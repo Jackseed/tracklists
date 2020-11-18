@@ -1,3 +1,142 @@
-<button (click)="authService.authSpotify()">
+<button (click)="service.authSpotify()">
   Login
 </button>
+
+<div *ngIf="isSignup">
+  <h3>Save your account</h3>
+</div>
+
+<div *ngIf="isLogin">
+  <h3>Sign In</h3>
+</div>
+
+<div *ngIf="isPasswordReset">
+  <h3>Reset Password</h3>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()" fxLayout="column" class="form">
+  <!---------------EMAIL--------------->
+  <mat-form-field appearance="legacy" color="accent" fxFlex>
+    <mat-label>Email address</mat-label>
+
+    <input
+      matInput
+
+      type="email"
+      formControlName="email"
+      placeholder="john.doe@war.love"
+    />
+
+    <mat-error *ngIf="email.invalid && email.dirty"
+      >Your email address is not valid</mat-error
+    >
+  </mat-form-field>
+  <!---------------PASSWORD--------------->
+  <mat-form-field
+    class="form"
+    appearance="legacy"
+    color="primary"
+    fxFlex
+    *ngIf="!isPasswordReset"
+  >
+    <mat-label>Password</mat-label>
+
+    <input
+      matInput
+
+      type="password"
+      formControlName="password"
+      placeholder="Your secret password"
+      autocomplete="on"
+    />
+
+    <mat-error *ngIf="password.invalid && password.dirty"
+      >Password must be at least 5 characters long</mat-error
+    >
+  </mat-form-field>
+  <!---------------PASSWORD CONFIRM--------------->
+  <mat-form-field
+
+    appearance="legacy"
+    color="primary"
+    fxFlex
+    *ngIf="isSignup"
+  >
+    <mat-label>Password confirmation</mat-label>
+
+    <input
+      matInput
+
+      type="password"
+      formControlName="passwordConfirm"
+      placeholder="Confirm your password"
+      autocomplete="on"
+    />
+
+    <mat-error *ngIf="passwordConfirm.dirty && !passwordDoesMatch"
+      >Password does not match</mat-error
+    >
+  </mat-form-field>
+
+  <mat-error>{{ serverMessage }}</mat-error>
+  <!-----------------SAVE----------------->
+  <button
+    *ngIf="isSignup"
+    type="submit"
+    mat-raised-button
+    color="primary"
+    [disabled]="form.invalid || !passwordDoesMatch || loading"
+  >
+    <span>Submit</span>
+  </button>
+
+  <button
+    *ngIf="isLogin"
+    type="submit"
+    mat-raised-button
+    color="primary"
+    [disabled]="password.invalid || email.invalid || loading"
+  >
+    <span>Log in</span>
+  </button>
+
+  <button
+    *ngIf="isPasswordReset"
+    mat-raised-button
+    color="primary"
+    type="submit"
+    [disabled]="loading || email.invalid"
+  >
+    <span>Send reset email</span>
+  </button>
+
+  <button
+    mat-button
+    *ngIf="isLogin && !isPasswordReset"
+    (click)="changeType('reset')"
+  >
+    <span>Forgot password?</span>
+  </button>
+
+  <button mat-button (click)="changeType('login')" *ngIf="isSignup">
+    <span>Returning user?</span>
+  </button>
+
+  <button
+    size="small"
+    mat-button
+    (click)="changeType('signup')"
+    *ngIf="isLogin"
+  >
+    <span>New user?</span>
+  </button>
+
+  <button
+    size="small"
+    mat-button
+    (click)="changeType('login')"
+    *ngIf="isPasswordReset"
+  >
+    <span>Back</span>
+  </button>
+</form>
