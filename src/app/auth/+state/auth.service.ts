@@ -66,6 +66,7 @@ export class AuthService extends CollectionService<AuthState> {
       if (user) {
         this.setUser(user.uid, user.email);
       }
+      this.router.navigate(["/home"]);
     } catch (err) {
       errorMessage = err;
     }
@@ -78,6 +79,7 @@ export class AuthService extends CollectionService<AuthState> {
 
     try {
       await this.afAuth.signInWithEmailAndPassword(email, password);
+      this.router.navigate(["/home"]);
     } catch (err) {
       errorMessage = err;
     }
