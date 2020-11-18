@@ -10,6 +10,16 @@ export const environment = {
     responseType: 'token',
     redirectURI: 'http://localhost:4200/home',
   },
+  firebaseConfig: {
+    apiKey: "AIzaSyDU6A1HcHI7HM2Q2m7ONn3JEvI1f9Dtp8E",
+    authDomain: "listy-bcc65.firebaseapp.com",
+    databaseURL: "https://listy-bcc65.firebaseio.com",
+    projectId: "listy-bcc65",
+    storageBucket: "listy-bcc65.appspot.com",
+    messagingSenderId: "15699329799",
+    appId: "1:15699329799:web:31d0b0c9b6da3c5d357ba2",
+    measurementId: "G-NSL8RT8J02"
+  }
 };
 
 /*

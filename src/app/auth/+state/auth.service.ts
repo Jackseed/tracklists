@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AuthStore } from './auth.store';
+import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
+import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 
 @Injectable({ providedIn: 'root' })
-export class AuthService {
-
+@CollectionConfig({ path: 'users' })
+export class AuthService extends CollectionService<AuthState> {
   authorizeURL = 'https://accounts.spotify.com/authorize';
   clientId: string = environment.spotify.clientId;
   // baseUrl: string = environment.spotify.apiURL;
@@ -13,20 +13,20 @@ export class AuthService {
   redirectURI = environment.spotify.redirectURI;
 
   scope = [
-  'user-read-email',
-  'user-read-currently-playing',
-  'user-modify-playback-state',
-  'streaming',
-  'user-read-playback-state',
-  'user-read-private',
-  'user-top-read',
-  'playlist-read-private',
-  'playlist-read-collaborative',
-  'user-library-read'
+    'user-read-email',
+    'user-read-currently-playing',
+    'user-modify-playback-state',
+    'streaming',
+    'user-read-playback-state',
+    'user-read-private',
+    'user-top-read',
+    'playlist-read-private',
+    'playlist-read-collaborative',
+    'user-library-read',
   ].join('%20');
 
-  constructor(private authStore: AuthStore,
-              private http: HttpClient) {
+  constructor(store: AuthStore) {
+    super(store);
   }
 
   authSpotify() {
@@ -41,5 +41,4 @@ export class AuthService {
     this.authorizeURL += '&scope=' + this.scope;
     return this.authorizeURL;
   }
-
 }

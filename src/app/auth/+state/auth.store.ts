@@ -1,23 +1,19 @@
 import { Injectable } from '@angular/core';
-import { Store, StoreConfig } from '@datorama/akita';
+import { ActiveState, EntityStore, StoreConfig } from '@datorama/akita';
+import { CollectionState } from 'akita-ng-fire/lib/collection/collection.service';
+import { User } from './auth.model';
 
-export interface AuthState {
-   key: string;
-}
+export interface AuthState extends CollectionState<User>, ActiveState<string> {}
 
-export function createInitialState(): AuthState {
-  return {
-    key: ''
-  };
-}
+const initialState = {
+  active: null,
+};
 
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'auth' })
-export class AuthStore extends Store<AuthState> {
-
+export class AuthStore extends EntityStore<AuthState> {
   constructor() {
-    super(createInitialState());
+    super(initialState);
   }
-
 }
 
