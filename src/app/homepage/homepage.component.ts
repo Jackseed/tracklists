@@ -7,11 +7,14 @@ import { AuthService } from '../auth/+state';
   styleUrls: ['./homepage.component.css'],
 })
 export class HomepageComponent implements OnInit {
+  spotifyUser;
+
   constructor(public authService: AuthService) {
 
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.authService.saveToken();
+    this.spotifyUser = await this.authService.getSpotifyActiveUser();
   }
 }

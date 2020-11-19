@@ -3,17 +3,18 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { first, map, tap } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 import { createUser } from './auth.model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
 export class AuthService extends CollectionService<AuthState> {
   authorizeURL = 'https://accounts.spotify.com/authorize';
   clientId: string = environment.spotify.clientId;
-  // baseUrl: string = environment.spotify.apiURL;
+  baseUrl: string = environment.spotify.apiUrl;
   responseType: string = 'token';
   redirectURI = environment.spotify.redirectURI;
 
@@ -35,6 +36,7 @@ export class AuthService extends CollectionService<AuthState> {
     private query: AuthQuery,
     private afAuth: AngularFireAuth,
     private router: Router,
+    private http: HttpClient,
   ) {
     super(store);
   }
@@ -42,6 +44,14 @@ export class AuthService extends CollectionService<AuthState> {
   public authSpotify() {
     window.location.href = this.getAuthUrl();
     return false;
+  }
+
+  public async getSpotifyActiveUser(){
+    const user = await this.query.getActive();
+    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + user.token);
+    const response = await this.http.get(this.baseUrl, {headers});
+
+    return response;
   }
 
   private getAuthUrl(): string {

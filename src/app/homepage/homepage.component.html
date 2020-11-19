@@ -1,3 +1,5 @@
-<button (click)="authService.authSpotify()">
-  Login
-</button>
+<button (click)="authService.authSpotify()">Login</button>
+
+<div *ngIf="spotifyUser | async as user">
+  {{ user | json }}
+</div>
