@@ -3,9 +3,10 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { first } from 'rxjs/operators';
+import { first, map, tap } from 'rxjs/operators';
 import { createUser } from './auth.model';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthQuery } from './auth.query';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -31,23 +32,36 @@ export class AuthService extends CollectionService<AuthState> {
 
   constructor(
     store: AuthStore,
+    private query: AuthQuery,
     private afAuth: AngularFireAuth,
-    private router: Router
+    private router: Router,
   ) {
     super(store);
   }
 
-  authSpotify() {
+  public authSpotify() {
     window.location.href = this.getAuthUrl();
     return false;
   }
 
-  getAuthUrl(): string {
+  private getAuthUrl(): string {
     this.authorizeURL += '?' + 'client_id=' + this.clientId;
     this.authorizeURL += '&response_type=' + this.responseType;
     this.authorizeURL += '&redirect_uri=' + this.redirectURI;
     this.authorizeURL += '&scope=' + this.scope;
     return this.authorizeURL;
+  }
+
+  private getTokenFromUrl(): string {
+    const url = this.router.url;
+    const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
+    return token;
+  }
+
+  public saveToken() {
+    const token = this.getTokenFromUrl();
+    const userId = this.query.getActiveId();
+    this.db.collection(this.currentPath).doc(userId).update({token});
   }
 
   private setUser(id: string, email: string) {
@@ -66,7 +80,7 @@ export class AuthService extends CollectionService<AuthState> {
       if (user) {
         this.setUser(user.uid, user.email);
       }
-      this.router.navigate(["/home"]);
+      this.router.navigate(['/home']);
     } catch (err) {
       errorMessage = err;
     }
@@ -79,7 +93,7 @@ export class AuthService extends CollectionService<AuthState> {
 
     try {
       await this.afAuth.signInWithEmailAndPassword(email, password);
-      this.router.navigate(["/home"]);
+      this.router.navigate(['/home']);
     } catch (err) {
       errorMessage = err;
     }
