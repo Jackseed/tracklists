@@ -54,6 +54,14 @@ export class AuthService extends CollectionService<AuthState> {
     return response;
   }
 
+  public async getPlaylist() {
+    const user = await this.query.getActive();
+    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + user.token);
+    const response = await this.http.get("https://api.spotify.com/v1/users/he5wfv993d9alrja3aed3yrkh/playlists", {headers});
+    response.subscribe(console.log);
+    return response;
+  }
+
   private getAuthUrl(): string {
     this.authorizeURL += '?' + 'client_id=' + this.clientId;
     this.authorizeURL += '&response_type=' + this.responseType;
