@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TracksStore, TracksState } from './tracks.store';
+import { TracksStore, TrackState } from './track.store';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
 import { AuthQuery } from 'src/app/auth/+state';
@@ -7,7 +7,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
-export class TracksService extends CollectionService<TracksState> {
+export class TrackService extends CollectionService<TrackState> {
   authorizeURL: string = 'https://accounts.spotify.com/authorize';
   clientId: string = environment.spotify.clientId;
   baseUrl: string = environment.spotify.apiUrl;

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth/+state';
+import { TrackService } from '../tracks/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -10,14 +11,14 @@ export class HomepageComponent implements OnInit {
   spotifyUser;
   playlists
 
-  constructor(public authService: AuthService) {
+  constructor(public tracksService: TrackService) {
 
   }
 
   async ngOnInit() {
     this.authService.saveToken();
     this.spotifyUser = await this.authService.getSpotifyActiveUser();
-    this.playlists = await this.authService.getPlaylist();
+    this.playlists = await this.trackService.getPlaylist();
 
   }
 
