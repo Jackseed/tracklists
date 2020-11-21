@@ -2,5 +2,7 @@
 
 <div *ngIf="spotifyUser | async as user">
   {{ user | json }}
-  {{ playlists | json }}
+  <div *ngIf="playlists | async as playlists">
+    {{ playlists | json }}
+  </div>
 </div>

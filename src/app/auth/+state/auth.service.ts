@@ -57,7 +57,7 @@ export class AuthService extends CollectionService<AuthState> {
   public async getPlaylist() {
     const user = await this.query.getActive();
     const headers = new HttpHeaders().set('Authorization', 'Bearer ' + user.token);
-    const response = await this.http.get("https://api.spotify.com/v1/users/he5wfv993d9alrja3aed3yrkh/playlists", {headers});
+    const response = await this.http.get("https://api.spotify.com/v1/me/tracks?limit=50", {headers});
     response.subscribe(console.log);
     return response;
   }
