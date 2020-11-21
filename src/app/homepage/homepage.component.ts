@@ -18,6 +18,7 @@ export class HomepageComponent implements OnInit {
     this.authService.saveToken();
     this.spotifyUser = await this.authService.getSpotifyActiveUser();
     this.playlists = await this.authService.getPlaylist();
+
   }
 
 
