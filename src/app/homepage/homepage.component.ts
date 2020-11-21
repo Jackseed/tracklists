@@ -9,18 +9,16 @@ import { TrackService } from '../tracks/+state';
 })
 export class HomepageComponent implements OnInit {
   spotifyUser;
-  playlists
+  playlists;
 
-  constructor(public tracksService: TrackService) {
-
-  }
+  constructor(
+    public authService: AuthService,
+    public trackService: TrackService
+  ) {}
 
   async ngOnInit() {
     this.authService.saveToken();
     this.spotifyUser = await this.authService.getSpotifyActiveUser();
     this.playlists = await this.trackService.getPlaylist();
-
   }
-
-
 }

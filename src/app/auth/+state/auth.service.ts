@@ -3,7 +3,7 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { first } from 'rxjs/operators';
+import { first, tap } from 'rxjs/operators';
 import { createUser } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
@@ -52,9 +52,19 @@ export class AuthService extends CollectionService<AuthState> {
       'Authorization',
       'Bearer ' + user.token
     );
-    const response = await this.http.get(this.baseUrl, { headers });
-
-    return response;
+    const spotifyUser = await this.http.get(this.baseUrl, { headers });
+    spotifyUser
+      .pipe(
+        // save spotifyId
+        tap((spotifyUser) => {
+          this.db
+            .collection(this.currentPath)
+            .doc(user.id)
+            .update({ spotifyId: spotifyUser.id });
+        }, first())
+      )
+      .subscribe();
+    return spotifyUser;
   }
 
   private getAuthUrl(): string {

@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email?: string;
   token?: string;
+  spotifyId: string;
 }
 
 export function createUser(params: Partial<User>) {
