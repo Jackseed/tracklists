@@ -19,6 +19,6 @@ export class HomepageComponent implements OnInit {
   async ngOnInit() {
     this.authService.saveToken();
     this.spotifyUser = await this.authService.getSpotifyActiveUser();
-    this.playlists = await this.trackService.getPlaylist();
+    this.playlists = await this.trackService.getLikedTracks();
   }
 }

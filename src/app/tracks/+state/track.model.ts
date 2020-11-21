@@ -6,7 +6,7 @@ export interface Track {
   added_at: Timestamp;
   album: Album;
   artists: Artist[];
-  duration: number;
+  duration_ms: number;
   name: string;
   popularity: number;
   key: number;
@@ -24,12 +24,12 @@ export interface Track {
 }
 
 export interface Album {
-  id: string;
-  name: string;
-  images: Image[];
-  genres: string[];
-  release_date: string;
-  release_date_precision: 'year' | 'month' | 'day';
+  id?: string;
+  name?: string;
+  images?: Image[];
+  genres?: string[];
+  release_date?: string;
+  release_date_precision?: 'year' | 'month' | 'day';
 }
 
 export interface Artist {
@@ -50,9 +50,43 @@ export function createTrack(params: Partial<Track>) {
     isLiked: params.isLiked,
     added_at: params.added_at,
     name: params.name,
-    artists: params.artists.forEach((artist) => createArtist(artist)),
-    album: createAlbum(params.album),
-    duration: params.duration,
+    artists: params.artists
+      ? params.artists.map((artist) => createArtist(artist))
+      : [],
+    album: params.album ? createAlbum(params.album) : {},
+    duration_ms: params.duration_ms,
+    popularity: params.popularity,
+  };
+}
+
+export function createAudioFeatures(params: Partial<Track>) {
+  return {
+    key: params.key,
+    mode: params.mode,
+    time_signature: params.time_signature,
+    acousticness: params.acousticness,
+    danceability: params.danceability,
+    energy: params.energy,
+    instrumentalness: params.instrumentalness,
+    liveness: params.liveness,
+    loudness: params.loudness,
+    speechiness: params.speechiness,
+    valence: params.valence,
+    tempo: params.tempo,
+  };
+}
+
+export function createFullTrack(params: Partial<Track>) {
+  return {
+    id: params.id,
+    isLiked: params.isLiked,
+    added_at: params.added_at,
+    name: params.name,
+    artists: params.artists
+      ? params.artists.map((artist) => createArtist(artist))
+      : [],
+    album: params.album ? createAlbum(params.album) : {},
+    duration_ms: params.duration_ms,
     popularity: params.popularity,
     key: params.key,
     mode: params.mode,
@@ -73,7 +107,7 @@ export function createAlbum(params: Partial<Album>) {
   return {
     id: params.id,
     name: params.name,
-    images: params.images.forEach((image) => createImage(image)),
+    images: params.images.map((image) => createImage(image)),
     genres: params.genres ? params.genres : [],
     release_date: params.release_date,
     release_date_precision: params.release_date_precision,
@@ -81,10 +115,13 @@ export function createAlbum(params: Partial<Album>) {
 }
 
 export function createArtist(params: Partial<Artist>) {
+  console.log('artist: ', params);
   return {
     id: params.id,
     name: params.name,
-    images: params.images.forEach((image) => createImage(image)),
+    images: params.images
+      ? params.images.map((image) => createImage(image))
+      : [],
   };
 }
 
