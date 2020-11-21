@@ -36,7 +36,7 @@ export class AuthService extends CollectionService<AuthState> {
     private query: AuthQuery,
     private afAuth: AngularFireAuth,
     private router: Router,
-    private http: HttpClient,
+    private http: HttpClient
   ) {
     super(store);
   }
@@ -46,19 +46,14 @@ export class AuthService extends CollectionService<AuthState> {
     return false;
   }
 
-  public async getSpotifyActiveUser(){
+  public async getSpotifyActiveUser() {
     const user = await this.query.getActive();
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + user.token);
-    const response = await this.http.get(this.baseUrl, {headers});
+    const headers = new HttpHeaders().set(
+      'Authorization',
+      'Bearer ' + user.token
+    );
+    const response = await this.http.get(this.baseUrl, { headers });
 
-    return response;
-  }
-
-  public async getPlaylist() {
-    const user = await this.query.getActive();
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + user.token);
-    const response = await this.http.get("https://api.spotify.com/v1/me/tracks?limit=50", {headers});
-    response.subscribe(console.log);
     return response;
   }
 
@@ -79,7 +74,7 @@ export class AuthService extends CollectionService<AuthState> {
   public saveToken() {
     const token = this.getTokenFromUrl();
     const userId = this.query.getActiveId();
-    this.db.collection(this.currentPath).doc(userId).update({token});
+    this.db.collection(this.currentPath).doc(userId).update({ token });
   }
 
   private setUser(id: string, email: string) {
