@@ -2,7 +2,6 @@ import { Timestamp } from '@google-cloud/firestore';
 
 export interface Track {
   id: string;
-  isLiked: boolean;
   added_at: Timestamp;
   album: Album;
   artists: Artist[];
@@ -47,7 +46,6 @@ export interface Image {
 export function createTrack(params: Partial<Track>) {
   return {
     id: params.id,
-    isLiked: params.isLiked,
     added_at: params.added_at,
     name: params.name,
     artists: params.artists
@@ -79,7 +77,6 @@ export function createAudioFeatures(params: Partial<Track>) {
 export function createFullTrack(params: Partial<Track>) {
   return {
     id: params.id,
-    isLiked: params.isLiked,
     added_at: params.added_at,
     name: params.name,
     artists: params.artists
@@ -115,7 +112,6 @@ export function createAlbum(params: Partial<Album>) {
 }
 
 export function createArtist(params: Partial<Artist>) {
-  console.log('artist: ', params);
   return {
     id: params.id,
     name: params.name,

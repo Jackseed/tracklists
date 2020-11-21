@@ -8,6 +8,7 @@ import { createUser } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firestore } from 'firebase/app';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -79,6 +80,16 @@ export class AuthService extends CollectionService<AuthState> {
     const url = this.router.url;
     const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
     return token;
+  }
+
+  public addLikedTrack(trackId: string) {
+    const userId = this.query.getActiveId();
+    this.db
+      .collection(this.currentPath)
+      .doc(userId)
+      .update({
+        likedTracks: firestore.FieldValue.arrayUnion(trackId),
+      });
   }
 
   public saveToken() {

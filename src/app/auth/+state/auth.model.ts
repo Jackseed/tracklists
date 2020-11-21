@@ -2,7 +2,8 @@ export interface User {
   id: string;
   email?: string;
   token?: string;
-  spotifyId: string;
+  spotifyId?: string;
+  likedTracks?: string[];
 }
 
 export function createUser(params: Partial<User>) {
