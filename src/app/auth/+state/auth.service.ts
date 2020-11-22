@@ -88,7 +88,7 @@ export class AuthService extends CollectionService<AuthState> {
       .collection(this.currentPath)
       .doc(userId)
       .update({
-        likedTracks: firestore.FieldValue.arrayUnion(trackId),
+        likedTracksIds: firestore.FieldValue.arrayUnion(trackId),
       });
   }
 

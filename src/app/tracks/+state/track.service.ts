@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TracksStore, TrackState } from './track.store';
+import { TrackStore, TrackState } from './track.store';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
 import { first, map, tap } from 'rxjs/operators';
@@ -21,7 +21,7 @@ export class TrackService extends CollectionService<TrackState> {
   redirectURI: string = environment.spotify.redirectURI;
 
   constructor(
-    store: TracksStore,
+    store: TrackStore,
     private query: TrackQuery,
     private authService: AuthService
   ) {

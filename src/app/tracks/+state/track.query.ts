@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
-import { TracksStore, TrackState } from './track.store';
+import { TrackStore, TrackState } from './track.store';
 import { AuthQuery } from 'src/app/auth/+state';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState> {
   constructor(
-    protected store: TracksStore,
+    protected store: TrackStore,
 
     private authQuery: AuthQuery,
     private http: HttpClient
@@ -27,10 +27,13 @@ export class TrackQuery extends QueryEntity<TrackState> {
 
   public async getLikedTracks() {
     const headers = await this.getHeaders();
-    const likedTracks = await this.http.get(
-      'https://api.spotify.com/v1/me/tracks?limit=5',
-      { headers }
-    );
+    const url = 'https://api.spotify.com/v1/me/tracks';
+    const queryParams = '?limit=5';
+
+    const likedTracks = await this.http.get(`${url + queryParams}`, {
+      headers,
+    });
+
     const likedItems = likedTracks.pipe(
       map((likedTracks) => likedTracks.items)
     );
@@ -39,10 +42,8 @@ export class TrackQuery extends QueryEntity<TrackState> {
 
   public async getAudioFeatures(trackId: string) {
     const headers = await this.getHeaders();
-    const audioAnalysis = await this.http.get(
-      `https://api.spotify.com/v1/audio-features/${trackId}`,
-      { headers }
-    );
+    const url = 'https://api.spotify.com/v1/audio-features/';
+    const audioAnalysis = await this.http.get(`${url + trackId}`, { headers });
     return audioAnalysis;
   }
 }

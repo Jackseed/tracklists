@@ -6,7 +6,7 @@ export interface TrackState extends EntityState<Track, string>, ActiveState<stri
 
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'tracks' })
-export class TracksStore extends EntityStore<TrackState> {
+export class TrackStore extends EntityStore<TrackState> {
 
   constructor() {
     super();
