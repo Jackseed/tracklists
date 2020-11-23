@@ -28,21 +28,33 @@ export class TrackService extends CollectionService<TrackState> {
     super(store);
   }
 
-  public async saveLikedTracks() {
-    const likedTracks = await this.query.getLikedTracks();
-    likedTracks.subscribe(console.log);
+  public async saveLikedTracks(url?: string) {
+    const baseUrl = url ? url : 'https://api.spotify.com/v1/me/tracks?limit=50';
+    const likedTracks = await this.query.getLikedTracks(baseUrl);
+
     likedTracks
       .pipe(
-        map((tracks) =>
-          tracks.map((track) => {
-            console.log(track);
-            this.saveTrack(track);
-            this.authService.addLikedTrack(track.track.id);
-          })
-        ),
+        map((likedTracks) => {
+          likedTracks.items.map(
+            (item) =>
+              // TODO: remove added_at from track
+              createTrack({
+                added_at: item.added_at,
+                ...item.track,
+              })
+            // await this.saveTrack(item);
+            // this.authService.addLikedTrack(item.track.id);
+          );
+          // setTimeout(() => {
+          console.log(likedTracks);
+          likedTracks.next ? this.saveLikedTracks(likedTracks.next) : false;
+          // }, 5000);
+        }),
+        // https://stackoverflow.com/questions/44292270/angular-4-get-headers-from-api-response
+        // https://www.learnrxjs.io/learn-rxjs/operators/error_handling/retrywhen
         first()
       )
-      .subscribe();
+      .subscribe(console.log);
   }
 
   public async saveTrack(trackItem) {
