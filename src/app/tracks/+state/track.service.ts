@@ -2,14 +2,8 @@ import { Injectable } from '@angular/core';
 import { TrackStore, TrackState } from './track.store';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
-import { first, map, tap } from 'rxjs/operators';
-import {
-  createAudioFeatures,
-  createFullTrack,
-  createTrack,
-} from './track.model';
+import { Track } from './track.model';
 import { TrackQuery } from './track.query';
-import { AuthService } from 'src/app/auth/+state';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -20,63 +14,38 @@ export class TrackService extends CollectionService<TrackState> {
   responseType: string = 'token';
   redirectURI: string = environment.spotify.redirectURI;
 
-  constructor(
-    store: TrackStore,
-    private query: TrackQuery,
-    private authService: AuthService
-  ) {
+  constructor(store: TrackStore, private query: TrackQuery) {
     super(store);
   }
 
-  public async saveLikedTracks(url?: string) {
-    const baseUrl = url ? url : 'https://api.spotify.com/v1/me/tracks?limit=50';
-    const likedTracks = await this.query.getLikedTracks(baseUrl);
+  public async saveLikedTracks() {
+    let limit = 50;
+    const total: number = await this.query.getTotalLikedTracks();
+    let tracks: Track[] = [];
+    let trackIds: string[] = [];
+    let audioFeatures: Track[] = [];
+    const fullTracks: Track[] = [];
 
-    likedTracks
-      .pipe(
-        map((likedTracks) => {
-          likedTracks.items.map(
-            (item) =>
-              // TODO: remove added_at from track
-              createTrack({
-                added_at: item.added_at,
-                ...item.track,
-              })
-            // await this.saveTrack(item);
-            // this.authService.addLikedTrack(item.track.id);
-          );
-          // setTimeout(() => {
-          console.log(likedTracks);
-          likedTracks.next ? this.saveLikedTracks(likedTracks.next) : false;
-          // }, 5000);
-        }),
-        // https://stackoverflow.com/questions/44292270/angular-4-get-headers-from-api-response
-        // https://www.learnrxjs.io/learn-rxjs/operators/error_handling/retrywhen
-        first()
-      )
-      .subscribe(console.log);
-  }
+    // get all the liked tracks
+    for (let j = 0; j <= Math.floor(total / limit) + 1; j++) {
+      const offset = j * limit;
+      const url = `https://api.spotify.com/v1/me/tracks?limit=${limit}&offset=${offset}`;
+      const formatedTracks = await this.query.getFormatedLikedTracks(url);
 
-  public async saveTrack(trackItem) {
-    let track = createTrack({
-      added_at: trackItem.added_at,
-      ...trackItem.track,
-    });
+      tracks = tracks.concat(formatedTracks);
+    }
 
-    const audioFeatures = await this.query.getAudioFeatures(track.id);
+    trackIds = tracks.map((track) => track.id);
 
-    audioFeatures
-      .pipe(
-        tap((audioFeatures) => {
-          const audioFeat = createAudioFeatures(audioFeatures);
-          const fullTrack = createFullTrack({
-            ...track,
-            ...audioFeat,
-          });
-          this.db.collection(this.currentPath).doc(fullTrack.id).set(fullTrack);
-        }),
-        first()
-      )
-      .subscribe();
+    // Get all the audio features from liked tracks by batches
+    for (let i = 0; i <= Math.floor(trackIds.length / 100); i++) {
+      const bactchTrackIds = trackIds.slice(0 + 100 * i, 100 * (i + 1));
+
+      const formatedFeatures = await this.query.getFormatedAudioFeatures(
+        bactchTrackIds
+      );
+      audioFeatures = audioFeatures.concat(formatedFeatures);
+    }
+    console.log('tracks: ', tracks, 'audio features: ', audioFeatures);
   }
 }

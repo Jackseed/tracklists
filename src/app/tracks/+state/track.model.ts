@@ -2,24 +2,24 @@ import { Timestamp } from '@google-cloud/firestore';
 
 export interface Track {
   id: string;
-  added_at: Timestamp;
-  album: Album;
-  artists: Artist[];
-  duration_ms: number;
-  name: string;
-  popularity: number;
-  key: number;
-  mode: number;
-  time_signature: number;
-  acousticness: number;
-  danceability: number;
-  energy: number;
-  instrumentalness: number;
-  liveness: number;
-  loudness: number;
-  speechiness: number;
-  valence: number;
-  tempo: number;
+  added_at?: Timestamp;
+  album?: Album;
+  artists?: Artist[];
+  duration_ms?: number;
+  name?: string;
+  popularity?: number;
+  key?: number;
+  mode?: number;
+  time_signature?: number;
+  acousticness?: number;
+  danceability?: number;
+  energy?: number;
+  instrumentalness?: number;
+  liveness?: number;
+  loudness?: number;
+  speechiness?: number;
+  valence?: number;
+  tempo?: number;
 }
 
 export interface Album {
@@ -59,6 +59,7 @@ export function createTrack(params: Partial<Track>) {
 
 export function createAudioFeatures(params: Partial<Track>) {
   return {
+    id: params.id,
     key: params.key,
     mode: params.mode,
     time_signature: params.time_signature,

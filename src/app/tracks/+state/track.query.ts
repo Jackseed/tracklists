@@ -2,21 +2,18 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
 import { AuthQuery } from 'src/app/auth/+state';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpHeaders,
-} from '@angular/common/http';
-import {
-  catchError,
   delayWhen,
   filter,
+  first,
   map,
   retryWhen,
   take,
   tap,
 } from 'rxjs/operators';
-import { combineLatest, timer } from 'rxjs';
+import { timer } from 'rxjs';
+import { createAudioFeatures, createTrack, Track } from './track.model';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState> {
@@ -38,10 +35,10 @@ export class TrackQuery extends QueryEntity<TrackState> {
     return headers;
   }
 
-  public async getLikedTracks(url: string) {
+  public async getPromisedLikedTracks(url: string) {
     const headers = await this.getHeaders();
 
-    const likedTracks = await this.http
+    const likedTracks = this.http
       .get(`${url}`, {
         headers,
       })
@@ -60,25 +57,69 @@ export class TrackQuery extends QueryEntity<TrackState> {
     return likedTracks;
   }
 
-  private handleError(error: HttpErrorResponse) {
-    if (error.error instanceof ErrorEvent) {
-      // A client-side or network error occurred. Handle it accordingly.
-      console.error('An error occurred:', error.error.message);
-    } else {
-      // The backend returned an unsuccessful response code.
-      // The response body may contain clues as to what went wrong.
-      console.error(
-        `Backend returned code ${error.status}, ` + `body was: ${error.error}`
-      );
-    }
-    // Return an observable with a user-facing error message.
-    return throwError('Something bad happened; please try again later.');
+  public async getLikedTracks(url: string) {
+    return await (await this.getPromisedLikedTracks(url))
+      .pipe(first())
+      .toPromise();
   }
 
-  public async getAudioFeatures(trackId: string) {
+  public async getTotalLikedTracks(): Promise<number> {
+    const url = 'https://api.spotify.com/v1/me/tracks?limit=1';
+    const tracks = await this.getLikedTracks(url);
+    return tracks.total;
+  }
+
+  public async getFormatedLikedTracks(url: string): Promise<Track[]> {
+    return await (await this.getPromisedLikedTracks(url))
+      .pipe(
+        map((tracks) =>
+          tracks.items.map((item) =>
+            // TODO: remove added_at from track
+            createTrack({
+              added_at: item.added_at,
+              ...item.track,
+            })
+          )
+        ),
+        first()
+      )
+      .toPromise();
+  }
+
+  public async getPromisedManyAudioFeatures(trackIds: string[]) {
     const headers = await this.getHeaders();
-    const url = 'https://api.spotify.com/v1/audio-features/';
-    const audioAnalysis = await this.http.get(`${url + trackId}`, { headers });
+
+    let queryParam: string = '?ids=';
+    for (const trackId of trackIds) {
+      queryParam = queryParam + trackId + ',';
+    }
+
+    const url = 'https://api.spotify.com/v1/audio-features/' + queryParam;
+    const audioAnalysis = await this.http.get(`${url}`, { headers }).pipe(
+      retryWhen((error) => {
+        return error.pipe(
+          tap((error) => console.log('error status: ', error.status)),
+          filter((error) => error.status === 429),
+          delayWhen(() => timer(5000)),
+          tap(() => console.log('retrying...')),
+          take(3)
+        );
+      })
+    );
+
     return audioAnalysis;
+  }
+
+  public async getFormatedAudioFeatures(trackIds: string[]): Promise<Track[]> {
+    return await (await this.getPromisedManyAudioFeatures(trackIds))
+      .pipe(
+        map((audioFeat) =>
+          audioFeat.audio_features.map((feature) =>
+            createAudioFeatures(feature)
+          )
+        ),
+        first()
+      )
+      .toPromise();
   }
 }
