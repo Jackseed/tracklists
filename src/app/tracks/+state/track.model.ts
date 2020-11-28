@@ -106,6 +106,7 @@ export function createAlbum(params: Partial<Album>) {
     id: params.id,
     name: params.name,
     images: params.images.map((image) => createImage(image)),
+    // TODO: check if genre is working
     genres: params.genres ? params.genres : [],
     release_date: params.release_date,
     release_date_precision: params.release_date_precision,

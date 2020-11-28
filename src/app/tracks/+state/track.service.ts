@@ -27,17 +27,18 @@ export class TrackService extends CollectionService<TrackState> {
     const likedTracksLimit = 50;
     const audioFeaturesLimit = 100;
     const firebaseWriteLimit = 500;
-    const userId = this.authQuery.getActiveId();
-    console.log('user id', userId);
     const total: number = await this.query.getTotalLikedTracks();
+
     let tracks: Track[] = [];
     let trackIds: string[] = [];
     let audioFeatures: Track[] = [];
     let fullTracks: Track[] = [];
+
+    const userId = this.authQuery.getActiveId();
     const collection = this.db.firestore.collection(this.currentPath);
     const userRef = this.db.firestore.collection('users').doc(userId);
 
-    // get all the liked tracks
+    // get all the liked tracks by batches
     for (let j = 0; j <= Math.floor(total / likedTracksLimit) + 1; j++) {
       const offset = j * likedTracksLimit;
       const url = `https://api.spotify.com/v1/me/tracks?limit=${likedTracksLimit}&offset=${offset}`;
@@ -48,7 +49,7 @@ export class TrackService extends CollectionService<TrackState> {
 
     trackIds = tracks.map((track) => track.id);
 
-    // Get all the audio features from liked tracks by batches
+    // Get all the audio features by batches
     for (let i = 0; i <= Math.floor(total / audioFeaturesLimit); i++) {
       const bactchTrackIds = trackIds.slice(
         audioFeaturesLimit * i,
@@ -60,13 +61,13 @@ export class TrackService extends CollectionService<TrackState> {
       );
       audioFeatures = audioFeatures.concat(formatedFeatures);
     }
-    console.log('tracks: ', tracks, 'audio features: ', audioFeatures);
 
+    // concat tracks & audio features
     fullTracks = tracks.map((item, i) =>
       Object.assign({}, item, audioFeatures[i])
     );
-    console.log(fullTracks);
-    console.log(trackIds);
+
+    // TODO: verify that tracks are not written if they already exist
     // write the tracks by batches
     for (let i = 0; i <= Math.floor(total / firebaseWriteLimit); i++) {
       const bactchFullTracks = fullTracks.slice(
@@ -86,6 +87,7 @@ export class TrackService extends CollectionService<TrackState> {
         .catch((error) => console.log(error));
     }
 
+    // write liked titles in the user doc
     userRef
       .update({ likedTracksIds: trackIds })
       .then((_) => console.log('trackIds saved on user'))

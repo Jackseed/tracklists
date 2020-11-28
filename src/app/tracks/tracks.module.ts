@@ -3,12 +3,9 @@ import { CommonModule } from '@angular/common';
 import { TrackListComponent } from './track-list/track-list.component';
 import { TrackViewComponent } from './track-view/track-view.component';
 
-
-
 @NgModule({
   declarations: [TrackListComponent, TrackViewComponent],
-  imports: [
-    CommonModule
-  ]
+  imports: [CommonModule],
+  exports: [TrackListComponent, TrackViewComponent],
 })
-export class TracksModule { }
+export class TracksModule {}

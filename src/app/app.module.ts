@@ -10,10 +10,10 @@ import { environment } from 'src/environments/environment';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { CommonModule } from '@angular/common';
+import { TracksModule } from './tracks/tracks.module';
 
 @NgModule({
   declarations: [
-
     AppComponent,
     HomepageComponent
   ],
@@ -23,6 +23,7 @@ import { CommonModule } from '@angular/common';
     BrowserAnimationsModule,
     AppRoutingModule,
     AuthModule,
+    TracksModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFirestoreModule,

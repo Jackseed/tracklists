@@ -1,1 +1,3 @@
-<p>track-list works!</p>
+<div *ngFor="let track of tracks$ | async">
+  <p>{{ track.name }}</p>
+</div>
