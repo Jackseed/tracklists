@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Track } from '../+state';
+import { Track, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-view',
@@ -8,7 +8,11 @@ import { Track } from '../+state';
 })
 export class TrackViewComponent implements OnInit {
   @Input() track: Track;
-  constructor() {}
+  constructor(private service: TrackService) {}
 
   ngOnInit(): void {}
+
+  public playTrack(trackId: string) {
+    this.service.addToPlayback(trackId);
+  }
 }

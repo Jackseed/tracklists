@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { AuthQuery } from 'src/app/auth/+state';
+import { first } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -91,6 +92,16 @@ export class TrackService extends CollectionService<TrackState> {
     userRef
       .update({ likedTracksIds: trackIds })
       .then((_) => console.log('trackIds saved on user'))
+      .catch((error) => console.log(error));
+  }
+
+  public async addToPlayback(trackId: string) {
+    const query = await this.query
+      .getAddToPlaybackRequest(trackId)
+      .then((res) => {
+        res.pipe(first()).subscribe();
+        this.store.setActive(trackId);
+      })
       .catch((error) => console.log(error));
   }
 }

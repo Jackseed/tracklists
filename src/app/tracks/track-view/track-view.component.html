@@ -11,5 +11,10 @@
       <mat-card-title>{{ track.name }}</mat-card-title>
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
+    <mat-card-actions>
+      <button mat-icon-button (click)="playTrack(track.id)">
+        <mat-icon>play_circle_outline</mat-icon>
+      </button>
+    </mat-card-actions>
   </mat-card>
 </div>

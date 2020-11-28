@@ -1,6 +1,7 @@
 export interface Track {
   id: string;
   added_at?: string;
+  uri?: string;
   album?: Album;
   artists?: Artist[];
   duration_ms?: number;
@@ -112,6 +113,7 @@ export function createTrack(params: Partial<Track>) {
     album: params.album ? createAlbum(params.album) : {},
     duration_ms: params.duration_ms,
     popularity: params.popularity,
+    uri: params.uri,
   };
 }
 
@@ -137,6 +139,7 @@ export function createFullTrack(params: Partial<Track>) {
   return {
     id: params.id,
     added_at: params.added_at,
+    uri: params.uri,
     name: params.name,
     artists: params.artists
       ? params.artists.map((artist) => createArtist(artist))
