@@ -43,6 +43,29 @@ export interface Image {
   width: number;
 }
 
+export interface SpotifyTrack extends Track {
+  // spotify parameters
+  available_markets: string[];
+  disc_number: number;
+  explicit: boolean;
+  external_ids: { [key: string]: string };
+  external_urls: { [key: string]: string };
+  href: string;
+  is_playable: boolean;
+  linked_from: {
+    externarl_urls: { [key: string]: string };
+    href: string;
+    id: string;
+    type: string;
+    uri: string;
+  };
+  restrictions: { [key: string]: string };
+  preview_url: string;
+  track_number: number;
+  type: string;
+  uri: string;
+}
+
 export function createTrack(params: Partial<Track>) {
   return {
     id: params.id,
