@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../auth/+state';
+import { Observable } from 'rxjs';
+import { AuthService, SpotifyUser } from '../auth/+state';
 import { TrackService } from '../tracks/+state';
 
 @Component({
@@ -8,7 +9,7 @@ import { TrackService } from '../tracks/+state';
   styleUrls: ['./homepage.component.css'],
 })
 export class HomepageComponent implements OnInit {
-  spotifyUser;
+  spotifyUser$: Observable<SpotifyUser>;
 
 
   constructor(
@@ -18,6 +19,6 @@ export class HomepageComponent implements OnInit {
 
   async ngOnInit() {
     this.authService.saveToken();
-    this.spotifyUser = await this.authService.getSpotifyActiveUser();
+    this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
   }
 }

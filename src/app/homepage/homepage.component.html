@@ -3,7 +3,7 @@
   Load liked tracks
 </button>
 
-<div *ngIf="spotifyUser | async as user">
+<div *ngIf="spotifyUser$ | async as user">
   {{ user.display_name }}
   <app-track-list></app-track-list>
 </div>

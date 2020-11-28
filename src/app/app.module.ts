@@ -12,9 +12,10 @@ import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { CommonModule } from '@angular/common';
 import { TracksModule } from './tracks/tracks.module';
 import { MatButtonModule } from '@angular/material/button';
+import { PlayerComponent } from './player/player.component';
 
 @NgModule({
-  declarations: [AppComponent, HomepageComponent],
+  declarations: [AppComponent, HomepageComponent, PlayerComponent],
   imports: [
     BrowserModule,
     CommonModule,

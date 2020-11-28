@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firestore } from 'firebase/app';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -47,13 +48,15 @@ export class AuthService extends CollectionService<AuthState> {
     return false;
   }
 
-  public async getSpotifyActiveUser() {
+  public async getSpotifyActiveUser(): Promise<Observable<SpotifyUser>> {
     const user = await this.query.getActive();
     const headers = new HttpHeaders().set(
       'Authorization',
       'Bearer ' + user.token
     );
-    const spotifyUser = await this.http.get(this.baseUrl, { headers });
+    const spotifyUser = await this.http.get<SpotifyUser>(this.baseUrl, {
+      headers,
+    });
     spotifyUser
       .pipe(
         // save spotifyId
@@ -96,6 +99,7 @@ export class AuthService extends CollectionService<AuthState> {
     const token = this.getTokenFromUrl();
     const userId = this.query.getActiveId();
     this.db.collection(this.currentPath).doc(userId).update({ token });
+    localStorage.setItem('spotify-access-token', token);
   }
 
   private setUser(id: string, email: string) {
