@@ -140,11 +140,24 @@ export class TrackQuery extends QueryEntity<TrackState> {
     const track = this.getEntity(trackId);
     const queryParam = `?uri=${track.uri}`;
     const url = baseUrl + queryParam;
-    console.log(url, headers);
+
     return this.http
       .post(`${url}`, null, {
         headers,
       })
-      .pipe(tap((res) => console.log(res)));
+      .pipe(first())
+      .toPromise();
+  }
+
+  public async getPlayNextRequest() {
+    const headers = await this.getHeaders();
+    const baseUrl = 'https://api.spotify.com/v1/me/player/next';
+
+    return this.http
+      .post(`${baseUrl}`, null, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
   }
 }

@@ -98,10 +98,19 @@ export class TrackService extends CollectionService<TrackState> {
   public async addToPlayback(trackId: string) {
     const query = await this.query
       .getAddToPlaybackRequest(trackId)
-      .then((res) => {
-        res.pipe(first()).subscribe();
-        this.store.setActive(trackId);
-      })
+      .then((res) => this.store.setActive(trackId))
+      .catch((error) => console.log(error));
+  }
+
+  public async playTrack(trackId: string) {
+    this.addToPlayback(trackId);
+    this.playNext();
+  }
+
+  public async playNext() {
+    const query = await this.query
+      .getPlayNextRequest()
+      .then((res) => console.log(res))
       .catch((error) => console.log(error));
   }
 }
