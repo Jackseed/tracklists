@@ -1,8 +1,6 @@
-import { Timestamp } from '@google-cloud/firestore';
-
 export interface Track {
   id: string;
-  added_at?: Timestamp;
+  added_at?: string;
   album?: Album;
   artists?: Artist[];
   duration_ms?: number;
@@ -62,6 +60,43 @@ export interface SpotifyTrack extends Track {
   restrictions: { [key: string]: string };
   preview_url: string;
   track_number: number;
+  type: string;
+  uri: string;
+}
+
+export interface SpotifySavedTrack {
+  added_at: string;
+  track: SpotifyTrack;
+}
+
+export interface SpotifyPaging {
+  href: string;
+  items: Object[];
+  limit: number;
+  next: string;
+  offset: number;
+  previous: string;
+  total: number;
+}
+
+export interface SpotifyAudioFeatures {
+  key?: number;
+  mode?: number;
+  time_signature?: number;
+  acousticness?: number;
+  danceability?: number;
+  energy?: number;
+  instrumentalness?: number;
+  liveness?: number;
+  loudness?: number;
+  speechiness?: number;
+  valence?: number;
+  tempo?: number;
+  // Spotify
+  analysis_url: string;
+  duration_ms: number;
+  id: string;
+  track_href: string;
   type: string;
   uri: string;
 }

@@ -12,8 +12,15 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import { timer } from 'rxjs';
-import { createAudioFeatures, createTrack, Track } from './track.model';
+import { Observable, timer } from 'rxjs';
+import {
+  createAudioFeatures,
+  createTrack,
+  SpotifyAudioFeatures,
+  SpotifyPaging,
+  SpotifySavedTrack,
+  Track,
+} from './track.model';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState> {
@@ -35,11 +42,13 @@ export class TrackQuery extends QueryEntity<TrackState> {
     return headers;
   }
 
-  public async getPromisedLikedTracks(url: string) {
+  public async getPromisedLikedTracks(
+    url: string
+  ): Promise<Observable<SpotifyPaging>> {
     const headers = await this.getHeaders();
 
-    const likedTracks = this.http
-      .get(`${url}`, {
+    const likedTracks: Observable<SpotifyPaging> = this.http
+      .get<SpotifyPaging>(`${url}`, {
         headers,
       })
       .pipe(
@@ -57,7 +66,7 @@ export class TrackQuery extends QueryEntity<TrackState> {
     return likedTracks;
   }
 
-  public async getLikedTracks(url: string) {
+  public async getLikedTracks(url: string): Promise<SpotifyPaging> {
     return await (await this.getPromisedLikedTracks(url))
       .pipe(first())
       .toPromise();
@@ -73,7 +82,7 @@ export class TrackQuery extends QueryEntity<TrackState> {
     return await (await this.getPromisedLikedTracks(url))
       .pipe(
         map((tracks) =>
-          tracks.items.map((item) =>
+          tracks.items.map((item: SpotifySavedTrack) =>
             // TODO: remove added_at from track
             createTrack({
               added_at: item.added_at,
@@ -95,17 +104,19 @@ export class TrackQuery extends QueryEntity<TrackState> {
     }
 
     const url = 'https://api.spotify.com/v1/audio-features/' + queryParam;
-    const audioAnalysis = await this.http.get(`${url}`, { headers }).pipe(
-      retryWhen((error) => {
-        return error.pipe(
-          tap((error) => console.log('error status: ', error.status)),
-          filter((error) => error.status === 429),
-          delayWhen(() => timer(5000)),
-          tap(() => console.log('retrying...')),
-          take(3)
-        );
-      })
-    );
+    const audioAnalysis = this.http
+      .get<{ audio_features: SpotifyAudioFeatures[] }>(`${url}`, { headers })
+      .pipe(
+        retryWhen((error) => {
+          return error.pipe(
+            tap((error) => console.log('error status: ', error.status)),
+            filter((error) => error.status === 429),
+            delayWhen(() => timer(5000)),
+            tap(() => console.log('retrying...')),
+            take(3)
+          );
+        })
+      );
 
     return audioAnalysis;
   }

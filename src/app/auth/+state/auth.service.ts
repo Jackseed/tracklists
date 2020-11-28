@@ -4,7 +4,7 @@ import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { first, tap } from 'rxjs/operators';
-import { createUser } from './auth.model';
+import { createUser, SpotifyUser } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -57,7 +57,7 @@ export class AuthService extends CollectionService<AuthState> {
     spotifyUser
       .pipe(
         // save spotifyId
-        tap((spotifyUser) => {
+        tap((spotifyUser: SpotifyUser) => {
           this.db
             .collection(this.currentPath)
             .doc(user.id)

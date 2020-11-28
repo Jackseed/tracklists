@@ -15,7 +15,7 @@ export class TrackListComponent implements OnInit {
   ngOnInit(): void {
     this.tracks$ = this.query.selectAll({
       limitTo: 100,
-      filterBy: ({ energy }) => energy < 0.3,
+      filterBy: ({ energy }) => energy > 0.9,
     });
   }
 }
