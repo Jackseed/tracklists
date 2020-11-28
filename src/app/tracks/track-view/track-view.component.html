@@ -1,1 +1,15 @@
-<p>{{ track.name }}</p>
+<div fxLayout="row" fxLayoutAlign="center center">
+  <mat-card class="card" fxFlex="30" fxFlexAlign="center center">
+    <mat-card-header>
+      <div
+        mat-card-avatar
+        [ngStyle]="{
+          'background-image': 'url(' + track.album.images[0].url + ')',
+          'background-size': 'cover'
+        }"
+      ></div>
+      <mat-card-title>{{ track.name }}</mat-card-title>
+      <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+</div>

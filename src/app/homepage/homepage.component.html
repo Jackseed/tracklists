@@ -1,6 +1,9 @@
-<button (click)="authService.authSpotify()">Login</button>
+<button mat-raised-button (click)="authService.authSpotify()">Login</button>
+<button mat-raised-button (click)="trackService.saveLikedTracks()">
+  Load liked tracks
+</button>
 
 <div *ngIf="spotifyUser | async as user">
-  {{ user | json }}
+  {{ user.display_name }}
   <app-track-list></app-track-list>
 </div>

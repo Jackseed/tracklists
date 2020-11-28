@@ -9,7 +9,7 @@ import { TrackService } from '../tracks/+state';
 })
 export class HomepageComponent implements OnInit {
   spotifyUser;
-  playlists;
+
 
   constructor(
     public authService: AuthService,
@@ -19,6 +19,5 @@ export class HomepageComponent implements OnInit {
   async ngOnInit() {
     this.authService.saveToken();
     this.spotifyUser = await this.authService.getSpotifyActiveUser();
-    this.playlists = await this.trackService.saveLikedTracks();
   }
 }

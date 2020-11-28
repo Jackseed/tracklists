@@ -11,12 +11,10 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { CommonModule } from '@angular/common';
 import { TracksModule } from './tracks/tracks.module';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomepageComponent
-  ],
+  declarations: [AppComponent, HomepageComponent],
   imports: [
     BrowserModule,
     CommonModule,
@@ -27,9 +25,10 @@ import { TracksModule } from './tracks/tracks.module';
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFirestoreModule,
-    environment.production ? [] : AkitaNgDevtools.forRoot()
+    MatButtonModule,
+    environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
