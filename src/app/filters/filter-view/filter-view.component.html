@@ -1,9 +1,11 @@
-<h5>{{ filteredProperty }}: {{ rangeValues[0] + " - " + rangeValues[1] }}</h5>
-<p-slider
-  (ngModelChange)="onChange()"
-  [(ngModel)]="rangeValues"
-  [range]="true"
-  [min]="0"
-  [max]="1"
-  [step]="0.1"
-></p-slider>
+<div class="margin-top">
+  <h4>{{ filter.label }}</h4>
+  <p-slider
+    (ngModelChange)="onChange()"
+    [(ngModel)]="rangeValues"
+    [range]="true"
+    [min]="0"
+    [max]="1"
+    [step]="0.1"
+  ></p-slider>
+</div>

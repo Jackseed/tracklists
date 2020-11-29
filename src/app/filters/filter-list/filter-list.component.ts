@@ -7,13 +7,34 @@ import { Component, OnInit } from '@angular/core';
 })
 export class FilterListComponent implements OnInit {
   filters = [
-    'energy',
-    'instrumentalness',
-    'danceability',
-    'acousticness',
-    'liveness',
-    'speechiness',
-    'valence',
+    {
+      property: 'energy',
+      label: 'Energy',
+    },
+    {
+      property: 'instrumentalness',
+      label: 'Instrumental',
+    },
+    {
+      property: 'danceability',
+      label: 'Dancy',
+    },
+    {
+      property: 'acousticness',
+      label: 'Accoustic',
+    },
+    {
+      property: 'liveness',
+      label: 'Live music',
+    },
+    {
+      property: 'speechiness',
+      label: 'Lyrics',
+    },
+    {
+      property: 'valence',
+      label: 'Happyness',
+    },
   ];
   constructor() {}
 

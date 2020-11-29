@@ -7,7 +7,10 @@ import { TrackService } from 'src/app/tracks/+state';
   styleUrls: ['./filter-view.component.css'],
 })
 export class FilterViewComponent implements OnInit {
-  @Input() filteredProperty: string;
+  @Input() filter: {
+    label: string;
+    property: string;
+  };
   rangeValues: number[] = [0, 0];
 
   constructor(private trackService: TrackService) {}
@@ -16,11 +19,11 @@ export class FilterViewComponent implements OnInit {
 
   public onChange() {
     this.trackService.setFilter({
-      id: this.filteredProperty,
+      id: this.filter.property,
       value: this.rangeValues,
       predicate: (entity) =>
-        this.rangeValues[0] < entity[this.filteredProperty] &&
-        entity[this.filteredProperty] < this.rangeValues[1],
+        this.rangeValues[0] < entity[this.filter.property] &&
+        entity[this.filter.property] < this.rangeValues[1],
     });
   }
 }

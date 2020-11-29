@@ -3,11 +3,12 @@
   Load liked tracks
 </button>
 
-<div>
-  <app-filter-list></app-filter-list>
-</div>
+<div fxLayout="row" *ngIf="spotifyUser$ | async as user" class="margin-top">
+  <div fxFlex="20" fxFlexOffset="10">
+    <app-filter-list></app-filter-list>
+  </div>
 
-<div *ngIf="spotifyUser$ | async as user">
-  {{ user.display_name }}
-  <app-track-list></app-track-list>
+  <div fxFlex="40" fxFlexOffset="10">
+    <app-track-list></app-track-list>
+  </div>
 </div>

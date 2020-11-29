@@ -14,6 +14,7 @@ import { TracksModule } from './tracks/tracks.module';
 import { MatButtonModule } from '@angular/material/button';
 import { PlayerComponent } from './player/player.component';
 import { FiltersModule } from './filters/filters.module';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [AppComponent, HomepageComponent, PlayerComponent],
@@ -29,6 +30,7 @@ import { FiltersModule } from './filters/filters.module';
     AngularFirestoreModule,
     AngularFirestoreModule,
     MatButtonModule,
+    FlexLayoutModule,
     environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],
