@@ -13,9 +13,10 @@ import { CommonModule } from '@angular/common';
 import { TracksModule } from './tracks/tracks.module';
 import { MatButtonModule } from '@angular/material/button';
 import { PlayerComponent } from './player/player.component';
+import { FiltersComponent } from './filters/filters.component';
 
 @NgModule({
-  declarations: [AppComponent, HomepageComponent, PlayerComponent],
+  declarations: [AppComponent, HomepageComponent, PlayerComponent, FiltersComponent],
   imports: [
     BrowserModule,
     CommonModule,
