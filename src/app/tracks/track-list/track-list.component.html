@@ -1,3 +1,11 @@
+<h1>Tracklist</h1>
+<p>
+  {{ (tracks$ | async)?.length }} tracks
+  <button mat-icon-button (click)="playAll()">
+    <mat-icon>play_circle_outline</mat-icon>
+  </button>
+</p>
+
 <div *ngFor="let track of tracks$ | async">
   <app-track-view [track]="track"></app-track-view>
 </div>

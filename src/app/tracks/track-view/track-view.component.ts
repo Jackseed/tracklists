@@ -12,10 +12,10 @@ export class TrackViewComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  public playTrack(trackId: string) {
-    this.service.playTrack(trackId);
+  public play(trackUri: string) {
+    this.service.play([trackUri]);
   }
-  public addoToPlayback(trackId: string) {
-    this.service.addToPlayback(trackId);
+  public addoToPlayback(trackUri: string) {
+    this.service.addToPlayback(trackUri);
   }
 }

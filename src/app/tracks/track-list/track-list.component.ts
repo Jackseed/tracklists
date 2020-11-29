@@ -1,5 +1,6 @@
- import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { first, map, tap } from 'rxjs/operators';
 import { Track, TrackService } from '../+state';
 
 @Component({
@@ -14,5 +15,15 @@ export class TrackListComponent implements OnInit {
 
   ngOnInit(): void {
     this.tracks$ = this.service.selectAll();
+  }
+
+  public playAll() {
+    this.tracks$
+      .pipe(
+        map((tracks) => tracks.map((track) => track.uri)),
+        tap((trackUris) => this.service.play(trackUris)),
+        first()
+      )
+      .subscribe();
   }
 }

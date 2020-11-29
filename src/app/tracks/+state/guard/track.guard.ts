@@ -22,8 +22,9 @@ export class TrackGuard extends CollectionGuard<TrackState> {
       pluck('likedTracksIds'),
       distinctUntilChanged((prev, curr) => prev.length === curr.length),
       tap((_) => this.store.reset()),
-      switchMap((likedTracksIds) =>
-        this.service.syncManyDocs(likedTracksIds.slice(0, 100))
+      switchMap(
+        (likedTracksIds) => this.service.syncManyDocs(likedTracksIds)
+        // this.service.syncManyDocs(likedTracksIds.slice(0, 100))
       )
     );
   }

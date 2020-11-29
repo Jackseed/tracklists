@@ -45,7 +45,9 @@ export class TrackService extends CollectionService<TrackState> {
 
   selectAll(): Observable<Track[]> {
     // @ts-ignore zs it was not an hashMap with not asObject
-    return this.trackFilters.selectAllByFilters();
+    return this.trackFilters.selectAllByFilters({
+      sortBy: 'id',
+    });
   }
 
   public async saveLikedTracks() {
@@ -123,11 +125,8 @@ export class TrackService extends CollectionService<TrackState> {
     const query = await this.query.getAddToPlaybackRequest(trackId);
   }
 
-  public async playTrack(trackId: string) {
-    this.addToPlayback(trackId);
-    this.playNext()
-      .then((_) => this.store.setActive(trackId))
-      .catch((error) => console.log(error));
+  public async play(trackUris: string[]) {
+    this.query.play(trackUris).catch((error) => console.log(error));
   }
 
   public async playNext() {

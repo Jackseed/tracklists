@@ -134,11 +134,10 @@ export class TrackQuery extends QueryEntity<TrackState> {
       .toPromise();
   }
 
-  public async getAddToPlaybackRequest(trackId: string) {
+  public async getAddToPlaybackRequest(trackUri: string) {
     const headers = await this.getHeaders();
     const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
-    const track = this.getEntity(trackId);
-    const queryParam = `?uri=${track.uri}`;
+    const queryParam = `?uri=${trackUri}`;
     const url = baseUrl + queryParam;
 
     return this.http
@@ -155,6 +154,21 @@ export class TrackQuery extends QueryEntity<TrackState> {
 
     return this.http
       .post(`${baseUrl}`, null, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
+
+  public async play(trackUris: string[]) {
+    const headers = await this.getHeaders();
+    const baseUrl = 'https://api.spotify.com/v1/me/player/play';
+    const body = {
+      uris: trackUris,
+    };
+
+    return this.http
+      .put(`${baseUrl}`, body, {
         headers,
       })
       .pipe(first())
