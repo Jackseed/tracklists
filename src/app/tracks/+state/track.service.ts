@@ -6,6 +6,9 @@ import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { AuthQuery } from 'src/app/auth/+state';
 import { first } from 'rxjs/operators';
+import { AkitaFiltersPlugin } from 'akita-filters-plugin/lib/akita-filters-plugin';
+import { AkitaFilter } from 'akita-filters-plugin/public_api';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -15,6 +18,7 @@ export class TrackService extends CollectionService<TrackState> {
   baseUrl: string = environment.spotify.apiUrl;
   responseType: string = 'token';
   redirectURI: string = environment.spotify.redirectURI;
+  trackFilters: AkitaFiltersPlugin<TrackState>;
 
   constructor(
     store: TrackStore,
@@ -22,6 +26,28 @@ export class TrackService extends CollectionService<TrackState> {
     private authQuery: AuthQuery
   ) {
     super(store);
+    this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
+  }
+
+  setFilter(filter: AkitaFilter<TrackState>) {
+    this.trackFilters.setFilter(filter);
+  }
+
+  removeFilter(id: string) {
+    this.trackFilters.removeFilter(id);
+  }
+
+  removeAllFilter() {
+    this.trackFilters.clearFilters();
+  }
+
+  selectFilters(): Observable<AkitaFilter<TrackState>[]> {
+    return this.trackFilters.selectFilters();
+  }
+
+  selectAll(): Observable<Track[]> {
+    // @ts-ignore zs it was not an hashMap with not asObject
+    return this.trackFilters.selectAllByFilters();
   }
 
   public async saveLikedTracks() {
