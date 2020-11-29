@@ -13,10 +13,10 @@ import { CommonModule } from '@angular/common';
 import { TracksModule } from './tracks/tracks.module';
 import { MatButtonModule } from '@angular/material/button';
 import { PlayerComponent } from './player/player.component';
-import { FiltersComponent } from './filters/filters.component';
+import { FiltersModule } from './filters/filters.module';
 
 @NgModule({
-  declarations: [AppComponent, HomepageComponent, PlayerComponent, FiltersComponent],
+  declarations: [AppComponent, HomepageComponent, PlayerComponent],
   imports: [
     BrowserModule,
     CommonModule,
@@ -24,6 +24,7 @@ import { FiltersComponent } from './filters/filters.component';
     AppRoutingModule,
     AuthModule,
     TracksModule,
+    FiltersModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFirestoreModule,

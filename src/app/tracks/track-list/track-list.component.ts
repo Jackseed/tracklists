@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Track, TrackQuery } from '../+state';
+import { Track, TrackQuery, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-list',
@@ -10,13 +10,9 @@ import { Track, TrackQuery } from '../+state';
 export class TrackListComponent implements OnInit {
   public tracks$: Observable<Track[]>;
 
-  constructor(private query: TrackQuery) {}
+  constructor(private service: TrackService) {}
 
   ngOnInit(): void {
-    this.tracks$ = this.query.selectAll({
-      limitTo: 100,
-      filterBy: ({ energy }) => 0.4 < energy && energy < 0.5,
-      sortBy: 'name',
-    });
+    this.tracks$ = this.service.selectAll();
   }
 }

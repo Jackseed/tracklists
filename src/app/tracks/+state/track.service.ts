@@ -5,10 +5,8 @@ import { environment } from 'src/environments/environment';
 import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { AuthQuery } from 'src/app/auth/+state';
-import { first } from 'rxjs/operators';
-import { AkitaFiltersPlugin } from 'akita-filters-plugin/lib/akita-filters-plugin';
-import { AkitaFilter } from 'akita-filters-plugin/public_api';
 import { Observable } from 'rxjs';
+import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })

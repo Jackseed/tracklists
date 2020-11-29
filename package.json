@@ -26,6 +26,7 @@
     "@datorama/akita": "^4.22.0",
     "@datorama/akita-ng-router-store": "^5.1.8",
     "@datorama/akita-ngdevtools": "^5.0.3",
+    "@ngneat/until-destroy": "^8.0.3",
     "@types/spotify-web-playback-sdk": "^0.1.7",
     "akita-filters-plugin": "^4.0.0",
     "akita-ng-fire": "^1.0.0",
