@@ -11,7 +11,7 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "~11.0.0",
+    "@angular/animations": "^11.0.2",
     "@angular/cdk": "^11.0.0",
     "@angular/common": "~11.0.0",
     "@angular/compiler": "~11.0.0",
@@ -31,6 +31,8 @@
     "akita-filters-plugin": "^4.0.0",
     "akita-ng-fire": "^1.0.0",
     "firebase": "^7.24.0",
+    "primeicons": "^4.1.0",
+    "primeng": "^11.0.0-rc.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"

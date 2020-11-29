@@ -11,6 +11,7 @@ import { TrackService } from 'src/app/tracks/+state';
 })
 export class FilterViewComponent implements OnInit {
   public filter = new FormControl();
+  rangeValues: number[];
 
   constructor(private trackService: TrackService) {}
 

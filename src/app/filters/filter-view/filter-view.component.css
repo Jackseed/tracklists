@@ -1,0 +1,8 @@
+:host ::ng-deep .p-slider-range {
+  background: red;
+}
+
+:host ::ng-deep .p-slider-handle {
+  background: red;
+  border: 2px solid black;
+}

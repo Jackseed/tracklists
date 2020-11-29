@@ -1,4 +1,6 @@
 <label>
   Energy:
-  <input type="number" [formControl]="filter">
+  <input type="number" [formControl]="filter" />
 </label>
+
+<p-slider [(ngModel)]="rangeValues" [range]="true"></p-slider>
