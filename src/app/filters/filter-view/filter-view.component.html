@@ -1,4 +1,4 @@
-<h5>Range: {{ rangeValues[0] + " - " + rangeValues[1] }}</h5>
+<h5>{{ filteredProperty }}: {{ rangeValues[0] + " - " + rangeValues[1] }}</h5>
 <p-slider
   (ngModelChange)="onChange()"
   [(ngModel)]="rangeValues"

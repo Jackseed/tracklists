@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { TrackService } from 'src/app/tracks/+state';
 
 @Component({
@@ -7,6 +7,7 @@ import { TrackService } from 'src/app/tracks/+state';
   styleUrls: ['./filter-view.component.css'],
 })
 export class FilterViewComponent implements OnInit {
+  @Input() filteredProperty: string;
   rangeValues: number[] = [0, 0];
 
   constructor(private trackService: TrackService) {}
@@ -15,11 +16,11 @@ export class FilterViewComponent implements OnInit {
 
   public onChange() {
     this.trackService.setFilter({
-      id: 'energy',
+      id: this.filteredProperty,
       value: this.rangeValues,
       predicate: (entity) =>
-        this.rangeValues[0] < entity.energy &&
-        entity.energy < this.rangeValues[1],
+        this.rangeValues[0] < entity[this.filteredProperty] &&
+        entity[this.filteredProperty] < this.rangeValues[1],
     });
   }
 }
