@@ -11,7 +11,7 @@ export class FilterViewComponent implements OnInit {
     label: string;
     property: string;
   };
-  rangeValues: number[] = [0, 0];
+  rangeValues: number[] = [0, 1];
 
   constructor(private trackService: TrackService) {}
 

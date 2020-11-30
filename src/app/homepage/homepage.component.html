@@ -1,10 +1,8 @@
-<button mat-raised-button (click)="authService.authSpotify()">Login</button>
-<button mat-raised-button (click)="trackService.saveLikedTracks()">
-  Load liked tracks
-</button>
+<app-navbar></app-navbar>
+
 
 <div fxLayout="row" *ngIf="spotifyUser$ | async as user" class="margin-top">
-  <div fxFlex="20" fxFlexOffset="10">
+  <div fxFlex="20" fxFlexOffset="10" style="margin-top: 10%; position: sticky; top: 20%;">
     <app-filter-list></app-filter-list>
   </div>
 

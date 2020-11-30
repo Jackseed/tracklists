@@ -15,9 +15,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { PlayerComponent } from './player/player.component';
 import { FiltersModule } from './filters/filters.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { NavbarComponent } from './navbar/navbar.component';
 
 @NgModule({
-  declarations: [AppComponent, HomepageComponent, PlayerComponent],
+  declarations: [AppComponent, HomepageComponent, PlayerComponent, NavbarComponent],
   imports: [
     BrowserModule,
     CommonModule,

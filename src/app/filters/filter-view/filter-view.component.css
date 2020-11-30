@@ -1,21 +1,21 @@
 :host ::ng-deep .p-slider-range {
-  background: indianred;
+  background: #69F0AE;
 }
 
 :host ::ng-deep .p-slider-handle {
-  background: indianred;
-  border: 2px solid black;
+  background: #69F0AE;
+  border: 1px solid black;
 }
 
 :host ::ng-deep .p-slider:not(.p-disabled) .p-slider-handle:hover {
-  background: indianred;
-  border-color: indianred;
+  background: #69F0AE;
+  border-color: #69F0AE;
 }
 
 :host ::ng-deep .p-slider .p-slider-handle:focus {
   outline: 0 none;
   outline-offset: 0;
-  box-shadow: 0 0 0 0.2rem indianred;
+  box-shadow: 0 0 0 0.2rem #69F0AE;
 }
 .margin-top {
   margin-top: 12px;

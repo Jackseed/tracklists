@@ -32,7 +32,7 @@
       <mat-form-field
         class="form"
         appearance="legacy"
-        color="primary"
+        color="accent"
         fxFlex
         *ngIf="!isPasswordReset"
       >
@@ -53,7 +53,7 @@
       <!---------------PASSWORD CONFIRM--------------->
       <mat-form-field
         appearance="legacy"
-        color="primary"
+        color="accent"
         fxFlex
         *ngIf="isSignup"
       >
@@ -78,7 +78,7 @@
         *ngIf="isSignup"
         type="submit"
         mat-raised-button
-        color="primary"
+        color="accent"
         [disabled]="form.invalid || !passwordDoesMatch || loading"
       >
         <span>Submit</span>
@@ -88,7 +88,7 @@
         *ngIf="isLogin"
         type="submit"
         mat-raised-button
-        color="primary"
+        color="accent"
         [disabled]="password.invalid || email.invalid || loading"
       >
         <span>Log in</span>
@@ -97,7 +97,7 @@
       <button
         *ngIf="isPasswordReset"
         mat-raised-button
-        color="primary"
+        color="accent"
         type="submit"
         [disabled]="loading || email.invalid"
       >
