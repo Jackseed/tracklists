@@ -44,8 +44,12 @@ export class AuthService extends CollectionService<AuthState> {
   }
 
   public authSpotify() {
-    window.location.href = this.getAuthUrl();
-    return false;
+    this.authorizeURL += '?' + 'client_id=' + this.clientId;
+    this.authorizeURL += '&response_type=' + this.responseType;
+    this.authorizeURL += '&redirect_uri=' + this.redirectURI;
+    this.authorizeURL += '&scope=' + this.scope;
+
+    window.location.href = this.authorizeURL;
   }
 
   public async getSpotifyActiveUser(): Promise<Observable<SpotifyUser>> {
@@ -71,20 +75,6 @@ export class AuthService extends CollectionService<AuthState> {
     return spotifyUser;
   }
 
-  private getAuthUrl(): string {
-    this.authorizeURL += '?' + 'client_id=' + this.clientId;
-    this.authorizeURL += '&response_type=' + this.responseType;
-    this.authorizeURL += '&redirect_uri=' + this.redirectURI;
-    this.authorizeURL += '&scope=' + this.scope;
-    return this.authorizeURL;
-  }
-
-  private getTokenFromUrl(): string {
-    const url = this.router.url;
-    const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
-    return token;
-  }
-
   public addLikedTrack(trackId: string) {
     const userId = this.query.getActiveId();
     this.db
@@ -96,7 +86,8 @@ export class AuthService extends CollectionService<AuthState> {
   }
 
   public saveToken() {
-    const token = this.getTokenFromUrl();
+    const url = this.router.url;
+    const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
     const userId = this.query.getActiveId();
     this.db.collection(this.currentPath).doc(userId).update({ token });
     localStorage.setItem('spotify-access-token', token);
@@ -131,7 +122,7 @@ export class AuthService extends CollectionService<AuthState> {
 
     try {
       await this.afAuth.signInWithEmailAndPassword(email, password);
-      this.router.navigate(['/home']);
+      await this.router.navigate(['/home']);
     } catch (err) {
       errorMessage = err;
     }
