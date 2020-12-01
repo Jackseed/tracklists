@@ -105,14 +105,14 @@ export interface SpotifyAudioFeatures {
 export function createTrack(params: Partial<Track>) {
   return {
     id: params.id,
-    added_at: params.added_at,
+    added_at: params.added_at ? params.added_at : '',
     name: params.name,
     artists: params.artists
       ? params.artists.map((artist) => createArtist(artist))
       : [],
     album: params.album ? createAlbum(params.album) : {},
     duration_ms: params.duration_ms,
-    popularity: params.popularity,
+    popularity: params.popularity ? params.popularity : null,
     uri: params.uri,
   };
 }
@@ -164,19 +164,21 @@ export function createFullTrack(params: Partial<Track>) {
 
 export function createAlbum(params: Partial<Album>) {
   return {
-    id: params.id,
+    id: params.id ? params.id : '',
     name: params.name,
     images: params.images.map((image) => createImage(image)),
     // TODO: check if genre is working
     genres: params.genres ? params.genres : [],
-    release_date: params.release_date,
-    release_date_precision: params.release_date_precision,
+    release_date: params.release_date ? params.release_date : '',
+    release_date_precision: params.release_date_precision
+      ? params.release_date_precision
+      : '',
   };
 }
 
 export function createArtist(params: Partial<Artist>) {
   return {
-    id: params.id,
+    id: params.id ? params.id : '',
     name: params.name,
     images: params.images
       ? params.images.map((image) => createImage(image))

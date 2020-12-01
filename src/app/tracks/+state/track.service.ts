@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { TrackStore, TrackState } from './track.store';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
-import { Track } from './track.model';
+import { createTrack, Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { AuthQuery } from 'src/app/auth/+state';
 import { Observable } from 'rxjs';
@@ -38,37 +38,27 @@ export class TrackService extends CollectionService<TrackState> {
   public async initializePlayer() {
     // @ts-ignore: Unreachable code error
     const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
-    const token = await this.authQuery.getActive().token;
+    const user = await this.authQuery.getActive();
     console.log('The Web Playback SDK has loaded.', Player);
 
     // instantiate the player
-    const sdk = new Player({
+    const player = new Player({
       name: 'Listy player',
       getOAuthToken: (callback) => {
-        callback(token);
+        callback(user.token);
       },
     });
 
-    let connected = await sdk.connect();
-    if (connected) {
-      console.log('connexion successful!');
+    let connected = await player.connect();
 
-      let state = await this.waitUntilUserHasSelectedPlayer(sdk);
-      await sdk.resume();
-      await sdk.setVolume(0.5);
-      console.log(state);
-      let {
-        id,
-        uri: track_uri,
-        name: track_name,
-        duration_ms,
-        artists,
-        album: { name: album_name, uri: album_uri, images: album_images },
-        // @ts-ignore: Unreachable code error
-      } = state.track_window.current_track;
-      console.log(`You're listening to ${track_name} by ${artists[0].name}!`);
-    }
+    // when player state change, save and set active the track
+    player.on('player_state_changed', async (state) => {
+      const track = createTrack(state.track_window.current_track);
+      this.db.collection(this.currentPath).doc(track.id).set(track);
+      this.store.setActive(track.id);
+    });
   }
+
   // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
   public async waitForSpotifyWebPlaybackSDKToLoad() {
     return new Promise((resolve) => {
@@ -79,18 +69,6 @@ export class TrackService extends CollectionService<TrackState> {
           resolve(window.Spotify);
         };
       }
-    });
-  }
-
-  public async waitUntilUserHasSelectedPlayer(sdk) {
-    return new Promise((resolve) => {
-      let interval = setInterval(async () => {
-        let state = await sdk.getCurrentState();
-        if (state !== null) {
-          resolve(state);
-          clearInterval(interval);
-        }
-      });
     });
   }
 
