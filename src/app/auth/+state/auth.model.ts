@@ -5,6 +5,7 @@ export interface User {
   email?: string;
   token?: string;
   spotifyId?: string;
+  deviceId?: string;
   likedTracksIds?: string[];
 }
 

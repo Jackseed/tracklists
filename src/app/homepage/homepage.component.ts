@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService, SpotifyUser } from '../auth/+state';
-import { TrackService } from '../tracks/+state';
+import { Track, TrackQuery, TrackService } from '../tracks/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -11,10 +11,12 @@ import { TrackService } from '../tracks/+state';
 })
 export class HomepageComponent implements OnInit {
   spotifyUser$: Observable<SpotifyUser>;
+  activeTrack$: Observable<Track>;
 
   constructor(
-    public authService: AuthService,
-    public trackService: TrackService,
+    private authService: AuthService,
+    private trackService: TrackService,
+    private trackQuery: TrackQuery,
     private router: Router
   ) {}
 
@@ -26,5 +28,6 @@ export class HomepageComponent implements OnInit {
     this.authService.saveToken();
     this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
     this.trackService.initializePlayer();
+    this.activeTrack$ = this.trackQuery.selectActive();
   }
 }

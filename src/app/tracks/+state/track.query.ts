@@ -26,7 +26,6 @@ import {
 export class TrackQuery extends QueryEntity<TrackState> {
   constructor(
     protected store: TrackStore,
-
     private authQuery: AuthQuery,
     private http: HttpClient
   ) {
@@ -161,14 +160,16 @@ export class TrackQuery extends QueryEntity<TrackState> {
   }
 
   public async play(trackUris: string[]) {
+    const user = this.authQuery.getActive();
     const headers = await this.getHeaders();
     const baseUrl = 'https://api.spotify.com/v1/me/player/play';
     const body = {
       uris: trackUris,
     };
+    const queryParam = user.deviceId ? `?device_id=${user.deviceId}` : '';
 
     return this.http
-      .put(`${baseUrl}`, body, {
+      .put(`${baseUrl + queryParam}`, body, {
         headers,
       })
       .pipe(first())

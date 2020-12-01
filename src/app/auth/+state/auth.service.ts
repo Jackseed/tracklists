@@ -85,6 +85,13 @@ export class AuthService extends CollectionService<AuthState> {
       });
   }
 
+  public saveDeviceId(deviceId: string) {
+    const userId = this.query.getActiveId();
+    this.db.collection(this.currentPath).doc(userId).update({
+      deviceId,
+    });
+  }
+
   public saveToken() {
     const url = this.router.url;
     const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));

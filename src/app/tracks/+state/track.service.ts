@@ -4,7 +4,7 @@ import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
 import { createTrack, Track } from './track.model';
 import { TrackQuery } from './track.query';
-import { AuthQuery } from 'src/app/auth/+state';
+import { AuthQuery, AuthService } from 'src/app/auth/+state';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 
@@ -29,7 +29,8 @@ export class TrackService extends CollectionService<TrackState> {
   constructor(
     store: TrackStore,
     private query: TrackQuery,
-    private authQuery: AuthQuery
+    private authQuery: AuthQuery,
+    private authService: AuthService
   ) {
     super(store);
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
@@ -51,11 +52,15 @@ export class TrackService extends CollectionService<TrackState> {
 
     let connected = await player.connect();
 
-    // when player state change, save and set active the track
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+      this.authService.saveDeviceId(device_id);
+    });
+
+    // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
-      const track = createTrack(state.track_window.current_track);
-      this.db.collection(this.currentPath).doc(track.id).set(track);
-      this.store.setActive(track.id);
+      this.store.setActive(state.track_window.current_track.id);
     });
   }
 
