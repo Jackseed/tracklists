@@ -90,7 +90,6 @@ export class AuthService extends CollectionService<AuthState> {
     const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
     const userId = this.query.getActiveId();
     this.db.collection(this.currentPath).doc(userId).update({ token });
-    localStorage.setItem('spotify-access-token', token);
   }
 
   private setUser(id: string, email: string) {

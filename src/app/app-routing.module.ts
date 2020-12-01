@@ -12,7 +12,7 @@ import { TrackGuard } from './tracks/+state/guard/track.guard';
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['welcome']);
 
 const routes: Routes = [
-  { path: '', redirectTo: '/welcome', pathMatch: 'full' },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'welcome', component: LoginComponent },
   {
     path: 'home',

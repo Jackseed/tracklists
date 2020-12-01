@@ -8,6 +8,14 @@ import { AuthQuery } from 'src/app/auth/+state';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 
+declare global {
+  interface Window {
+    onSpotifyWebPlaybackSDKReady(): void;
+    // @ts-ignore: Unreachable code error
+    Spotify: typeof Spotify;
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
 export class TrackService extends CollectionService<TrackState> {
@@ -27,26 +35,62 @@ export class TrackService extends CollectionService<TrackState> {
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
   }
 
-  setFilter(filter: AkitaFilter<TrackState>) {
-    this.trackFilters.setFilter(filter);
+  public async initializePlayer() {
+    // @ts-ignore: Unreachable code error
+    const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
+    const token = await this.authQuery.getActive().token;
+    console.log('The Web Playback SDK has loaded.', Player);
+
+    // instantiate the player
+    const sdk = new Player({
+      name: 'Listy player',
+      getOAuthToken: (callback) => {
+        callback(token);
+      },
+    });
+
+    let connected = await sdk.connect();
+    if (connected) {
+      console.log('connexion successful!');
+
+      let state = await this.waitUntilUserHasSelectedPlayer(sdk);
+      await sdk.resume();
+      await sdk.setVolume(0.5);
+      console.log(state);
+      let {
+        id,
+        uri: track_uri,
+        name: track_name,
+        duration_ms,
+        artists,
+        album: { name: album_name, uri: album_uri, images: album_images },
+        // @ts-ignore: Unreachable code error
+      } = state.track_window.current_track;
+      console.log(`You're listening to ${track_name} by ${artists[0].name}!`);
+    }
+  }
+  // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
+  public async waitForSpotifyWebPlaybackSDKToLoad() {
+    return new Promise((resolve) => {
+      if (window.Spotify) {
+        resolve(window.Spotify);
+      } else {
+        window.onSpotifyWebPlaybackSDKReady = () => {
+          resolve(window.Spotify);
+        };
+      }
+    });
   }
 
-  removeFilter(id: string) {
-    this.trackFilters.removeFilter(id);
-  }
-
-  removeAllFilter() {
-    this.trackFilters.clearFilters();
-  }
-
-  selectFilters(): Observable<AkitaFilter<TrackState>[]> {
-    return this.trackFilters.selectFilters();
-  }
-
-  selectAll(): Observable<Track[]> {
-    // @ts-ignore zs it was not an hashMap with not asObject
-    return this.trackFilters.selectAllByFilters({
-      sortBy: 'id',
+  public async waitUntilUserHasSelectedPlayer(sdk) {
+    return new Promise((resolve) => {
+      let interval = setInterval(async () => {
+        let state = await sdk.getCurrentState();
+        if (state !== null) {
+          resolve(state);
+          clearInterval(interval);
+        }
+      });
     });
   }
 
@@ -131,5 +175,28 @@ export class TrackService extends CollectionService<TrackState> {
 
   public async playNext() {
     const query = await this.query.getPlayNextRequest();
+  }
+
+  setFilter(filter: AkitaFilter<TrackState>) {
+    this.trackFilters.setFilter(filter);
+  }
+
+  removeFilter(id: string) {
+    this.trackFilters.removeFilter(id);
+  }
+
+  removeAllFilter() {
+    this.trackFilters.clearFilters();
+  }
+
+  selectFilters(): Observable<AkitaFilter<TrackState>[]> {
+    return this.trackFilters.selectFilters();
+  }
+
+  selectAll(): Observable<Track[]> {
+    // @ts-ignore zs it was not an hashMap with not asObject
+    return this.trackFilters.selectAllByFilters({
+      sortBy: 'id',
+    });
   }
 }
