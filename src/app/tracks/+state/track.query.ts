@@ -175,4 +175,16 @@ export class TrackQuery extends QueryEntity<TrackState> {
       .pipe(first())
       .toPromise();
   }
+
+  public async pause() {
+    const headers = await this.getHeaders();
+    const baseUrl = 'https://api.spotify.com/v1/me/player/pause';
+
+    return this.http
+      .put(`${baseUrl}`, null, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
 }

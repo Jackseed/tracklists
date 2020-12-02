@@ -16,9 +16,19 @@ import { PlayerComponent } from './player/player.component';
 import { FiltersModule } from './filters/filters.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { NavbarComponent } from './navbar/navbar.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSliderModule } from '@angular/material/slider';
+import { SecToMinPipe } from './utils/sec-to-min.pipe';
 
 @NgModule({
-  declarations: [AppComponent, HomepageComponent, PlayerComponent, NavbarComponent],
+  declarations: [
+    AppComponent,
+    HomepageComponent,
+    PlayerComponent,
+    NavbarComponent,
+    SecToMinPipe,
+  ],
   imports: [
     BrowserModule,
     CommonModule,
@@ -31,7 +41,10 @@ import { NavbarComponent } from './navbar/navbar.component';
     AngularFirestoreModule,
     AngularFirestoreModule,
     MatButtonModule,
+    MatCardModule,
+    MatIconModule,
     FlexLayoutModule,
+    MatSliderModule,
     environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],

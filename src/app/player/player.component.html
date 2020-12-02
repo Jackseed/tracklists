@@ -1,2 +1,30 @@
-
-
+<div fxLayout="row" fxLayoutAlign="center center">
+  <mat-card class="card" fxFlex fxFlexAlign="center center">
+    <mat-card-header>
+      <div
+        mat-card-avatar
+        [ngStyle]="{
+          'background-image': 'url(' + track.album.images[0].url + ')',
+          'background-size': 'cover'
+        }"
+      ></div>
+      <mat-card-title>{{ track.name }}</mat-card-title>
+      <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-slider color="accent" min="0"> </mat-slider>
+      <p>{{ track.duration_ms / 1000 | secToMin }}</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-icon-button (click)="play(track.uri)">
+        <mat-icon>play_circle_outline</mat-icon>
+      </button>
+      <button mat-icon-button (click)="pause()">
+        <mat-icon>pause_circle_outline</mat-icon>
+      </button>
+      <button mat-icon-button (click)="playNext()">
+        <mat-icon>skip_next</mat-icon>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

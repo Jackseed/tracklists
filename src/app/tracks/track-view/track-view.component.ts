@@ -15,9 +15,6 @@ export class TrackViewComponent implements OnInit {
   public play(trackUri: string) {
     this.service.play([trackUri]);
   }
-  public playNext() {
-    this.service.playNext();
-  }
   public addoToPlayback(trackUri: string) {
     this.service.addToPlayback(trackUri);
   }

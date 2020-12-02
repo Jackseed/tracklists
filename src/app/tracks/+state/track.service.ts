@@ -54,7 +54,6 @@ export class TrackService extends CollectionService<TrackState> {
 
     // Ready
     player.addListener('ready', ({ device_id }) => {
-      console.log('Ready with Device ID', device_id);
       this.authService.saveDeviceId(device_id);
     });
 
@@ -154,6 +153,10 @@ export class TrackService extends CollectionService<TrackState> {
 
   public async play(trackUris: string[]) {
     this.query.play(trackUris).catch((error) => console.log(error));
+  }
+
+  public async pause() {
+    this.query.pause().catch((error) => console.log(error));
   }
 
   public async playNext() {

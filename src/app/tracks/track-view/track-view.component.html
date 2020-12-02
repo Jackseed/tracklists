@@ -11,15 +11,13 @@
       <mat-card-title>{{ track.name }}</mat-card-title>
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
+
     <mat-card-actions>
       <button mat-icon-button (click)="play(track.uri)">
         <mat-icon>play_circle_outline</mat-icon>
       </button>
       <button mat-icon-button (click)="addoToPlayback(track.uri)">
         <mat-icon>playlist_add</mat-icon>
-      </button>
-      <button mat-icon-button (click)="playNext()">
-        <mat-icon>skip_next</mat-icon>
       </button>
     </mat-card-actions>
   </mat-card>

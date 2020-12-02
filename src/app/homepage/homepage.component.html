@@ -1,7 +1,7 @@
 <app-navbar></app-navbar>
 
 <div *ngIf="activeTrack$ | async as track">
-  <app-track-view [track]="track"></app-track-view>
+  <app-player [track]="track"></app-player>
 </div>
 
 <div fxLayout="row" *ngIf="spotifyUser$ | async as user" class="margin-top">
