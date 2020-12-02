@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { QueryEntity } from '@datorama/akita';
-import { TrackStore, TrackState } from './track.store';
+import { EntityUIQuery, QueryEntity } from '@datorama/akita';
+import { TrackStore, TrackState, TrackUIState } from './track.store';
 import { AuthQuery } from 'src/app/auth/+state';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
@@ -24,12 +24,19 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState> {
+  ui: EntityUIQuery<TrackUIState>;
+
   constructor(
     protected store: TrackStore,
     private authQuery: AuthQuery,
     private http: HttpClient
   ) {
     super(store);
+    this.createUIQuery();
+  }
+
+  selectTrackPosition(trackId: string): Observable<number> {
+    return this.ui.selectEntity(trackId, 'position');
   }
 
   private async getHeaders() {

@@ -59,8 +59,14 @@ export class TrackService extends CollectionService<TrackState> {
 
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
-      this.store.setActive(state.track_window.current_track.id);
+      const track = state.track_window.current_track;
+      this.store.setActive(track.id);
+      this.updatePosition(track.id, state.position);
     });
+  }
+
+  public updatePosition(trackId: string, position: number) {
+    this.store.ui.upsert(trackId, { position });
   }
 
   // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired

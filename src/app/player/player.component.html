@@ -1,4 +1,8 @@
-<div fxLayout="row" fxLayoutAlign="center center">
+<div
+  fxLayout="row"
+  fxLayoutAlign="center center"
+  *ngIf="track$ | async as track"
+>
   <mat-card class="card" fxFlex fxFlexAlign="center center">
     <mat-card-header>
       <div
@@ -12,7 +16,14 @@
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <mat-slider color="accent" min="0"> </mat-slider>
+      <p>{{ value | secToMin }}</p>
+      <mat-slider
+        color="accent"
+        min="0"
+        [max]="track.duration_ms / 1000"
+        [(ngModel)]="value"
+      >
+      </mat-slider>
       <p>{{ track.duration_ms / 1000 | secToMin }}</p>
     </mat-card-content>
     <mat-card-actions>

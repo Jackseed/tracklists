@@ -20,6 +20,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { SecToMinPipe } from './utils/sec-to-min.pipe';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     MatButtonModule,
     MatCardModule,
     MatIconModule,
+    FormsModule,
     FlexLayoutModule,
     MatSliderModule,
     environment.production ? [] : AkitaNgDevtools.forRoot(),
