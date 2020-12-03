@@ -1,6 +1,9 @@
+import { SpotifyUser } from 'src/app/auth/+state';
+
 export interface Track {
   id: string;
   added_at?: string;
+  added_by?: SpotifyUser;
   uri?: string;
   album?: Album;
   artists?: Artist[];
@@ -85,6 +88,13 @@ export interface SpotifyTracks {
   total: number;
 }
 
+export interface SpotifyPlaylistTrack {
+  added_at?: string;
+  added_by?: SpotifyUser;
+  is_local?: boolean;
+  track: SpotifyTrack;
+}
+
 export interface SpotifyAudioFeatures {
   key?: number;
   mode?: number;
@@ -111,6 +121,7 @@ export function createTrack(params: Partial<Track>) {
   return {
     id: params.id,
     added_at: params.added_at ? params.added_at : '',
+    added_by: params.added_by ? params.added_by : null,
     name: params.name,
     artists: params.artists
       ? params.artists.map((artist) => createArtist(artist))

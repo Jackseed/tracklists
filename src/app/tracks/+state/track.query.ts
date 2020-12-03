@@ -18,7 +18,9 @@ import {
   createTrack,
   SpotifyAudioFeatures,
   SpotifyPaging,
+  SpotifyPlaylistTrack,
   SpotifySavedTrack,
+  SpotifyTrack,
   Track,
 } from './track.model';
 
@@ -100,6 +102,49 @@ export class TrackQuery extends QueryEntity<TrackState> {
             // TODO: remove added_at from track
             createTrack({
               added_at: item.added_at,
+              ...item.track,
+            })
+          )
+        ),
+        first()
+      )
+      .toPromise();
+  }
+  // TODO: merge get playlist tracks & get liked tracks
+  public async getPromisedPlaylistTracks(
+    url: string
+  ): Promise<Observable<SpotifyPaging>> {
+    const headers = await this.getHeaders();
+
+    const playlistTracks: Observable<SpotifyPaging> = this.http
+      .get<SpotifyPaging>(`${url}`, {
+        headers,
+      })
+      .pipe(
+        retryWhen((error) => {
+          return error.pipe(
+            tap((error) => console.log('error status: ', error.status)),
+            filter((error) => error.status === 429),
+            delayWhen(() => timer(5000)),
+            tap(() => console.log('retrying...')),
+            take(3)
+          );
+        })
+      );
+    playlistTracks.subscribe(console.log);
+    return playlistTracks;
+  }
+
+  public async getFormatedPlaylistTracks(url: string): Promise<Track[]> {
+    return await (await this.getPromisedPlaylistTracks(url))
+      .pipe(
+        tap((_) => console.log),
+        map((playlistTracks) =>
+          playlistTracks.items.map((item: SpotifyPlaylistTrack) =>
+            // TODO: remove added_at from track
+            createTrack({
+              added_at: item.added_at,
+              added_by: item.added_by,
               ...item.track,
             })
           )
