@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Playlist } from '../+state';
+import { Playlist, PlaylistStore } from '../+state';
 
 @Component({
   selector: 'app-playlist-view',
@@ -9,7 +9,11 @@ import { Playlist } from '../+state';
 export class PlaylistViewComponent implements OnInit {
   @Input() playlist: Playlist;
 
-  constructor() {}
+  constructor(private store: PlaylistStore) {}
 
   ngOnInit(): void {}
+
+  public setActive() {
+    this.store.toggleActive(this.playlist.id);
+  }
 }
