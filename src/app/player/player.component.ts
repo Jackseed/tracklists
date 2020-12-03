@@ -15,10 +15,13 @@ export class PlayerComponent implements OnInit {
   position$: Observable<number>;
   paused$: Observable<boolean>;
   value = 0;
+  isTicking = false;
+
   constructor(private query: TrackQuery, private service: TrackService) {}
 
   ngOnInit(): void {
     let interval;
+    // get track position
     this.track$
       .pipe(
         untilDestroyed(this),
@@ -31,18 +34,30 @@ export class PlayerComponent implements OnInit {
     this.paused$ = this.track$.pipe(
       switchMap((track) => this.query.selectPaused(track.id))
     );
+    // if the track is played, add 1 to value every sec
     this.paused$
       .pipe(
         untilDestroyed(this),
-        tap((paused) =>
-          paused
-            ? clearInterval(interval)
-            : (interval = window.setInterval((_) => {
-                this.value += 1;
-              }, 1000))
-        )
+        tap((paused) => {
+          if (paused) {
+            clearInterval(interval);
+            this.isTicking = false;
+          }
+        }),
+        tap((paused) => {
+          if (!paused && !this.isTicking) {
+            interval = window.setInterval((_) => {
+              this.value += 1;
+              this.isTicking = true;
+            }, 1000);
+          }
+        })
       )
       .subscribe();
+    const elements = document.getElementsByClassName('mat-slider-thumb');
+    while (elements.length > 0) {
+      elements[0].parentNode.removeChild(elements[0]);
+    }
   }
   // TODO pause when space bar
 
@@ -55,7 +70,6 @@ export class PlayerComponent implements OnInit {
   public playNext() {
     this.service.playNext();
   }
-
   public onChangeSlider() {
     this.service.seekPosition(this.value * 1000);
   }

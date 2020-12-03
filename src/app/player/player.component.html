@@ -15,9 +15,10 @@
       <mat-card-title>{{ track.name }}</mat-card-title>
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
-    <mat-card-content>
-      <p>{{ value | secToMin }}</p>
+    <mat-card-content fxLayoutAlign="center center" fxLayout="row">
+      <p fxFlex class="right">{{ value | secToMin }}</p>
       <mat-slider
+        fxFlex
         color="accent"
         min="0"
         [max]="track.duration_ms / 1000"
@@ -25,7 +26,7 @@
         (ngModelChange)="onChangeSlider()"
       >
       </mat-slider>
-      <p>{{ track.duration_ms / 1000 | secToMin }}</p>
+      <p fxFlex>{{ track.duration_ms / 1000 | secToMin }}</p>
     </mat-card-content>
     <mat-card-actions>
       <button mat-icon-button (click)="play()">
