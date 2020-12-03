@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { CollectionGuard } from 'akita-ng-fire';
-import { distinctUntilChanged, pluck, switchMap, tap } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { AuthQuery } from 'src/app/auth/+state';
+import { PlaylistQuery } from 'src/app/playlists/+state';
 import { TrackService } from '../track.service';
-import { TrackStore, TrackState } from '../track.store';
+import { TrackState } from '../track.store';
 
 @Injectable({
   providedIn: 'root',
@@ -11,22 +13,28 @@ import { TrackStore, TrackState } from '../track.store';
 export class TrackGuard extends CollectionGuard<TrackState> {
   constructor(
     service: TrackService,
-    private store: TrackStore,
-    private authQuery: AuthQuery
+    private authQuery: AuthQuery,
+    private playlistQuery: PlaylistQuery
   ) {
     super(service);
   }
 
   sync() {
-    return this.authQuery.selectActive().pipe(
-      pluck('likedTracksIds'),
-      distinctUntilChanged((prev, curr) => prev.length === curr.length),
-      tap((_) => this.store.reset()),
-      switchMap(
-        // (likedTracksIds) => this.service.syncManyDocs(likedTracksIds)
-        (likedTracksIds) =>
-          this.service.syncManyDocs(likedTracksIds.slice(0, 100))
-      )
+    const activePlaylists$ = this.playlistQuery.selectActive();
+    const user$ = this.authQuery.selectActive();
+
+    return combineLatest([activePlaylists$, user$]).pipe(
+      switchMap(([playlists, user]) => {
+        let trackIds: string[] = [];
+
+        for (const playlist of playlists) {
+          trackIds = trackIds.concat(playlist.trackIds);
+        }
+
+        trackIds = trackIds.concat(user.likedTracksIds);
+
+        return this.service.syncManyDocs(trackIds.slice(0, 100));
+      })
     );
   }
 }
