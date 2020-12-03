@@ -19,7 +19,7 @@ export class AuthService extends CollectionService<AuthState> {
   baseUrl: string = environment.spotify.apiUrl;
   responseType: string = 'token';
   redirectURI = environment.spotify.redirectURI;
-
+// TODO: change for necessary scope only
   scope = [
     'user-read-email',
     'user-read-currently-playing',

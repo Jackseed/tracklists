@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { TrackStore, TrackState } from './track.store';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
-import { createTrack, Track } from './track.model';
+import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { AuthQuery, AuthService } from 'src/app/auth/+state';
 import { Observable } from 'rxjs';
@@ -172,7 +172,7 @@ export class TrackService extends CollectionService<TrackState> {
   public async pause() {
     await this.query.pause().catch((error) => console.log(error));
   }
-  
+
   public async seekPosition(position: number) {
     await this.query
       .seekPosition(position)
