@@ -8,6 +8,7 @@ import {
 } from '@angular/fire/auth-guard';
 import { ActiveGuard } from './auth/guard/active.guard';
 import { TrackGuard } from './tracks/+state/guard/track.guard';
+import { SyncPlaylistsGuard } from './playlists/+state/guard/sync-playlists.guard';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['welcome']);
 
@@ -24,7 +25,14 @@ const routes: Routes = [
         path: '',
         canActivate: [TrackGuard],
         canDeactivate: [TrackGuard],
-        component: HomepageComponent,
+        children: [
+          {
+            path: '',
+            canActivate: [SyncPlaylistsGuard],
+            canDeactivate: [SyncPlaylistsGuard],
+            component: HomepageComponent,
+          },
+        ],
       },
     ],
   },
