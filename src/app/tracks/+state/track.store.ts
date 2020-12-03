@@ -10,6 +10,7 @@ import {
 
 export type TrackUI = {
   position: number;
+  paused: boolean;
 };
 
 export interface TrackState
@@ -24,6 +25,6 @@ export class TrackStore extends EntityStore<TrackState> {
 
   constructor() {
     super();
-    this.createUIStore();
+    this.createUIStore().setInitialEntityState({ position: 0, paused: false });
   }
 }

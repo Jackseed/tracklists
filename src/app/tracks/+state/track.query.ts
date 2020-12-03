@@ -35,8 +35,16 @@ export class TrackQuery extends QueryEntity<TrackState> {
     this.createUIQuery();
   }
 
-  selectTrackPosition(trackId: string): Observable<number> {
+  selectPosition(trackId: string): Observable<number> {
     return this.ui.selectEntity(trackId, 'position');
+  }
+
+  selectPaused(trackId: string): Observable<boolean> {
+    return this.ui.selectEntity(trackId, 'paused');
+  }
+
+  getPaused(trackId: string): boolean {
+    return this.ui.getEntity(trackId).paused;
   }
 
   private async getHeaders() {
@@ -166,14 +174,18 @@ export class TrackQuery extends QueryEntity<TrackState> {
       .toPromise();
   }
 
-  public async play(trackUris: string[]) {
+  public async play(trackUris?: string[]) {
     const user = this.authQuery.getActive();
     const headers = await this.getHeaders();
     const baseUrl = 'https://api.spotify.com/v1/me/player/play';
-    const body = {
-      uris: trackUris,
-    };
-    const queryParam = user.deviceId ? `?device_id=${user.deviceId}` : '';
+    const body = trackUris
+      ? {
+          uris: trackUris,
+        }
+      : null;
+
+    const queryParam =
+      user.deviceId && trackUris ? `?device_id=${user.deviceId}` : '';
 
     return this.http
       .put(`${baseUrl + queryParam}`, body, {

@@ -27,7 +27,7 @@
       <p>{{ track.duration_ms / 1000 | secToMin }}</p>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-icon-button (click)="play(track.uri)">
+      <button mat-icon-button (click)="play()">
         <mat-icon>play_circle_outline</mat-icon>
       </button>
       <button mat-icon-button (click)="pause()">

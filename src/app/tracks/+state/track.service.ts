@@ -60,13 +60,21 @@ export class TrackService extends CollectionService<TrackState> {
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
       const track = state.track_window.current_track;
+      const pause = this.query.getPaused(track.id);
       this.store.setActive(track.id);
       this.updatePosition(track.id, state.position);
+      state.paused === pause
+        ? false
+        : this.updatePaused(track.id, state.paused);
     });
   }
 
   public updatePosition(trackId: string, position: number) {
     this.store.ui.upsert(trackId, { position });
+  }
+
+  public updatePaused(trackId: string, paused: boolean) {
+    this.store.ui.upsert(trackId, { paused });
   }
 
   // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
@@ -157,8 +165,8 @@ export class TrackService extends CollectionService<TrackState> {
     const query = await this.query.getAddToPlaybackRequest(trackId);
   }
 
-  public async play(trackUris: string[]) {
-    this.query.play(trackUris).catch((error) => console.log(error));
+  public async play(trackUris?: string[]) {
+    trackUris ? this.query.play(trackUris) : this.query.play();
   }
 
   public async pause() {
