@@ -15,6 +15,7 @@ declare global {
     Spotify: typeof Spotify;
   }
 }
+// TODO: write a Spotify service 
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })

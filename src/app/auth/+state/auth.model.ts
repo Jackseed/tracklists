@@ -7,6 +7,7 @@ export interface User {
   spotifyId?: string;
   deviceId?: string;
   likedTracksIds?: string[];
+  playlistIds?: string[];
 }
 
 export interface SpotifyUser {

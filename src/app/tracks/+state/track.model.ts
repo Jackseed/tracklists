@@ -80,6 +80,11 @@ export interface SpotifyPaging {
   total: number;
 }
 
+export interface SpotifyTracks {
+  href: string;
+  total: number;
+}
+
 export interface SpotifyAudioFeatures {
   key?: number;
   mode?: number;
