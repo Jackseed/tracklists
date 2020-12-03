@@ -206,4 +206,17 @@ export class TrackQuery extends QueryEntity<TrackState> {
       .pipe(first())
       .toPromise();
   }
+
+  public async seekPosition(position_ms: number) {
+    const headers = await this.getHeaders();
+    const baseUrl = 'https://api.spotify.com/v1/me/player/seek';
+    const queryParam = `?position_ms=${position_ms}`;
+
+    return this.http
+      .put(`${baseUrl + queryParam}`, null, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
 }

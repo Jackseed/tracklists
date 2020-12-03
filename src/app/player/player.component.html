@@ -22,6 +22,7 @@
         min="0"
         [max]="track.duration_ms / 1000"
         [(ngModel)]="value"
+        (ngModelChange)="onChangeSlider()"
       >
       </mat-slider>
       <p>{{ track.duration_ms / 1000 | secToMin }}</p>

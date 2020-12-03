@@ -42,8 +42,9 @@ export class PlayerComponent implements OnInit {
               }, 1000))
         )
       )
-      .subscribe(console.log);
+      .subscribe();
   }
+  // TODO pause when space bar
 
   public play() {
     this.service.play();
@@ -53,5 +54,9 @@ export class PlayerComponent implements OnInit {
   }
   public playNext() {
     this.service.playNext();
+  }
+
+  public onChangeSlider() {
+    this.service.seekPosition(this.value * 1000);
   }
 }

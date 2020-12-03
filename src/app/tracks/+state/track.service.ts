@@ -166,11 +166,17 @@ export class TrackService extends CollectionService<TrackState> {
   }
 
   public async play(trackUris?: string[]) {
-    trackUris ? this.query.play(trackUris) : this.query.play();
+    trackUris ? await this.query.play(trackUris) : await this.query.play();
   }
 
   public async pause() {
-    this.query.pause().catch((error) => console.log(error));
+    await this.query.pause().catch((error) => console.log(error));
+  }
+  
+  public async seekPosition(position: number) {
+    await this.query
+      .seekPosition(position)
+      .catch((error) => console.log(error));
   }
 
   public async playNext() {
