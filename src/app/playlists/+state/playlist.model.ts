@@ -15,6 +15,7 @@ export interface Playlist {
   tracks: SpotifyTracks;
   type: string;
   uri: string;
+  trackIds?: string[];
 }
 
 export interface PlaylistPaging {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AuthQuery } from 'src/app/auth/+state';
-import { TrackQuery } from 'src/app/tracks/+state';
+import { Track, TrackQuery } from 'src/app/tracks/+state';
 import { Playlist } from './playlist.model';
 import { PlaylistQuery } from './playlist.query';
 import { PlaylistState, PlaylistStore } from './playlist.store';
@@ -21,14 +21,20 @@ export class PlaylistService extends CollectionService<PlaylistState> {
   public async savePlaylists() {
     const playlistLimit = 50;
     const playlistTracksLimit = 100;
+    const audioFeaturesLimit = 100;
     const firebaseWriteLimit = 500;
     const user = this.authQuery.getActive();
     const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
     const total = await this.query.getTotalPlaylists(url);
 
     let playlists: Playlist[] = [];
+    let totalPlaylistTracks: Track[] = [];
+    let totalPlaylistTrackIds: string[];
+    let audioFeatures: Track[] = [];
+    let totalPlaylistFullTracks: Track[] = [];
 
-    const collection = this.db.firestore.collection(this.currentPath);
+    const playlistCollection = this.db.firestore.collection(this.currentPath);
+    const trackCollection = this.db.firestore.collection('tracks');
     const userRef = this.db.firestore.collection('users').doc(user.id);
 
     // get all the playlists by batches
@@ -41,27 +47,49 @@ export class PlaylistService extends CollectionService<PlaylistState> {
     }
 
     // get the tracks from all playlists
-    for (const list of playlists) {
-      let playlistTracks = [];
+    for (let m = 0; m < playlists.length; m++) {
+      let playlistTracks: Track[] = [];
+      console.log(playlists[m].name);
       // get all the playlist tracks by batches
       for (
         let l = 0;
-        l <= Math.floor(list.tracks.total / playlistTracksLimit) + 1;
+        l <= Math.floor(playlists[m].tracks.total / playlistTracksLimit) + 1;
         l++
       ) {
         const offset = l * playlistTracksLimit;
-        const url = `${list.tracks.href}?limit=${playlistTracksLimit}&offset=${offset}`;
+        const url = `${playlists[m].tracks.href}?limit=${playlistTracksLimit}&offset=${offset}`;
         const formatedTracks = await this.trackQuery.getFormatedPlaylistTracks(
           url
         );
 
         playlistTracks = playlistTracks.concat(formatedTracks);
       }
-      console.log(playlistTracks);
+      let trackIds = playlistTracks.map((track) => track.id);
+      playlists[m].trackIds = trackIds;
+      totalPlaylistTracks = totalPlaylistTracks.concat(playlistTracks);
     }
 
-    // TODO: verify that lists are not written if they already exist
-    // write the tracks by batches
+    totalPlaylistTrackIds = totalPlaylistTracks.map((track) => track.id);
+
+    // Get all the audio features by batches
+    for (let i = 0; i <= Math.floor(total / audioFeaturesLimit); i++) {
+      const bactchTrackIds = totalPlaylistTrackIds.slice(
+        audioFeaturesLimit * i,
+        audioFeaturesLimit * (i + 1)
+      );
+
+      const formatedFeatures = await this.trackQuery.getFormatedAudioFeatures(
+        bactchTrackIds
+      );
+      audioFeatures = audioFeatures.concat(formatedFeatures);
+    }
+
+    // concat tracks & audio features
+    totalPlaylistFullTracks = totalPlaylistTracks.map((item, i) =>
+      Object.assign({}, item, audioFeatures[i])
+    );
+
+    // write the playlists by batches
     for (let i = 0; i <= Math.floor(total / firebaseWriteLimit); i++) {
       const bactchPlaylist = playlists.slice(
         firebaseWriteLimit * i,
@@ -70,7 +98,7 @@ export class PlaylistService extends CollectionService<PlaylistState> {
       const batch = this.db.firestore.batch();
 
       for (const playlist of bactchPlaylist) {
-        const ref = collection.doc(playlist.id);
+        const ref = playlistCollection.doc(playlist.id);
         batch.set(ref, playlist);
       }
 
@@ -79,6 +107,30 @@ export class PlaylistService extends CollectionService<PlaylistState> {
         .then((_) => console.log(`batch of plalist ${i} saved`))
         .catch((error) => console.log(error));
     }
+
+    // write the playlist tracks by batches
+    for (
+      let n = 0;
+      n <= Math.floor(totalPlaylistFullTracks.length / firebaseWriteLimit);
+      n++
+    ) {
+      const bactchTrack = totalPlaylistFullTracks.slice(
+        firebaseWriteLimit * n,
+        firebaseWriteLimit * (n + 1)
+      );
+      const batch = this.db.firestore.batch();
+
+      for (const track of bactchTrack) {
+        const ref = trackCollection.doc(track.id);
+        batch.set(ref, track);
+      }
+
+      batch
+        .commit()
+        .then((_) => console.log(`batch of tracks ${n} saved`))
+        .catch((error) => console.log(error));
+    }
+
     const playlistIds = playlists.map((playlist) => playlist.id);
     // write playlist ids in the user doc
     userRef

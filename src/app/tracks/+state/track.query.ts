@@ -20,7 +20,6 @@ import {
   SpotifyPaging,
   SpotifyPlaylistTrack,
   SpotifySavedTrack,
-  SpotifyTrack,
   Track,
 } from './track.model';
 
@@ -131,7 +130,6 @@ export class TrackQuery extends QueryEntity<TrackState> {
           );
         })
       );
-    playlistTracks.subscribe(console.log);
     return playlistTracks;
   }
 
