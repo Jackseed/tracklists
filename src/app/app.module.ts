@@ -21,6 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { SecToMinPipe } from './utils/sec-to-min.pipe';
 import { FormsModule } from '@angular/forms';
+import { PlaylistsModule } from './playlists/playlists.module';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { FormsModule } from '@angular/forms';
     AuthModule,
     TracksModule,
     FiltersModule,
+    PlaylistsModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFirestoreModule,
