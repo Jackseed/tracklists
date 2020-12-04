@@ -7,6 +7,7 @@ export interface Track {
   uri?: string;
   album?: Album;
   artists?: Artist[];
+  genres?: string[];
   duration_ms?: number;
   name?: string;
   popularity?: number;
@@ -33,10 +34,37 @@ export interface Album {
   release_date_precision?: 'year' | 'month' | 'day';
 }
 
+export interface SpotifyAlbum {
+  id?: string;
+  name?: string;
+  images?: Image[];
+  genres?: string[];
+  release_date?: string;
+  release_date_precision?: 'year' | 'month' | 'day';
+  album_type: string;
+  artists: Artist[];
+  available_markets: string[];
+  copyrights: Copyright[];
+  external_ids: { [key: string]: string };
+  external_url: { [key: string]: string };
+  href: string;
+  label: string;
+  popularity: number;
+  track: Track[];
+  type: string;
+  uri: string;
+}
+
+export interface Copyright {
+  text: string;
+  type: string;
+}
+
 export interface Artist {
   id: string;
   name: string;
   images: Image[];
+  genres?: string[];
 }
 
 export interface Image {

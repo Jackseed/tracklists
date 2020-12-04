@@ -31,9 +31,9 @@ export class TrackGuard extends CollectionGuard<TrackState> {
           trackIds = trackIds.concat(playlist.trackIds);
         }
 
-        trackIds = trackIds.concat(user.likedTracksIds);
+       trackIds = trackIds.concat(user.likedTracksIds);
 
-        return this.service.syncManyDocs(trackIds.slice(0, 100));
+        return this.service.syncManyDocs(trackIds.slice(200, 300));
       })
     );
   }

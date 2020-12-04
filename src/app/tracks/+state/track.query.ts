@@ -14,8 +14,10 @@ import {
 } from 'rxjs/operators';
 import { Observable, timer } from 'rxjs';
 import {
+  Artist,
   createAudioFeatures,
   createTrack,
+  SpotifyAlbum,
   SpotifyAudioFeatures,
   SpotifyPaging,
   SpotifyPlaylistTrack,
@@ -147,6 +149,69 @@ export class TrackQuery extends QueryEntity<TrackState> {
             })
           )
         ),
+        first()
+      )
+      .toPromise();
+  }
+
+  public async getPromisedAlbums(trackIds: string[]) {
+    const headers = await this.getHeaders();
+
+    let queryParam: string = '?ids=';
+    for (const trackId of trackIds) {
+      queryParam = queryParam + trackId + ',';
+    }
+    queryParam = queryParam.substring(0, queryParam.length - 1);
+
+    const url = 'https://api.spotify.com/v1/albums' + queryParam;
+    const albums = this.http
+      .get<{ albums: SpotifyAlbum[] }>(`${url}`, { headers })
+      .pipe(
+        retryWhen((error) => {
+          return error.pipe(
+            tap((error) => console.log('error status: ', error.status)),
+            filter((error) => error.status === 429),
+            delayWhen(() => timer(5000)),
+            tap(() => console.log('retrying...')),
+            take(3)
+          );
+        })
+      );
+
+    return albums;
+  }
+
+  public async getPromisedArtists(artistIds: string[]) {
+    const headers = await this.getHeaders();
+
+    let queryParam: string = '?ids=';
+    for (const artistId of artistIds) {
+      queryParam = queryParam + artistId + ',';
+    }
+    queryParam = queryParam.substring(0, queryParam.length - 1);
+
+    const url = 'https://api.spotify.com/v1/artists' + queryParam;
+    const artists = this.http
+      .get<{ artists: Artist[] }>(`${url}`, { headers })
+      .pipe(
+        retryWhen((error) => {
+          return error.pipe(
+            tap((error) => console.log('error status: ', error.status)),
+            filter((error) => error.status === 429),
+            delayWhen(() => timer(5000)),
+            tap(() => console.log('retrying...')),
+            take(3)
+          );
+        })
+      );
+
+    return artists;
+  }
+
+  public async getFormatedArtists(artistIds: string[]): Promise<Artist[]> {
+    return await (await this.getPromisedArtists(artistIds))
+      .pipe(
+        map((artists) => artists.artists),
         first()
       )
       .toPromise();

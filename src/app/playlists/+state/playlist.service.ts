@@ -21,6 +21,7 @@ export class PlaylistService extends CollectionService<PlaylistState> {
   public async savePlaylists() {
     const playlistLimit = 50;
     const playlistTracksLimit = 100;
+    const artistLimit = 50;
     const audioFeaturesLimit = 100;
     const firebaseWriteLimit = 500;
     const user = this.authQuery.getActive();
@@ -30,8 +31,10 @@ export class PlaylistService extends CollectionService<PlaylistState> {
     let playlists: Playlist[] = [];
     let totalPlaylistTracks: Track[] = [];
     let totalPlaylistTrackIds: string[];
+    let artistIds: string[];
     let audioFeatures: Track[] = [];
     let totalPlaylistFullTracks: Track[] = [];
+    let totalGenres: string[][] = [[]];
 
     const playlistCollection = this.db.firestore.collection(this.currentPath);
     const trackCollection = this.db.firestore.collection('tracks');
@@ -49,7 +52,6 @@ export class PlaylistService extends CollectionService<PlaylistState> {
     // get the tracks from all playlists
     for (let m = 0; m < playlists.length; m++) {
       let playlistTracks: Track[] = [];
-      console.log(playlists[m].name);
       // get all the playlist tracks by batches
       for (
         let l = 0;
@@ -72,7 +74,11 @@ export class PlaylistService extends CollectionService<PlaylistState> {
     totalPlaylistTrackIds = totalPlaylistTracks.map((track) => track.id);
 
     // Get all the audio features by batches
-    for (let i = 0; i <= Math.floor(total / audioFeaturesLimit); i++) {
+    for (
+      let i = 0;
+      i <= Math.floor(totalPlaylistTrackIds.length / audioFeaturesLimit);
+      i++
+    ) {
       const bactchTrackIds = totalPlaylistTrackIds.slice(
         audioFeaturesLimit * i,
         audioFeaturesLimit * (i + 1)
@@ -84,10 +90,24 @@ export class PlaylistService extends CollectionService<PlaylistState> {
       audioFeatures = audioFeatures.concat(formatedFeatures);
     }
 
-    // concat tracks & audio features
-    totalPlaylistFullTracks = totalPlaylistTracks.map((item, i) =>
-      Object.assign({}, item, audioFeatures[i])
-    );
+    artistIds = totalPlaylistTracks.map((track) => track.artists[0].id);
+    // Get all the artists by batches to extract genres
+    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
+      const bactchArtistIds = artistIds.slice(
+        artistLimit * i,
+        artistLimit * (i + 1)
+      );
+      const artists = await this.trackQuery.getFormatedArtists(bactchArtistIds);
+      const genres = artists.map((artist) => artist.genres);
+      totalGenres = totalGenres.concat(genres);
+    }
+
+    // concat all items into one track
+    totalPlaylistFullTracks = totalPlaylistTracks.map((track, i) => ({
+      ...track,
+      ...audioFeatures[i],
+      genres: totalGenres[i],
+    }));
 
     // write the playlists by batches
     for (let i = 0; i <= Math.floor(total / firebaseWriteLimit); i++) {
