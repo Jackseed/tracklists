@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { first, map, tap } from 'rxjs/operators';
+import { SpotifyService } from 'src/app/spotify/spotify.service';
 import { Track, TrackService } from '../+state';
 
 @Component({
@@ -11,7 +12,10 @@ import { Track, TrackService } from '../+state';
 export class TrackListComponent implements OnInit {
   public tracks$: Observable<Track[]>;
 
-  constructor(private service: TrackService) {}
+  constructor(
+    private service: TrackService,
+    private spotifyService: SpotifyService
+  ) {}
 
   ngOnInit(): void {
     this.tracks$ = this.service.selectAll();
@@ -21,7 +25,7 @@ export class TrackListComponent implements OnInit {
     this.tracks$
       .pipe(
         map((tracks) => tracks.map((track) => track.uri)),
-        tap((trackUris) => this.service.play(trackUris)),
+        tap(async (trackUris) => await this.spotifyService.play(trackUris)),
         first()
       )
       .subscribe();

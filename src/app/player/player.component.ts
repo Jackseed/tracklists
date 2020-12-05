@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
+import { SpotifyService } from '../spotify/spotify.service';
 import { TrackService, Track, TrackQuery } from '../tracks/+state';
 
 @UntilDestroy()
@@ -17,7 +18,11 @@ export class PlayerComponent implements OnInit {
   value = 0;
   isTicking = false;
 
-  constructor(private query: TrackQuery, private service: TrackService) {}
+  constructor(
+    private query: TrackQuery,
+    private service: TrackService,
+    private spotifyService: SpotifyService
+  ) {}
 
   ngOnInit(): void {
     let interval;
@@ -61,16 +66,16 @@ export class PlayerComponent implements OnInit {
   }
   // TODO pause when space bar
 
-  public play() {
-    this.service.play();
+  public async play() {
+    await this.spotifyService.play();
   }
-  public pause() {
-    this.service.pause();
+  public async pause() {
+    await this.spotifyService.pause();
   }
-  public playNext() {
-    this.service.playNext();
+  public async playNext() {
+    await this.spotifyService.playNext();
   }
-  public onChangeSlider() {
-    this.service.seekPosition(this.value * 1000);
+  public async onChangeSlider() {
+    await this.spotifyService.seekPosition(this.value * 1000);
   }
 }

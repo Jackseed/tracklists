@@ -24,6 +24,7 @@ import {
   SpotifyPlaylistTrack,
   SpotifySavedTrack,
 } from '../tracks/+state/track.model';
+import { TrackService } from '../tracks/+state';
 
 declare global {
   interface Window {
@@ -44,6 +45,7 @@ export class SpotifyService {
     private authService: AuthService,
     private trackStore: TrackStore,
     private trackQuery: TrackQuery,
+    private trackService: TrackService,
     private playlistQuery: PlaylistQuery,
     private http: HttpClient
   ) {}
@@ -74,19 +76,11 @@ export class SpotifyService {
       const track = state.track_window.current_track;
       const pause = this.trackQuery.getPaused(track.id);
       this.trackStore.setActive(track.id);
-      this.updatePosition(track.id, state.position);
+      this.trackService.updatePosition(track.id, state.position);
       state.paused === pause
         ? false
-        : this.updatePaused(track.id, state.paused);
+        : this.trackService.updatePaused(track.id, state.paused);
     });
-  }
-
-  public updatePosition(trackId: string, position: number) {
-    this.trackStore.ui.upsert(trackId, { position });
-  }
-
-  public updatePaused(trackId: string, paused: boolean) {
-    this.trackStore.ui.upsert(trackId, { paused });
   }
 
   // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
@@ -452,14 +446,14 @@ export class SpotifyService {
     );
   }
 
-  public async getAddToPlaybackRequest(trackUri: string) {
+  public async addToPlayback(trackUri: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
     const queryParam = `?uri=${trackUri}`;
 
     return this.postRequests(baseUrl, queryParam, null);
   }
 
-  public async getPlayNextRequest() {
+  public async playNext() {
     const baseUrl = 'https://api.spotify.com/v1/me/player/next';
 
     return this.postRequests(baseUrl, '', null);

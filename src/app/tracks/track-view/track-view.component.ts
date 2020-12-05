@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Track, TrackService } from '../+state';
+import { SpotifyService } from 'src/app/spotify/spotify.service';
+import { Track } from '../+state';
 
 @Component({
   selector: 'app-track-view',
@@ -8,14 +9,14 @@ import { Track, TrackService } from '../+state';
 })
 export class TrackViewComponent implements OnInit {
   @Input() track: Track;
-  constructor(private service: TrackService) {}
+  constructor(private spotifyService: SpotifyService) {}
 
   ngOnInit(): void {}
 
-  public play(trackUri: string) {
-    this.service.play([trackUri]);
+  public async play(trackUri: string) {
+    await this.spotifyService.play([trackUri]);
   }
-  public addoToPlayback(trackUri: string) {
-    this.service.addToPlayback(trackUri);
+  public async addoToPlayback(trackUri: string) {
+    await this.spotifyService.addToPlayback(trackUri);
   }
 }
