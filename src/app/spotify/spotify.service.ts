@@ -10,9 +10,9 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import firebase, { firestore } from 'firebase';
+import firebase from 'firebase';
 import { AuthQuery, AuthService } from '../auth/+state';
-import { Playlist, PlaylistQuery } from '../playlists/+state';
+import { Playlist } from '../playlists/+state';
 import { TrackStore } from '../tracks/+state/track.store';
 import { TrackQuery } from '../tracks/+state/track.query';
 import {
@@ -25,7 +25,6 @@ import {
   SpotifySavedTrack,
 } from '../tracks/+state/track.model';
 import { TrackService } from '../tracks/+state';
-import { query } from '@angular/animations';
 
 declare global {
   interface Window {
@@ -47,7 +46,6 @@ export class SpotifyService {
     private trackStore: TrackStore,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
-    private playlistQuery: PlaylistQuery,
     private http: HttpClient
   ) {}
 
@@ -98,88 +96,33 @@ export class SpotifyService {
   }
 
   public async saveLikedTracks() {
-    const likedTracksLimit = 50;
-    const audioFeaturesLimit = 100;
-    const firebaseWriteLimit = 500;
-    const artistLimit = 50;
-    const total: number = await this.getTotalLikedTracks();
-
-    let tracks: Track[] = [];
-    let trackIds: string[] = [];
-    let audioFeatures: Track[] = [];
-    let fullTracks: Track[] = [];
-    let artistIds: string[];
-    let totalGenres: string[][] = [[]];
-
-    const userId = this.authQuery.getActiveId();
-    const trackCollection = this.db.collection('tracks');
-    const userRef = this.db.collection('users').doc(userId);
-
-    // get all the liked tracks by batches
-    for (let j = 0; j <= Math.floor(total / likedTracksLimit) + 1; j++) {
-      const offset = j * likedTracksLimit;
-      const url = 'https://api.spotify.com/v1/me/tracks';
-      const queryParam = `?limit=${likedTracksLimit}&offset=${offset}`;
-      const formatedTracks = await this.getLikedTracks(url, queryParam);
-
-      tracks = tracks.concat(formatedTracks);
-    }
-
-    trackIds = tracks.map((track) => track.id);
-
-    // Get all the audio features by batches
-    for (let i = 0; i <= Math.floor(total / audioFeaturesLimit); i++) {
-      const bactchTrackIds = trackIds.slice(
-        audioFeaturesLimit * i,
-        audioFeaturesLimit * (i + 1)
-      );
-
-      const formatedFeatures = await this.getAudioFeatures(bactchTrackIds);
-      audioFeatures = audioFeatures.concat(formatedFeatures);
-    }
-
-    artistIds = tracks.map((track) => track.artists[0].id);
-    // Get all the artists by batches to extract genres
-    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
-      const bactchArtistIds = artistIds.slice(
-        artistLimit * i,
-        artistLimit * (i + 1)
-      );
-      const artists = await this.getArtists(bactchArtistIds);
-      const genres = artists.map((artist) => artist.genres);
-      totalGenres = totalGenres.concat(genres);
-    }
+    // get liked tracks by batches
+    const tracks: Track[] = await this.getLikedTracksByBatches();
+    const trackIds: string[] = tracks.map((track) => track.id);
+    // Get audio features by batches
+    const audioFeatures: Track[] = await this.getAudioFeaturesByBatches(
+      trackIds
+    );
+    // Get genres
+    const artistIds: string[] = tracks.map((track) => track.artists[0].id);
+    const genres = await this.getGenresByBatches(artistIds);
 
     // concat all items into one track
-    fullTracks = tracks.map((track, i) => ({
+    const fullTracks: Track[] = tracks.map((track, i) => ({
       ...track,
       ...audioFeatures[i],
-      genres: totalGenres[i],
+      genres: genres[i],
     }));
 
     console.log(fullTracks);
 
-    // TODO: verify that tracks are not written if they already exist
-    // write the tracks by batches
-    for (let i = 0; i <= Math.floor(total / firebaseWriteLimit); i++) {
-      const bactchFullTracks = fullTracks.slice(
-        firebaseWriteLimit * i,
-        firebaseWriteLimit * (i + 1)
-      );
-      const batch = this.db.batch();
-
-      for (const track of bactchFullTracks) {
-        const ref = trackCollection.doc(track.id);
-        batch.set(ref, track);
-      }
-
-      batch
-        .commit()
-        .then((_) => console.log(`batch of tracks ${i} saved`))
-        .catch((error) => console.log(error));
-    }
+    // write tracks by batches
+    const trackCollection = this.db.collection('tracks');
+    await this.firestoreWriteBatches(trackCollection, fullTracks);
 
     // write liked titles in the user doc
+    const userId = this.authQuery.getActiveId();
+    const userRef = this.db.collection('users').doc(userId);
     userRef
       .update({ likedTracksIds: trackIds })
       .then((_) => console.log('trackIds saved on user'))
@@ -221,6 +164,21 @@ export class SpotifyService {
       .update({ playlistIds })
       .then((_) => console.log('playlistIds saved on user'))
       .catch((error) => console.log(error));
+  }
+
+  private async getLikedTracksByBatches(): Promise<Track[]> {
+    const likedTracksLimit = 50;
+    const total: number = await this.getTotalLikedTracks();
+    let tracks: Track[] = [];
+    for (let j = 0; j <= Math.floor(total / likedTracksLimit) + 1; j++) {
+      const offset = j * likedTracksLimit;
+      const url = 'https://api.spotify.com/v1/me/tracks';
+      const queryParam = `?limit=${likedTracksLimit}&offset=${offset}`;
+      const formatedTracks = await this.getLikedTracks(url, queryParam);
+
+      tracks = tracks.concat(formatedTracks);
+    }
+    return tracks;
   }
 
   private async getActiveUserPlaylistsByBatches(): Promise<Playlist[]> {
