@@ -4,18 +4,10 @@ import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { environment } from 'src/environments/environment';
 import { Track } from './track.model';
 import { TrackQuery } from './track.query';
-import { AuthQuery, AuthService } from 'src/app/auth/+state';
+import { AuthQuery } from 'src/app/auth/+state';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
-
-declare global {
-  interface Window {
-    onSpotifyWebPlaybackSDKReady(): void;
-    // @ts-ignore: Unreachable code error
-    Spotify: typeof Spotify;
-  }
-}
-// TODO: write a Spotify service
+import { SpotifyService } from 'src/app/spotify/spotify.service';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -30,175 +22,34 @@ export class TrackService extends CollectionService<TrackState> {
   constructor(
     store: TrackStore,
     private query: TrackQuery,
-    private authQuery: AuthQuery,
-    private authService: AuthService
+    private spotifyService: SpotifyService
   ) {
     super(store);
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
   }
 
-  public async initializePlayer() {
-    // @ts-ignore: Unreachable code error
-    const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
-    const user = await this.authQuery.getActive();
-    console.log('The Web Playback SDK has loaded.', Player);
-
-    // instantiate the player
-    const player = new Player({
-      name: 'Listy player',
-      getOAuthToken: (callback) => {
-        callback(user.token);
-      },
-    });
-
-    let connected = await player.connect();
-
-    // Ready
-    player.addListener('ready', ({ device_id }) => {
-      this.authService.saveDeviceId(device_id);
-    });
-
-    // when player state change, set active the track
-    player.on('player_state_changed', async (state) => {
-      const track = state.track_window.current_track;
-      const pause = this.query.getPaused(track.id);
-      this.store.setActive(track.id);
-      this.updatePosition(track.id, state.position);
-      state.paused === pause
-        ? false
-        : this.updatePaused(track.id, state.paused);
-    });
-  }
-
-  public updatePosition(trackId: string, position: number) {
-    this.store.ui.upsert(trackId, { position });
-  }
-
-  public updatePaused(trackId: string, paused: boolean) {
-    this.store.ui.upsert(trackId, { paused });
-  }
-
-  // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
-  public async waitForSpotifyWebPlaybackSDKToLoad() {
-    return new Promise((resolve) => {
-      if (window.Spotify) {
-        resolve(window.Spotify);
-      } else {
-        window.onSpotifyWebPlaybackSDKReady = () => {
-          resolve(window.Spotify);
-        };
-      }
-    });
-  }
-
-  public async saveLikedTracks() {
-    const likedTracksLimit = 50;
-    const audioFeaturesLimit = 100;
-    const firebaseWriteLimit = 500;
-    const artistLimit = 50;
-    const total: number = await this.query.getTotalLikedTracks();
-
-    let tracks: Track[] = [];
-    let trackIds: string[] = [];
-    let audioFeatures: Track[] = [];
-    let fullTracks: Track[] = [];
-    let artistIds: string[];
-    let totalGenres: string[][] = [[]];
-
-    const userId = this.authQuery.getActiveId();
-    const collection = this.db.firestore.collection(this.currentPath);
-    const userRef = this.db.firestore.collection('users').doc(userId);
-
-    // get all the liked tracks by batches
-    for (let j = 0; j <= Math.floor(total / likedTracksLimit) + 1; j++) {
-      const offset = j * likedTracksLimit;
-      const url = `https://api.spotify.com/v1/me/tracks?limit=${likedTracksLimit}&offset=${offset}`;
-      const formatedTracks = await this.query.getFormatedLikedTracks(url);
-
-      tracks = tracks.concat(formatedTracks);
-    }
-
-    trackIds = tracks.map((track) => track.id);
-
-    // Get all the audio features by batches
-    for (let i = 0; i <= Math.floor(total / audioFeaturesLimit); i++) {
-      const bactchTrackIds = trackIds.slice(
-        audioFeaturesLimit * i,
-        audioFeaturesLimit * (i + 1)
-      );
-
-      const formatedFeatures = await this.query.getFormatedAudioFeatures(
-        bactchTrackIds
-      );
-      audioFeatures = audioFeatures.concat(formatedFeatures);
-    }
-
-    artistIds = tracks.map((track) => track.artists[0].id);
-    // Get all the artists by batches to extract genres
-    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
-      const bactchArtistIds = artistIds.slice(
-        artistLimit * i,
-        artistLimit * (i + 1)
-      );
-      const artists = await this.query.getFormatedArtists(bactchArtistIds);
-      const genres = artists.map((artist) => artist.genres);
-      totalGenres = totalGenres.concat(genres);
-    }
-
-    // concat all items into one track
-    fullTracks = tracks.map((track, i) => ({
-      ...track,
-      ...audioFeatures[i],
-      genres: totalGenres[i],
-    }));
-
-    // TODO: verify that tracks are not written if they already exist
-    // write the tracks by batches
-    for (let i = 0; i <= Math.floor(total / firebaseWriteLimit); i++) {
-      const bactchFullTracks = fullTracks.slice(
-        firebaseWriteLimit * i,
-        firebaseWriteLimit * (i + 1)
-      );
-      const batch = this.db.firestore.batch();
-
-      for (const track of bactchFullTracks) {
-        const ref = collection.doc(track.id);
-        batch.set(ref, track);
-      }
-
-      batch
-        .commit()
-        .then((_) => console.log(`batch of tracks ${i} saved`))
-        .catch((error) => console.log(error));
-    }
-
-    // write liked titles in the user doc
-    userRef
-      .update({ likedTracksIds: trackIds })
-      .then((_) => console.log('trackIds saved on user'))
-      .catch((error) => console.log(error));
-  }
-
   public async addToPlayback(trackId: string) {
-    const query = await this.query.getAddToPlaybackRequest(trackId);
+    const query = await this.spotifyService.getAddToPlaybackRequest(trackId);
   }
 
   public async play(trackUris?: string[]) {
-    trackUris ? await this.query.play(trackUris) : await this.query.play();
+    trackUris
+      ? await this.spotifyService.play(trackUris)
+      : await this.spotifyService.play();
   }
 
   public async pause() {
-    await this.query.pause().catch((error) => console.log(error));
+    await this.spotifyService.pause().catch((error) => console.log(error));
   }
 
   public async seekPosition(position: number) {
-    await this.query
+    await this.spotifyService
       .seekPosition(position)
       .catch((error) => console.log(error));
   }
 
   public async playNext() {
-    const query = await this.query.getPlayNextRequest();
+    const query = await this.spotifyService.getPlayNextRequest();
   }
 
   setFilter(filter: AkitaFilter<TrackState>) {
