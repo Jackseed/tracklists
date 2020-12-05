@@ -22,16 +22,19 @@ export class TrackGuard extends CollectionGuard<TrackState> {
   sync() {
     const activePlaylists$ = this.playlistQuery.selectActive();
     const user$ = this.authQuery.selectActive();
+    const activePlaylistIds$ = this.playlistQuery.selectActiveId();
 
-    return combineLatest([activePlaylists$, user$]).pipe(
-      switchMap(([playlists, user]) => {
+    return combineLatest([activePlaylists$, activePlaylistIds$, user$]).pipe(
+      switchMap(([playlists, playlistIds, user]) => {
         let trackIds: string[] = [];
 
         for (const playlist of playlists) {
           trackIds = trackIds.concat(playlist.trackIds);
         }
 
-       trackIds = trackIds.concat(user.likedTracksIds);
+        if (playlistIds.includes('likedTracks')) {
+          trackIds = trackIds.concat(user.likedTracksIds);
+        }
 
         return this.service.syncManyDocs(trackIds.slice(200, 300));
       })

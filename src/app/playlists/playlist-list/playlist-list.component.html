@@ -4,6 +4,11 @@
       <mat-card-title>Playlists</mat-card-title>
     </mat-card-header>
     <mat-card-content>
+      <div>
+        <mat-checkbox color="accent" (change)="setLikedTracksActive()">
+          Liked tracks
+        </mat-checkbox>
+      </div>
       <div *ngFor="let playlist of playlists">
         <app-playlist-view [playlist]="playlist"></app-playlist-view>
       </div>
