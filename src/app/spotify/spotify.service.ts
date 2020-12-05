@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, timer } from 'rxjs';
+import { timer } from 'rxjs';
 import {
   delayWhen,
   filter,
@@ -25,6 +25,7 @@ import {
   SpotifySavedTrack,
 } from '../tracks/+state/track.model';
 import { TrackService } from '../tracks/+state';
+import { query } from '@angular/animations';
 
 declare global {
   interface Window {
@@ -191,9 +192,10 @@ export class SpotifyService {
     const artistLimit = 50;
     const audioFeaturesLimit = 100;
     const firebaseWriteLimit = 500;
+
     const user = this.authQuery.getActive();
-    const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
-    const total = await this.playlistQuery.getTotalPlaylists(url);
+
+    const total = await this.getTotalPlaylists();
 
     let playlists: Playlist[] = [];
     let totalPlaylistTracks: Track[] = [];
@@ -210,8 +212,10 @@ export class SpotifyService {
     // get all the playlists by batches
     for (let j = 0; j <= Math.floor(total / playlistLimit) + 1; j++) {
       const offset = j * playlistLimit;
-      const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists?limit=${playlistLimit}&offset=${offset}`;
-      const lists = await this.playlistQuery.getPlaylists(url);
+      const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+      const queryParam = `?limit=${playlistLimit}&offset=${offset}`;
+
+      const lists = await this.getPlaylists(url, queryParam);
 
       playlists = playlists.concat(lists);
     }
@@ -273,6 +277,7 @@ export class SpotifyService {
       genres: totalGenres[i],
     }));
 
+    console.log(totalPlaylistFullTracks);
     // write the playlists by batches
     for (let i = 0; i <= Math.floor(total / firebaseWriteLimit); i++) {
       const bactchPlaylist = playlists.slice(
@@ -381,6 +386,30 @@ export class SpotifyService {
         first()
       )
       .toPromise();
+  }
+
+  public async getPlaylists(
+    url: string,
+    queryParam: string
+  ): Promise<Playlist[]> {
+    return await (await this.getPromisedObjects(url, queryParam))
+      .pipe(
+        map((paging: { items: Playlist[] }) => paging.items),
+        first()
+      )
+      .toPromise();
+  }
+
+  public async getTotalPlaylists(): Promise<number> {
+    const user = this.authQuery.getActive();
+    const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    const queryParam = '?limit=1';
+
+    const playlists = await (await this.getPromisedObjects(url, queryParam))
+      .pipe(first())
+      .toPromise();
+    // @ts-ignore: Unreachable code error
+    return playlists.total;
   }
 
   public async getAudioFeatures(trackIds: string[]): Promise<Track[]> {
