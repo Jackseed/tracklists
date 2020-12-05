@@ -15,7 +15,7 @@ declare global {
     Spotify: typeof Spotify;
   }
 }
-// TODO: write a Spotify service 
+// TODO: write a Spotify service
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -95,12 +95,15 @@ export class TrackService extends CollectionService<TrackState> {
     const likedTracksLimit = 50;
     const audioFeaturesLimit = 100;
     const firebaseWriteLimit = 500;
+    const artistLimit = 50;
     const total: number = await this.query.getTotalLikedTracks();
 
     let tracks: Track[] = [];
     let trackIds: string[] = [];
     let audioFeatures: Track[] = [];
     let fullTracks: Track[] = [];
+    let artistIds: string[];
+    let totalGenres: string[][] = [[]];
 
     const userId = this.authQuery.getActiveId();
     const collection = this.db.firestore.collection(this.currentPath);
@@ -130,10 +133,24 @@ export class TrackService extends CollectionService<TrackState> {
       audioFeatures = audioFeatures.concat(formatedFeatures);
     }
 
-    // concat tracks & audio features
-    fullTracks = tracks.map((item, i) =>
-      Object.assign({}, item, audioFeatures[i])
-    );
+    artistIds = tracks.map((track) => track.artists[0].id);
+    // Get all the artists by batches to extract genres
+    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
+      const bactchArtistIds = artistIds.slice(
+        artistLimit * i,
+        artistLimit * (i + 1)
+      );
+      const artists = await this.query.getFormatedArtists(bactchArtistIds);
+      const genres = artists.map((artist) => artist.genres);
+      totalGenres = totalGenres.concat(genres);
+    }
+
+    // concat all items into one track
+    fullTracks = tracks.map((track, i) => ({
+      ...track,
+      ...audioFeatures[i],
+      genres: totalGenres[i],
+    }));
 
     // TODO: verify that tracks are not written if they already exist
     // write the tracks by batches
