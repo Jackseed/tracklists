@@ -26,6 +26,7 @@ import {
   SpotifySavedTrack,
 } from '../tracks/+state/track.model';
 import { TrackService } from '../tracks/+state';
+import { guid } from '@datorama/akita';
 
 declare global {
   interface Window {
@@ -96,7 +97,7 @@ export class SpotifyService {
     });
   }
 
-  public async saveLikedTracks() {
+  private async saveLikedTracks() {
     // get liked tracks by batches
     const tracks: Track[] = await this.getLikedTracksByBatches();
     const trackIds: string[] = tracks.map((track) => track.id);
@@ -115,21 +116,38 @@ export class SpotifyService {
       genres: genres[i],
     }));
 
-    console.log(fullTracks);
+    console.log('liked tracks: ', fullTracks);
 
     // write tracks by batches
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks);
 
-    // write liked titles in the user doc
-    const userId = this.authQuery.getActiveId();
-    const userRef = this.db.collection('users').doc(userId);
-    userRef
-      .update({ likedTracksIds: trackIds })
-      .then((_) => console.log('trackIds saved on user'))
+    // create liked tracks as a playlist
+    const user = this.authQuery.getActive();
+    const playlist: Playlist = {
+      id: `${user.name}LikedTracks`,
+      name: `${user.name}'s liked tracks`,
+      trackIds,
+      type: 'likedTracks',
+    };
+
+    // write the playlist
+    const playlistCollection = this.db.collection('playlists');
+    await playlistCollection
+      .doc(playlist.id)
+      .set(playlist, { merge: true })
+      .then((_) => console.log('liked tracks saved as a playlist'))
       .catch((error) => console.log(error));
-    // write genres on user
-    this.extractGenresFromLikedTracks(fullTracks);
+
+    // add the liked tracks playlist in the user doc
+    const userRef = this.db.collection('users').doc(user.id);
+    userRef
+      .update({ playlistIds: firestore.FieldValue.arrayUnion(playlist.id) })
+      .then((_) => console.log('liked tracks playlist added on user'))
+      .catch((error) => console.log(error));
+
+    // write genres on playlist
+    this.extractGenresFromTrackToPlaylist(playlist, fullTracks);
   }
 
   public async savePlaylists() {
@@ -150,7 +168,7 @@ export class SpotifyService {
       genres: genres[i],
     }));
 
-    console.log(fullTracks);
+    console.log('playlist tracks: ', fullTracks);
     // write playlists by batches
     const playlistCollection = this.db.collection('playlists');
     await this.firestoreWriteBatches(playlistCollection, playlists);
@@ -172,6 +190,9 @@ export class SpotifyService {
     playlists.forEach((playlist) =>
       this.extractGenresFromTrackToPlaylist(playlist, fullTracks)
     );
+
+    // save the liked tracks as a playlist
+    this.saveLikedTracks();
   }
 
   private extractGenresFromTrackToPlaylist(
@@ -194,52 +215,17 @@ export class SpotifyService {
     playlistTracks.forEach((track) => {
       track.genres.forEach((genre) => {
         const ref = genreCollection.doc(genre);
-        batchArray[batchIndex].update(ref, {
-          id: genre,
-          trackIds: firestore.FieldValue.arrayUnion(track.id),
-        });
+        batchArray[batchIndex].set(
+          ref,
+          {
+            id: genre,
+            trackIds: firestore.FieldValue.arrayUnion(track.id),
+          },
+          { merge: true }
+        );
 
         operationCounter += 2;
-        console.log(operationCounter);
-        if (operationCounter >= firebaseWriteLimit) {
-          batchArray.push(this.db.batch());
-          batchIndex++;
-          operationCounter = 0;
-        }
-      });
-    });
 
-    batchArray.forEach(
-      async (batch) =>
-        await batch
-          .commit()
-          .then((_) => console.log(`batch of genres saved`))
-          .catch((error) => console.log(error, batch))
-    );
-  }
-
-  private extractGenresFromLikedTracks(tracks: Track[]) {
-    const user = this.authQuery.getActive();
-    const genreCollection = this.db
-      .collection('users')
-      .doc(user.id)
-      .collection('genres');
-    const firebaseWriteLimit = 497;
-    const batchArray = [];
-    batchArray.push(this.db.batch());
-    let operationCounter = 0;
-    let batchIndex = 0;
-
-    tracks.forEach((track) => {
-      track.genres.forEach((genre) => {
-        const ref = genreCollection.doc(genre);
-        batchArray[batchIndex].update(ref, {
-          id: genre,
-          trackIds: firestore.FieldValue.arrayUnion(track.id),
-        });
-
-        operationCounter += 2;
-        console.log(operationCounter);
         if (operationCounter >= firebaseWriteLimit) {
           batchArray.push(this.db.batch());
           batchIndex++;

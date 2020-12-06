@@ -4,7 +4,7 @@ import { Image, SpotifyTracks } from 'src/app/tracks/+state';
 export interface Playlist {
   collaborative?: boolean;
   description?: string;
-  external_urls: { [key: string]: string };
+  external_urls?: { [key: string]: string };
   href?: string;
   id?: string;
   images?: Image[];

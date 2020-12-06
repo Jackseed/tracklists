@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
+import { Playlist, PlaylistQuery } from '../+state';
 
 @Component({
   selector: 'app-playlist-list',
@@ -10,13 +10,9 @@ import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
 export class PlaylistListComponent implements OnInit {
   playlists$: Observable<Playlist[]>;
 
-  constructor(private store: PlaylistStore, private query: PlaylistQuery) {}
+  constructor(private query: PlaylistQuery) {}
 
   ngOnInit(): void {
     this.playlists$ = this.query.selectAll();
-  }
-
-  public setLikedTracksActive() {
-    this.store.toggleActive('likedTracks');
   }
 }
