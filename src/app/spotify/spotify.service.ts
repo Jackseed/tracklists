@@ -128,6 +128,8 @@ export class SpotifyService {
       .update({ likedTracksIds: trackIds })
       .then((_) => console.log('trackIds saved on user'))
       .catch((error) => console.log(error));
+    // write genres on user
+    this.extractGenresFromLikedTracks(fullTracks);
   }
 
   public async savePlaylists() {
@@ -183,7 +185,7 @@ export class SpotifyService {
       .collection('playlists')
       .doc(playlist.id)
       .collection('genres');
-    const firebaseWriteLimit = 450;
+    const firebaseWriteLimit = 497;
     const batchArray = [];
     batchArray.push(this.db.batch());
     let operationCounter = 0;
@@ -192,7 +194,46 @@ export class SpotifyService {
     playlistTracks.forEach((track) => {
       track.genres.forEach((genre) => {
         const ref = genreCollection.doc(genre);
-        batchArray[batchIndex].set(ref, {
+        batchArray[batchIndex].update(ref, {
+          id: genre,
+          trackIds: firestore.FieldValue.arrayUnion(track.id),
+        });
+
+        operationCounter += 2;
+        console.log(operationCounter);
+        if (operationCounter >= firebaseWriteLimit) {
+          batchArray.push(this.db.batch());
+          batchIndex++;
+          operationCounter = 0;
+        }
+      });
+    });
+
+    batchArray.forEach(
+      async (batch) =>
+        await batch
+          .commit()
+          .then((_) => console.log(`batch of genres saved`))
+          .catch((error) => console.log(error, batch))
+    );
+  }
+
+  private extractGenresFromLikedTracks(tracks: Track[]) {
+    const user = this.authQuery.getActive();
+    const genreCollection = this.db
+      .collection('users')
+      .doc(user.id)
+      .collection('genres');
+    const firebaseWriteLimit = 497;
+    const batchArray = [];
+    batchArray.push(this.db.batch());
+    let operationCounter = 0;
+    let batchIndex = 0;
+
+    tracks.forEach((track) => {
+      track.genres.forEach((genre) => {
+        const ref = genreCollection.doc(genre);
+        batchArray[batchIndex].update(ref, {
           id: genre,
           trackIds: firestore.FieldValue.arrayUnion(track.id),
         });
