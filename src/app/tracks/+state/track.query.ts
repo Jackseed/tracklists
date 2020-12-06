@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { EntityUIQuery, QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState, TrackUIState } from './track.store';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState> {
@@ -22,5 +23,11 @@ export class TrackQuery extends QueryEntity<TrackState> {
 
   getPaused(trackId: string): boolean {
     return this.ui.getEntity(trackId).paused;
+  }
+
+  selectGenres(): Observable<string[][]> {
+    return this.selectAll().pipe(
+      map((tracks) => tracks.map((track) => track.genres))
+    );
   }
 }
