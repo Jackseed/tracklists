@@ -6,7 +6,10 @@
 
 <div fxLayout="row" *ngIf="spotifyUser$ | async as user" class="margin-top">
   <div fxFlex="20" fxFlexOffset="10" class="margin-10">
-    <app-filter-list></app-filter-list>
+    <app-genre-list></app-genre-list>
+    <div class="margin-top">
+      <app-filter-list></app-filter-list>
+    </div>
     <div class="margin-top">
       <app-playlist-list></app-playlist-list>
     </div>

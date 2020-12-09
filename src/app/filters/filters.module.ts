@@ -7,9 +7,19 @@ import { SliderModule } from 'primeng/slider';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
+import { GenreListComponent } from './genre-filters/genre-list/genre-list.component';
+import { GenreViewComponent } from './genre-filters/genre-view/genre-view.component';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
-  declarations: [FilterViewComponent, FilterListComponent],
+  declarations: [
+    FilterViewComponent,
+    FilterListComponent,
+    GenreListComponent,
+    GenreViewComponent,
+  ],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -18,7 +28,15 @@ import { MatCardModule } from '@angular/material/card';
     BrowserModule,
     BrowserAnimationsModule,
     MatCardModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
   ],
-  exports: [FilterViewComponent, FilterListComponent],
+  exports: [
+    FilterViewComponent,
+    FilterListComponent,
+    GenreListComponent,
+    GenreViewComponent,
+  ],
 })
 export class FiltersModule {}

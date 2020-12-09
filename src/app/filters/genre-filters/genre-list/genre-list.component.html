@@ -1,0 +1,17 @@
+<form>
+  <mat-form-field appearance="legacy" color="accent">
+    <input
+      type="text"
+      placeholder="Genres"
+      aria-label="Genres"
+      matInput
+      [formControl]="genreControl"
+      [matAutocomplete]="auto"
+    />
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let genre of filteredGenres$ | async" [value]="genre">
+        {{ genre.id }} ({{ genre.trackIds.length }})
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+</form>

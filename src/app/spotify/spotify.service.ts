@@ -97,6 +97,51 @@ export class SpotifyService {
     });
   }
 
+  public async savePlaylists() {
+    // get active user's playlists by batches
+    const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
+    // extract the tracks
+    const tracks = await this.getPlaylistsTracksByBatches(playlists);
+    // Get audio features
+    const trackIds: string[] = tracks.map((track) => track.id);
+    const audioFeatures = this.getAudioFeaturesByBatches(trackIds);
+    // Get genres
+    const artistIds: string[] = tracks.map((track) => track.artists[0].id);
+    const genres = await this.getGenresByBatches(artistIds);
+    // concat all items into one track
+    const fullTracks: Track[] = tracks.map((track, i) => ({
+      ...track,
+      ...audioFeatures[i],
+      genres: genres[i],
+    }));
+
+    console.log('playlist tracks: ', fullTracks);
+    // write playlists by batches
+    const playlistCollection = this.db.collection('playlists');
+    await this.firestoreWriteBatches(playlistCollection, playlists);
+
+    // write tracks by batches
+    const trackCollection = this.db.collection('tracks');
+    await this.firestoreWriteBatches(trackCollection, fullTracks);
+
+    // write playlist ids in user doc
+    const user = this.authQuery.getActive();
+    const userRef = this.db.collection('users').doc(user.id);
+    const playlistIds = playlists.map((playlist) => playlist.id);
+    userRef
+      .update({ playlistIds })
+      .then((_) => console.log('playlistIds saved on user'))
+      .catch((error) => console.log(error));
+
+    // write genres on playlists
+    playlists.forEach((playlist) =>
+      this.extractGenresFromTrackToPlaylist(playlist, fullTracks)
+    );
+
+    // save the liked tracks as a playlist
+    this.saveLikedTracks();
+  }
+
   private async saveLikedTracks() {
     // get liked tracks by batches
     const tracks: Track[] = await this.getLikedTracksByBatches();
@@ -148,51 +193,6 @@ export class SpotifyService {
 
     // write genres on playlist
     this.extractGenresFromTrackToPlaylist(playlist, fullTracks);
-  }
-
-  public async savePlaylists() {
-    // get active user's playlists by batches
-    const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
-    // extract the tracks
-    const tracks = await this.getPlaylistsTracksByBatches(playlists);
-    // Get audio features
-    const trackIds: string[] = tracks.map((track) => track.id);
-    const audioFeatures = this.getAudioFeaturesByBatches(trackIds);
-    // Get genres
-    const artistIds: string[] = tracks.map((track) => track.artists[0].id);
-    const genres = await this.getGenresByBatches(artistIds);
-    // concat all items into one track
-    const fullTracks: Track[] = tracks.map((track, i) => ({
-      ...track,
-      ...audioFeatures[i],
-      genres: genres[i],
-    }));
-
-    console.log('playlist tracks: ', fullTracks);
-    // write playlists by batches
-    const playlistCollection = this.db.collection('playlists');
-    await this.firestoreWriteBatches(playlistCollection, playlists);
-
-    // write tracks by batches
-    const trackCollection = this.db.collection('tracks');
-    await this.firestoreWriteBatches(trackCollection, fullTracks);
-
-    // write playlist ids in user doc
-    const user = this.authQuery.getActive();
-    const userRef = this.db.collection('users').doc(user.id);
-    const playlistIds = playlists.map((playlist) => playlist.id);
-    userRef
-      .update({ playlistIds })
-      .then((_) => console.log('playlistIds saved on user'))
-      .catch((error) => console.log(error));
-
-    // write genres on playlists
-    playlists.forEach((playlist) =>
-      this.extractGenresFromTrackToPlaylist(playlist, fullTracks)
-    );
-
-    // save the liked tracks as a playlist
-    this.saveLikedTracks();
   }
 
   private extractGenresFromTrackToPlaylist(
