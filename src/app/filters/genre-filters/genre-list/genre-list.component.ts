@@ -1,8 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import {
+  MatAutocomplete,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
+import { MatChipInputEvent } from '@angular/material/chips';
 import { Observable } from 'rxjs';
-import { filter, map, startWith, switchMap } from 'rxjs/operators';
-import { Genre, GenreQuery } from '../+state';
+import { map, startWith, switchMap } from 'rxjs/operators';
+import { Genre, GenreQuery, GenreStore } from '../+state';
 
 @Component({
   selector: 'app-genre-list',
@@ -13,20 +19,60 @@ export class GenreListComponent implements OnInit {
   genreControl = new FormControl();
   genres$: Observable<Genre[]>;
   filteredGenres$: Observable<Genre[]>;
+  activeGenres$: Observable<Genre[]>;
+  selectable = true;
+  removable = true;
+  separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  constructor(private query: GenreQuery) {}
+  @ViewChild('genreInput') genreInput: ElementRef<HTMLInputElement>;
+  @ViewChild('auto') matAutocomplete: MatAutocomplete;
+
+  constructor(private store: GenreStore, private query: GenreQuery) {}
 
   ngOnInit(): void {
     this.genres$ = this.query.selectAll();
+    this.activeGenres$ = this.query.selectActive();
     this.filteredGenres$ = this.genreControl.valueChanges.pipe(
       startWith(''),
-      switchMap((value) => this.textFilter(value))
+      switchMap((text) => (text ? this.textFilter(text) : this.genres$))
     );
   }
 
-  private textFilter(value: string): Observable<Genre[]> {
-    const filterValue = value.toLowerCase();
+  add(event: MatChipInputEvent): void {
+    const input = event.input;
+    const value = event.value;
+    console.log(value);
 
+    // Set selected genre active
+    if ((value || '').trim()) {
+      this.store.addActive(value);
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+
+    this.genreControl.setValue(null);
+  }
+
+  remove(genreId: string): void {
+    this.store.removeActive(genreId);
+  }
+
+  selected(event: MatAutocompleteSelectedEvent): void {
+    this.store.addActive(event.option.value.id);
+    this.genreInput.nativeElement.value = '';
+    this.genreControl.setValue(null);
+  }
+
+  private textFilter(value: string | Genre): Observable<Genre[]> {
+    let filterValue;
+    if (typeof value === 'string') {
+      filterValue = value.toLowerCase();
+    } else {
+      filterValue = value.id;
+    }
     return this.genres$.pipe(
       map((genres) =>
         genres.filter(

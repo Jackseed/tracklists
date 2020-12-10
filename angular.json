@@ -15,8 +15,7 @@
           "options": {
             "allowedCommonJsDependencies": [
               "firebase/app",
-              "@firebase/auth",
-              "firebase"
+              "@firebase/auth"
             ],
             "outputPath": "dist/listy",
             "index": "src/index.html",

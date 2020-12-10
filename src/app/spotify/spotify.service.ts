@@ -11,7 +11,7 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import { AuthQuery, AuthService } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
 import { TrackStore } from '../tracks/+state/track.store';
@@ -55,7 +55,6 @@ export class SpotifyService {
     // @ts-ignore: Unreachable code error
     const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
     const user = await this.authQuery.getActive();
-    console.log('The Web Playback SDK has loaded.', Player);
 
     // instantiate the player
     const player = new Player({
