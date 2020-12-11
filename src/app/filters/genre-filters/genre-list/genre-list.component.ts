@@ -6,8 +6,9 @@ import {
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { Observable } from 'rxjs';
-import { map, startWith, switchMap } from 'rxjs/operators';
+import { ID } from '@datorama/akita';
+import { combineLatest, Observable } from 'rxjs';
+import { filter, map, startWith, switchMap } from 'rxjs/operators';
 import { Genre, GenreQuery, GenreStore } from '../+state';
 
 @Component({
@@ -20,6 +21,7 @@ export class GenreListComponent implements OnInit {
   genres$: Observable<Genre[]>;
   filteredGenres$: Observable<Genre[]>;
   activeGenres$: Observable<Genre[]>;
+  listedGenres$: Observable<Genre[]>;
   selectable = true;
   removable = true;
   separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -34,7 +36,14 @@ export class GenreListComponent implements OnInit {
     this.activeGenres$ = this.query.selectActive();
     this.filteredGenres$ = this.genreControl.valueChanges.pipe(
       startWith(''),
-      switchMap((text) => (text ? this.textFilter(text) : this.genres$))
+      switchMap((text) => (text ? this.textFilter(text) : this.genres$)),
+      // filter the already selected genres
+      map((genres) =>
+        genres.filter((genre) => {
+          const activeGenreIds = this.query.getActiveId();
+          return !activeGenreIds.includes(genre.id);
+        })
+      )
     );
   }
 

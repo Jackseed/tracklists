@@ -103,7 +103,7 @@ export class SpotifyService {
     const tracks = await this.getPlaylistsTracksByBatches(playlists);
     // Get audio features
     const trackIds: string[] = tracks.map((track) => track.id);
-    const audioFeatures = this.getAudioFeaturesByBatches(trackIds);
+    const audioFeatures = await this.getAudioFeaturesByBatches(trackIds);
     // Get genres
     const artistIds: string[] = tracks.map((track) => track.artists[0].id);
     const genres = await this.getGenresByBatches(artistIds);
@@ -113,6 +113,14 @@ export class SpotifyService {
       ...audioFeatures[i],
       genres: genres[i],
     }));
+    console.log(
+      'tracks : ',
+      tracks,
+      'audioFeatures: ',
+      audioFeatures,
+      'genres: ',
+      genres
+    );
 
     console.log('playlist tracks: ', fullTracks);
     // write playlists by batches
