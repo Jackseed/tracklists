@@ -6,11 +6,13 @@ import {
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { ID } from '@datorama/akita';
-import { combineLatest, Observable } from 'rxjs';
-import { filter, map, startWith, switchMap } from 'rxjs/operators';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { Observable } from 'rxjs';
+import { filter, map, startWith, switchMap, tap } from 'rxjs/operators';
+import { TrackService } from 'src/app/tracks/+state';
 import { Genre, GenreQuery, GenreStore } from '../+state';
 
+@UntilDestroy()
 @Component({
   selector: 'app-genre-list',
   templateUrl: './genre-list.component.html',
@@ -29,7 +31,11 @@ export class GenreListComponent implements OnInit {
   @ViewChild('genreInput') genreInput: ElementRef<HTMLInputElement>;
   @ViewChild('auto') matAutocomplete: MatAutocomplete;
 
-  constructor(private store: GenreStore, private query: GenreQuery) {}
+  constructor(
+    private store: GenreStore,
+    private query: GenreQuery,
+    private trackService: TrackService
+  ) {}
 
   ngOnInit(): void {
     this.genres$ = this.query.selectAll();
@@ -45,12 +51,27 @@ export class GenreListComponent implements OnInit {
         })
       )
     );
+
+    this.activeGenres$
+      .pipe(
+        untilDestroyed(this),
+        filter((genres) => genres.length > 0),
+        map((genres) => genres.map((genre) => genre.trackIds)),
+        // @ts-ignore: Unreachable code error
+        map((arrTrackIds) => arrTrackIds.flat()),
+        tap((trackIds) =>
+          this.trackService.setFilter({
+            id: 'genres',
+            predicate: (track) => trackIds.includes(track.id),
+          })
+        )
+      )
+      .subscribe();
   }
 
   add(event: MatChipInputEvent): void {
     const input = event.input;
     const value = event.value;
-    console.log(value);
 
     // Set selected genre active
     if ((value || '').trim()) {

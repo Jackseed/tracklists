@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { first, tap } from 'rxjs/operators';
 import { PlaylistQuery } from 'src/app/playlists/+state';
+import { TrackService } from 'src/app/tracks/+state';
 import { Genre } from './genre.model';
 import { GenreQuery } from './genre.query';
 import { GenreState, GenreStore } from './genre.store';
@@ -12,7 +13,8 @@ export class GenreService extends CollectionService<GenreState> {
   constructor(
     store: GenreStore,
     private query: GenreQuery,
-    private playlistQuery: PlaylistQuery
+    private playlistQuery: PlaylistQuery,
+    private trackService: TrackService
   ) {
     super(store);
   }

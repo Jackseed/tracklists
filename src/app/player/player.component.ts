@@ -3,7 +3,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { SpotifyService } from '../spotify/spotify.service';
-import { TrackService, Track, TrackQuery } from '../tracks/+state';
+import { Track, TrackQuery } from '../tracks/+state';
 
 @UntilDestroy()
 @Component({
@@ -20,7 +20,6 @@ export class PlayerComponent implements OnInit {
 
   constructor(
     private query: TrackQuery,
-    private service: TrackService,
     private spotifyService: SpotifyService
   ) {}
 
