@@ -520,6 +520,20 @@ export class SpotifyService {
     );
   }
 
+  public async addTracksToPlaylistByBatches(
+    playlistId: string,
+    tracks: Track[]
+  ) {
+    const limit = 100;
+
+    // add tracks by batches
+    for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
+      const bactchTracks = tracks.slice(limit * i, limit * (i + 1));
+      console.log('batch ', i, bactchTracks);
+      this.addTracksToPlaylist(playlistId, bactchTracks);
+    }
+  }
+
   public async addToPlayback(trackUri: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
     const queryParam = `?uri=${trackUri}`;
@@ -537,6 +551,14 @@ export class SpotifyService {
     const user = this.authQuery.getActive();
     const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
     const body = { name };
+
+    return this.postRequests(baseUrl, '', body);
+  }
+
+  private async addTracksToPlaylist(playlistId: string, tracks: Track[]) {
+    const uris = tracks.map((track) => track.uri);
+    const baseUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+    const body = { uris };
 
     return this.postRequests(baseUrl, '', body);
   }

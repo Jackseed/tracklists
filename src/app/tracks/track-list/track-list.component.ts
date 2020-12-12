@@ -1,14 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 import { first, map, tap } from 'rxjs/operators';
+import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { SpotifyService } from 'src/app/spotify/spotify.service';
 import { Track, TrackService } from '../+state';
-
-export interface DialogData {
-  name: string;
-}
 
 @Component({
   selector: 'app-track-list',
@@ -17,12 +15,12 @@ export interface DialogData {
 })
 export class TrackListComponent implements OnInit {
   public tracks$: Observable<Track[]>;
-  public name: string;
 
   constructor(
     private service: TrackService,
     private spotifyService: SpotifyService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -47,12 +45,32 @@ export class TrackListComponent implements OnInit {
   openDialog(): void {
     const dialogRef = this.dialog.open(PlaylistFormComponent, {
       width: '250px',
-      data: { name: this.name },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('The dialog was closed ', result);
-      this.name = result;
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        const playlist: Playlist = await this.spotifyService.createPlaylist(
+          result
+        );
+        console.log(playlist);
+        this.tracks$
+          .pipe(
+            tap((tracks) =>
+              this.spotifyService.addTracksToPlaylistByBatches(
+                playlist.id,
+                tracks
+              )
+            ),
+            first()
+          )
+          .subscribe((_) => this.openSnackBar('Playlist saved!'));
+      }
+    });
+  }
+
+  private openSnackBar(message: string) {
+    this._snackBar.open(message, '', {
+      duration: 2000,
     });
   }
 }
