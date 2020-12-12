@@ -4,6 +4,9 @@
   <button mat-icon-button (click)="playAll()">
     <mat-icon>play_circle_outline</mat-icon>
   </button>
+  <button mat-icon-button (click)="savePlaylist()">
+    <mat-icon>save</mat-icon>
+  </button>
 </p>
 
 <div *ngFor="let track of tracks$ | async">

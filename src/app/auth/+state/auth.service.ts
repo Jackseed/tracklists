@@ -19,7 +19,7 @@ export class AuthService extends CollectionService<AuthState> {
   baseUrl: string = environment.spotify.apiUrl;
   responseType: string = 'token';
   redirectURI = environment.spotify.redirectURI;
-// TODO: change for necessary scope only
+  // TODO: change for necessary scope only
   scope = [
     'user-read-email',
     'user-read-currently-playing',
@@ -31,6 +31,8 @@ export class AuthService extends CollectionService<AuthState> {
     'playlist-read-private',
     'playlist-read-collaborative',
     'user-library-read',
+    'playlist-modify-public',
+    'playlist-modify-private',
   ].join('%20');
 
   constructor(

@@ -26,7 +26,6 @@ import {
   SpotifySavedTrack,
 } from '../tracks/+state/track.model';
 import { TrackService } from '../tracks/+state';
-import { guid } from '@datorama/akita';
 
 declare global {
   interface Window {
@@ -532,6 +531,14 @@ export class SpotifyService {
     const baseUrl = 'https://api.spotify.com/v1/me/player/next';
 
     return this.postRequests(baseUrl, '', null);
+  }
+
+  public async createPlaylist(name: string) {
+    const user = this.authQuery.getActive();
+    const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    const body = { name };
+
+    return this.postRequests(baseUrl, '', body);
   }
 
   private async postRequests(baseUrl: string, queryParam: string, body) {
