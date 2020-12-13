@@ -9,6 +9,9 @@
   </button>
 </p>
 
-<div *ngFor="let track of tracks$ | async">
-  <app-track-view [track]="track"></app-track-view>
-</div>
+<app-track-view
+  *ngFor="let track of tracks$ | async"
+  [track]="track"
+></app-track-view>
+
+<div #anchor></div>

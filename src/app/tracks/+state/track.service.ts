@@ -5,6 +5,7 @@ import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
+import { transaction } from '@datorama/akita';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -45,5 +46,23 @@ export class TrackService extends CollectionService<TrackState> {
     return this.trackFilters.selectAllByFilters({
       sortBy: 'id',
     });
+  }
+
+  public selectPage(page: number): Observable<Track[]> {
+    const perPage = 5;
+    const offset = page * perPage;
+
+    return this.trackFilters.selectAllByFilters({
+      sortBy: 'id',
+      filterBy: (entity, index) => index < offset + perPage,
+    }) as Observable<Track[]>;
+  }
+
+  @transaction()
+  private updateTweets(res) {
+    const nextPage = res.currentPage + 1;
+    this.store.add(res.data);
+    this.store.update({ hasMore: res.hasMore, page: nextPage });
+    this.store.setLoading(false);
   }
 }

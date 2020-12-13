@@ -1,4 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
@@ -6,17 +13,22 @@ import { first, map, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { SpotifyService } from 'src/app/spotify/spotify.service';
-import { Track, TrackService } from '../+state';
+import { Track, TrackQuery, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-list',
   templateUrl: './track-list.component.html',
   styleUrls: ['./track-list.component.css'],
 })
-export class TrackListComponent implements OnInit {
+export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('anchor') anchor: ElementRef<HTMLElement>;
   public tracks$: Observable<Track[]>;
+  public page: number = 0;
+
+  private observer: IntersectionObserver;
 
   constructor(
+    private query: TrackQuery,
     private service: TrackService,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -24,7 +36,20 @@ export class TrackListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.tracks$ = this.service.selectAll();
+    this.tracks$ = this.service.selectPage(this.query.getPage());
+    this.observer = new IntersectionObserver(([entry]) => {
+      entry.isIntersecting && this.onScroll();
+    });
+  }
+
+  ngAfterViewInit() {
+    this.observer.observe(this.anchor.nativeElement);
+  }
+
+  public onScroll() {
+    this.page++;
+    console.log('hello world');
+    this.tracks$ = this.service.selectPage(this.page);
   }
 
   public playAll() {
@@ -72,5 +97,9 @@ export class TrackListComponent implements OnInit {
     this._snackBar.open(message, '', {
       duration: 2000,
     });
+  }
+
+  ngOnDestroy() {
+    this.observer.disconnect();
   }
 }
