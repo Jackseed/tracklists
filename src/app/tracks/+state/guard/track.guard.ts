@@ -23,7 +23,7 @@ export class TrackGuard extends CollectionGuard<TrackState> {
         for (const playlist of playlists) {
           trackIds = trackIds.concat(playlist.trackIds);
         }
-        return this.service.syncManyDocs(trackIds.slice(0, 600));
+        return this.service.syncManyDocs(trackIds);
       })
     );
   }

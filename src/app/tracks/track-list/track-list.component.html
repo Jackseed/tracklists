@@ -1,6 +1,6 @@
 <h1>Tracklist</h1>
 <p>
-  {{ (tracks$ | async)?.length }} tracks
+  {{ this.trackNumber$ | async }} tracks
   <button mat-icon-button (click)="playAll()">
     <mat-icon>play_circle_outline</mat-icon>
   </button>
@@ -14,8 +14,7 @@
   [track]="track"
 ></app-track-view>
 
-<div *ngIf="loading | async">
+<div #anchor></div>
+<div *ngIf="hasMore$ | async">
   <mat-spinner></mat-spinner>
 </div>
-
-<div #anchor></div>
