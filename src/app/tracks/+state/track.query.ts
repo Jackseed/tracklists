@@ -30,8 +30,4 @@ export class TrackQuery extends QueryEntity<TrackState> {
       map((tracks) => tracks.map((track) => track.genres))
     );
   }
-
-  public getPage() {
-    return this.getValue().page;
-  }
 }

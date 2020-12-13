@@ -15,10 +15,7 @@ export type TrackUI = {
 
 export interface TrackState
   extends EntityState<Track, string>,
-    ActiveState<string> {
-  hasMore: boolean;
-  page: number;
-}
+    ActiveState<string> {}
 
 export interface TrackUIState extends EntityState<TrackUI> {}
 
@@ -28,7 +25,7 @@ export class TrackStore extends EntityStore<TrackState> {
   ui: EntityUIStore<TrackUIState>;
 
   constructor() {
-    super({ page: 0, hasMore: true });
+    super();
     this.createUIStore().setInitialEntityState({
       position: 0,
       paused: false,

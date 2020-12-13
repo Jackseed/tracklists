@@ -13,7 +13,7 @@ import { first, map, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { SpotifyService } from 'src/app/spotify/spotify.service';
-import { Track, TrackQuery, TrackService } from '../+state';
+import { Track, TrackQuery, TrackService, TrackStore } from '../+state';
 
 @Component({
   selector: 'app-track-list',
@@ -22,12 +22,13 @@ import { Track, TrackQuery, TrackService } from '../+state';
 })
 export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('anchor') anchor: ElementRef<HTMLElement>;
+  private observer: IntersectionObserver;
   public tracks$: Observable<Track[]>;
   public page: number = 0;
-
-  private observer: IntersectionObserver;
+  public loading: Observable<boolean>;
 
   constructor(
+    private store: TrackStore,
     private query: TrackQuery,
     private service: TrackService,
     private spotifyService: SpotifyService,
@@ -36,10 +37,11 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.tracks$ = this.service.selectPage(this.query.getPage());
+    this.tracks$ = this.service.getMore(this.page);
     this.observer = new IntersectionObserver(([entry]) => {
       entry.isIntersecting && this.onScroll();
     });
+    this.loading = this.query.selectLoading();
   }
 
   ngAfterViewInit() {
@@ -47,9 +49,10 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public onScroll() {
+    this.store.setLoading(true);
     this.page++;
-    console.log('hello world');
-    this.tracks$ = this.service.selectPage(this.page);
+    this.tracks$ = this.service.getMore(this.page);
+    this.store.setLoading(false);
   }
 
   public playAll() {
@@ -64,7 +67,6 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public savePlaylist() {
     this.openDialog();
-    // this.spotifyService.createPlaylist('yo');
   }
 
   openDialog(): void {

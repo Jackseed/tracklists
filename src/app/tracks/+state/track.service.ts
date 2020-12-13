@@ -43,26 +43,15 @@ export class TrackService extends CollectionService<TrackState> {
 
   selectAll(): Observable<Track[]> {
     // @ts-ignore zs it was not an hashMap with not asObject
-    return this.trackFilters.selectAllByFilters({
-      sortBy: 'id',
-    });
+    return this.trackFilters.selectAllByFilters();
   }
 
-  public selectPage(page: number): Observable<Track[]> {
+  public getMore(page: number): Observable<Track[]> {
     const perPage = 5;
     const offset = page * perPage;
 
     return this.trackFilters.selectAllByFilters({
-      sortBy: 'id',
       filterBy: (entity, index) => index < offset + perPage,
     }) as Observable<Track[]>;
-  }
-
-  @transaction()
-  private updateTweets(res) {
-    const nextPage = res.currentPage + 1;
-    this.store.add(res.data);
-    this.store.update({ hasMore: res.hasMore, page: nextPage });
-    this.store.setLoading(false);
   }
 }

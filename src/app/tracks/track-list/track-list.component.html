@@ -14,4 +14,8 @@
   [track]="track"
 ></app-track-view>
 
+<div *ngIf="loading | async">
+  <mat-spinner></mat-spinner>
+</div>
+
 <div #anchor></div>
