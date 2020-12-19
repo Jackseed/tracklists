@@ -41,13 +41,13 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
       entry.isIntersecting && this.onScroll();
     });
 
-    this.trackNumber$ = this.service
-      .selectAll()
-      .pipe(map((tracks) => tracks.length));
+    this.trackNumber$ = this.service.tracksLength$;
 
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
     );
+    this.tracks$.subscribe(console.log);
+    this.hasMore$.subscribe(console.log);
   }
 
   ngAfterViewInit() {
@@ -57,6 +57,9 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   public onScroll() {
     this.page++;
     this.tracks$ = this.service.getMore(this.page);
+    this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
+      map(([tracks, total]) => (tracks.length === total ? false : true))
+    );
   }
 
   public playAll() {

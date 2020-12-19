@@ -5,7 +5,7 @@ import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
-import { transaction } from '@datorama/akita';
+import { map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -50,8 +50,12 @@ export class TrackService extends CollectionService<TrackState> {
     const perPage = 5;
     const offset = page * perPage;
 
-    return this.trackFilters.selectAllByFilters({
-      filterBy: (entity, index) => index < offset + perPage,
-    }) as Observable<Track[]>;
+    return this.trackFilters
+      .selectAllByFilters()
+      .pipe(map((tracks: Track[]) => tracks.slice(0, offset)));
+  }
+
+  public get tracksLength$() {
+    return this.selectAll().pipe(map((tracks) => tracks.length));
   }
 }
