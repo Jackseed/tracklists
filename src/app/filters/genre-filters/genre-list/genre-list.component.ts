@@ -91,7 +91,6 @@ export class GenreListComponent implements OnInit {
 
   remove(genreId: string): void {
     this.store.removeActive(genreId);
-    this.trackService.removeFilter(genreId);
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {

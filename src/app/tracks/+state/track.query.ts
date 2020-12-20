@@ -22,7 +22,9 @@ export class TrackQuery extends QueryEntity<TrackState> {
   }
 
   getPaused(trackId: string): boolean {
-    return this.ui.getEntity(trackId).paused;
+    const track = this.ui.getEntity(trackId);
+    if (!track) return;
+    return track.paused;
   }
 
   selectGenres(): Observable<string[][]> {

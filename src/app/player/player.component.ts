@@ -29,7 +29,7 @@ export class PlayerComponent implements OnInit {
     this.track$
       .pipe(
         untilDestroyed(this),
-        filter(track => !track),
+        filter((track) => !!track),
         switchMap((track) => this.query.selectPosition(track.id)),
         map((position) => {
           this.value = position / 1000;
@@ -37,6 +37,7 @@ export class PlayerComponent implements OnInit {
       )
       .subscribe();
     this.paused$ = this.track$.pipe(
+      filter((track) => !!track),
       switchMap((track) => this.query.selectPaused(track.id))
     );
     // if the track is played, add 1 to value every sec
