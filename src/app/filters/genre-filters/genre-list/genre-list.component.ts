@@ -55,6 +55,9 @@ export class GenreListComponent implements OnInit {
     this.activeGenres$
       .pipe(
         untilDestroyed(this),
+        tap((genres) =>
+          genres.length === 0 ? this.trackService.removeFilter('genres') : false
+        ),
         filter((genres) => genres.length > 0),
         map((genres) => genres.map((genre) => genre.trackIds)),
         // @ts-ignore: Unreachable code error
@@ -88,6 +91,7 @@ export class GenreListComponent implements OnInit {
 
   remove(genreId: string): void {
     this.store.removeActive(genreId);
+    this.trackService.removeFilter(genreId);
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {

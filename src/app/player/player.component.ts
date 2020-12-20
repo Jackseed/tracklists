@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery } from '../tracks/+state';
 
@@ -29,6 +29,7 @@ export class PlayerComponent implements OnInit {
     this.track$
       .pipe(
         untilDestroyed(this),
+        filter(track => !track),
         switchMap((track) => this.query.selectPosition(track.id)),
         map((position) => {
           this.value = position / 1000;

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { first, tap } from 'rxjs/operators';
 import { PlaylistQuery } from 'src/app/playlists/+state';
-import { TrackService } from 'src/app/tracks/+state';
 import { Genre } from './genre.model';
 import { GenreQuery } from './genre.query';
 import { GenreState, GenreStore } from './genre.store';
@@ -13,8 +12,7 @@ export class GenreService extends CollectionService<GenreState> {
   constructor(
     store: GenreStore,
     private query: GenreQuery,
-    private playlistQuery: PlaylistQuery,
-    private trackService: TrackService
+    private playlistQuery: PlaylistQuery
   ) {
     super(store);
   }
@@ -39,6 +37,7 @@ export class GenreService extends CollectionService<GenreState> {
               // else remove it
             } else {
               const stateGenre = this.query.getEntity(genre.id);
+              if (!stateGenre) return;
               let filteredTrackIds: string[] = stateGenre.trackIds;
               for (const trackId of genre.trackIds) {
                 filteredTrackIds = filteredTrackIds.filter(

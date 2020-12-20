@@ -46,8 +46,6 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
     );
-    this.tracks$.subscribe(console.log);
-    this.hasMore$.subscribe(console.log);
   }
 
   ngAfterViewInit() {
