@@ -1,19 +1,25 @@
-import { Component, OnInit } from "@angular/core";
-import { FormGroup, FormBuilder, Validators } from "@angular/forms";
-import { AuthService, AuthQuery, User } from "../+state";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { AngularFireAnalytics } from "@angular/fire/analytics";
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { AuthService, AuthQuery, User } from '../+state';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AngularFireAnalytics } from '@angular/fire/analytics';
+import { Router } from '@angular/router';
+import { filter, tap } from 'rxjs/operators';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { Observable } from 'rxjs';
+import { AngularFireAuth } from '@angular/fire/auth';
 
+@UntilDestroy()
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
   form: FormGroup;
-  user: User;
-  serverMessage: string;
-  type: "login" | "signup" | "reset" = "signup";
+  user$: Observable<User>;
+  type: 'login' | 'signup' | 'reset' = 'signup';
   loading = false;
 
   constructor(
@@ -22,41 +28,50 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private analytics: AngularFireAnalytics,
+    private router: Router,
+    private afAuth: AngularFireAuth
   ) {}
 
   ngOnInit(): void {
-    this.user = this.query.getActive();
     this.form = this.fb.group({
-      email: ["", [Validators.required, Validators.email]],
-      password: ["", [Validators.minLength(6), Validators.required]],
-      passwordConfirm: ["", []]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.minLength(6), Validators.required]],
+      passwordConfirm: ['', []],
     });
   }
 
   async onSubmit() {
+    let errorMessage: string;
     this.loading = true;
     const email = this.email.value;
     const password = this.password.value;
     let snackBarMessage: string;
 
     if (this.isSignup) {
-      this.serverMessage = await this.service.emailSignup(email, password);
-      this.analytics.logEvent("email_saved");
-      snackBarMessage = "Account saved";
+      this.service
+        .emailSignup(email, password)
+        .then((_) => {
+          this.analytics.logEvent('email_saved');
+          snackBarMessage = 'Account saved';
+          this.router.navigateByUrl('/home');
+        })
+        .catch((error) => console.log(error));
     } else if (this.isLogin) {
-      this.serverMessage = await this.service.emailLogin(email, password);
-      this.analytics.logEvent("email_login");
-      snackBarMessage = "Successfully connected";
+      errorMessage = await this.service.emailLogin(email, password);
+      this.analytics.logEvent('email_login');
+      snackBarMessage = 'Successfully connected';
+      this.router.navigate(['/home']);
     } else if (this.isPasswordReset) {
-      this.serverMessage = await this.service.resetPassword(email);
-      this.analytics.logEvent("password_reset");
-      snackBarMessage = "Email sent";
+      errorMessage = await this.service.resetPassword(email);
+      this.analytics.logEvent('password_reset');
+      snackBarMessage = 'Email sent';
+      this.router.navigate(['/home']);
     }
-
-    if (!this.serverMessage) {
+    if (snackBarMessage) {
       this.snackBar.open(snackBarMessage);
       this.form.reset();
     }
+
     this.loading = false;
   }
 
@@ -65,27 +80,27 @@ export class LoginComponent implements OnInit {
   }
 
   get isLogin() {
-    return this.type === "login";
+    return this.type === 'login';
   }
 
   get isSignup() {
-    return this.type === "signup";
+    return this.type === 'signup';
   }
 
   get isPasswordReset() {
-    return this.type === "reset";
+    return this.type === 'reset';
   }
 
   get email() {
-    return this.form.get("email");
+    return this.form.get('email');
   }
 
   get password() {
-    return this.form.get("password");
+    return this.form.get('password');
   }
 
   get passwordConfirm() {
-    return this.form.get("passwordConfirm");
+    return this.form.get('passwordConfirm');
   }
 
   get passwordDoesMatch() {
@@ -93,10 +108,9 @@ export class LoginComponent implements OnInit {
 
     if (!isMatching) {
       this.passwordConfirm.setErrors({
-        notMatching: true
+        notMatching: true,
       });
     }
     return isMatching;
   }
-
 }

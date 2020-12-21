@@ -1,10 +1,10 @@
-import { Injectable } from "@angular/core";
-import { AuthState, AuthService, AuthStore } from "../+state";
-import { AngularFireAuth } from "@angular/fire/auth";
-import { CollectionGuardConfig, CollectionGuard } from "akita-ng-fire";
-import { switchMap, tap } from "rxjs/operators";
+import { Injectable } from '@angular/core';
+import { AuthState, AuthService, AuthStore } from '../+state';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { CollectionGuardConfig, CollectionGuard } from 'akita-ng-fire';
+import { filter, switchMap, tap } from 'rxjs/operators';
 
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 @CollectionGuardConfig({ awaitSync: true })
 export class ActiveGuard extends CollectionGuard<AuthState> {
   constructor(
@@ -17,6 +17,7 @@ export class ActiveGuard extends CollectionGuard<AuthState> {
 
   sync() {
     return this.afAuth.user.pipe(
+      filter((user) => !!user),
       tap((user) => this.store.setActive(user.uid)),
       switchMap((_) => this.service.syncCollection())
     );

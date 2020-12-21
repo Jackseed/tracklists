@@ -53,13 +53,13 @@ export class SpotifyService {
   public async initializePlayer() {
     // @ts-ignore: Unreachable code error
     const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
-    const user = await this.authQuery.getActive();
+    const token = this.authQuery.token;
 
     // instantiate the player
     const player = new Player({
       name: 'Listy player',
       getOAuthToken: (callback) => {
-        callback(user.token);
+        callback(token);
       },
     });
 

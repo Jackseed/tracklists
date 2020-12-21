@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService, SpotifyUser } from '../auth/+state';
+import { AuthService, SpotifyUser, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery } from '../tracks/+state';
 
@@ -13,6 +13,7 @@ import { Track, TrackQuery } from '../tracks/+state';
 export class HomepageComponent implements OnInit {
   spotifyUser$: Observable<SpotifyUser>;
   activeTrack$: Observable<Track>;
+  user$: Observable<User>;
   constructor(
     private authService: AuthService,
     private spotifyService: SpotifyService,

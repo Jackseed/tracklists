@@ -3,8 +3,8 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { first, tap } from 'rxjs/operators';
-import { createUser, SpotifyUser } from './auth.model';
+import { filter, first, tap } from 'rxjs/operators';
+import { createUser, SpotifyUser, User } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -56,10 +56,8 @@ export class AuthService extends CollectionService<AuthState> {
 
   public async getSpotifyActiveUser(): Promise<Observable<SpotifyUser>> {
     const user = await this.query.getActive();
-    const headers = new HttpHeaders().set(
-      'Authorization',
-      'Bearer ' + user.token
-    );
+    const token = this.query.token;
+    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
     const spotifyUser = await this.http.get<SpotifyUser>(this.baseUrl, {
       headers,
     });
@@ -67,10 +65,12 @@ export class AuthService extends CollectionService<AuthState> {
       .pipe(
         // save spotifyId
         tap((spotifyUser: SpotifyUser) => {
-          this.db
-            .collection(this.currentPath)
-            .doc(user.id)
-            .update({ spotifyId: spotifyUser.id });
+          if (user) {
+            this.db
+              .collection(this.currentPath)
+              .doc(user.id)
+              .update({ spotifyId: spotifyUser.id });
+          }
         }, first())
       )
       .subscribe();
@@ -98,31 +98,22 @@ export class AuthService extends CollectionService<AuthState> {
     const url = this.router.url;
     const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
     const userId = this.query.getActiveId();
-    this.db.collection(this.currentPath).doc(userId).update({ token });
+    this.db.collection('users').doc(userId).update({ token });
   }
 
-  private setUser(id: string, email: string) {
+  private async setUser(id: string, email: string): Promise<User> {
     const user = createUser({ id, email });
-    this.db.collection(this.currentPath).doc(id).set(user);
+    await this.db.collection(this.currentPath).doc(id).set(user);
+    return user;
   }
 
-  public async emailSignup(email: string, password: string): Promise<string> {
-    let errorMessage: string;
-
-    try {
-      await this.afAuth.createUserWithEmailAndPassword(email, password);
-
-      const user = await this.afAuth.authState.pipe(first()).toPromise();
-
-      if (user) {
-        this.setUser(user.uid, user.email);
-      }
-      this.router.navigate(['/home']);
-    } catch (err) {
-      errorMessage = err;
-    }
-
-    return errorMessage;
+  public async emailSignup(email: string, password: string) {
+    return this.afAuth
+      .createUserWithEmailAndPassword(email, password)
+      .then((user) => {
+        return this.setUser(user.user.uid, user.user.email);
+      })
+      .catch((err) => console.log(err));
   }
 
   public async emailLogin(email: string, password: string): Promise<string> {
