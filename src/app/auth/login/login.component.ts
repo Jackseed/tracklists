@@ -1,15 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { AuthService, AuthQuery, User } from '../+state';
+import { AuthService, User } from '../+state';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AngularFireAnalytics } from '@angular/fire/analytics';
 import { Router } from '@angular/router';
-import { filter, tap } from 'rxjs/operators';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/auth';
 
-@UntilDestroy()
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -23,7 +20,6 @@ export class LoginComponent implements OnInit {
   loading = false;
 
   constructor(
-    private query: AuthQuery,
     public service: AuthService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
@@ -67,6 +63,7 @@ export class LoginComponent implements OnInit {
       snackBarMessage = 'Email sent';
       this.router.navigate(['/home']);
     }
+    if (errorMessage) console.log(errorMessage);
     if (snackBarMessage) {
       this.snackBar.open(snackBarMessage);
       this.form.reset();

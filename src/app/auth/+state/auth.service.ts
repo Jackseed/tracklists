@@ -3,7 +3,7 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { filter, first, tap } from 'rxjs/operators';
+import { first, tap } from 'rxjs/operators';
 import { createUser, SpotifyUser, User } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
