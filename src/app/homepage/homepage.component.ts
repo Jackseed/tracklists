@@ -5,7 +5,7 @@ import { AuthQuery, AuthService, SpotifyUser, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
-import { Playlist } from 'src/app/playlists/+state';
+import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,12 +21,14 @@ export class HomepageComponent implements OnInit {
   public user$: Observable<User>;
   public tracks$: Observable<Track[]>;
   public trackNumber$: Observable<number>;
+  public activePlaylistIds$: Observable<string[]>;
 
   constructor(
     private authQuery: AuthQuery,
     private authService: AuthService,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
+    private playlistQuery: PlaylistQuery,
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -44,6 +46,9 @@ export class HomepageComponent implements OnInit {
     this.spotifyService.initializePlayer();
     this.activeTrack$ = this.trackQuery.selectActive();
     this.trackNumber$ = this.trackService.tracksLength$;
+    this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
+      string[]
+    >;
   }
 
   public loginSpotify() {

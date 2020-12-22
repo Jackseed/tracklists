@@ -1,21 +1,29 @@
-:host ::ng-deep .p-slider-range {
-  background: #69F0AE;
+:host ::ng-deep .p-slider .p-slider-range {
+  background: linear-gradient(to right, #def0e7, #97ecc3 50%, #05f782 100%);
 }
 
+.ui-slider-handle {
+  background: white;
+}
 :host ::ng-deep .p-slider-handle {
-  background: #69F0AE;
+  background: #69f0ae;
+  border: 1px solid black;
+}
+
+:host ::ng-deep .p-slider-handle:first-of-type {
+  background: white;
   border: 1px solid black;
 }
 
 :host ::ng-deep .p-slider:not(.p-disabled) .p-slider-handle:hover {
-  background: #69F0AE;
-  border-color: #69F0AE;
+  background: #69f0ae;
+  border-color: #69f0ae;
 }
 
 :host ::ng-deep .p-slider .p-slider-handle:focus {
   outline: 0 none;
   outline-offset: 0;
-  box-shadow: 0 0 0 0.2rem #69F0AE;
+  box-shadow: 0 0 0 0.2rem #69f0ae;
 }
 .margin-top {
   margin-top: 12px;

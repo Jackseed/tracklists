@@ -3,81 +3,106 @@
   fxFlexFill
   fxLayout="row"
 >
-  <!----------------- LEFT BAR ----------------->
-  <div fxFlexOffset="10" fxFlex="25" fxFlexFill>
-    <div fxLayout="column" fxFlexFill>
-      <div fxFlexOffset="10" fxFlex="90" class="left-bar">
-        <mat-tab-group mat-align-tabs="center" fxFlexFill>
-          <mat-tab label="Playlists">
-            <div fxLayout="row" fxLayoutAlign="center center">
-              <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
-            </div>
-          </mat-tab>
-          <mat-tab label="Filters">
-            <div fxLayout="row" fxLayoutAlign="center center">
-              <div fxFlex="80">
-                <app-genre-list></app-genre-list>
-                <app-filter-list></app-filter-list>
+  <div
+    *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
+    fxFlexFill
+    fxLayout="row"
+  >
+    <!----------------- LEFT BAR ----------------->
+    <div fxFlexOffset="10" fxFlex="25" fxFlexFill>
+      <div fxLayout="column" fxFlexFill>
+        <div fxFlexOffset="10" fxFlex="90" class="left-bar">
+          <mat-tab-group mat-align-tabs="center" fxFlexFill>
+            <mat-tab label="Playlists">
+              <div fxLayout="row" fxLayoutAlign="center center">
+                <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
               </div>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
+            </mat-tab>
+            <mat-tab label="Filters">
+              <div fxLayout="row" fxLayoutAlign="center center">
+                <div fxFlex="80">
+                  <app-genre-list></app-genre-list>
+                  <app-filter-list></app-filter-list>
+                </div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
       </div>
     </div>
-  </div>
-  <!----------------- RIGHT BAR ----------------->
-  <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
-    <div fxLayout="column" fxFlexFill>
+    <!----------------- RIGHT BAR ----------------->
+    <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
       <div fxLayout="column" fxFlexFill>
-        <div fxFlexOffset="5" class="header" fxFlex="15">
-          <h1>Tracklist</h1>
-          <mat-divider></mat-divider>
-          <p>
-            {{ this.trackNumber$ | async }} tracks
-            <button mat-icon-button (click)="playAll()">
-              <mat-icon>play_circle_outline</mat-icon>
-            </button>
-            <button mat-icon-button (click)="savePlaylist()">
-              <mat-icon>save</mat-icon>
-            </button>
-          </p>
-        </div>
-        <!----------------- TRACK LIST ----------------->
-        <div
-          *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
-          class="track-list"
-          fxFlex="80"
-        >
-          <app-track-list></app-track-list>
-        </div>
-
-        <!----------------- NO DATA ----------------->
-        <ng-template #noPlaylist>
-          <div fxFlexFill fxAlign="center center">
-            <h3>Almost there</h3>
+        <div fxLayout="column" fxFlexFill>
+          <div fxFlexOffset="5" class="header" fxFlex="15">
+            <h1>Tracklist</h1>
+            <mat-divider></mat-divider>
             <p>
-              We need to load your songs from Spotify, it may take a few
-              minutes.
+              {{ this.trackNumber$ | async }} tracks
+              <button mat-icon-button (click)="playAll()">
+                <mat-icon>play_circle_outline</mat-icon>
+              </button>
+              <button mat-icon-button (click)="savePlaylist()">
+                <mat-icon>save</mat-icon>
+              </button>
             </p>
-            <button mat-raised-button color="accent" (click)="loadPlaylist()">
-              Load music
-            </button>
           </div>
-        </ng-template>
-        <!----------------- PLAYER ----------------->
-        <div *ngIf="activeTrack$ | async">
-          <app-player [track$]="activeTrack$"></app-player>
+          <!----------------- TRACK LIST ----------------->
+          <div
+            class="track-list"
+            fxFlex="80"
+            *ngIf="
+              (activePlaylistIds$ | async)?.length > 0;
+              else noActivePlaylist
+            "
+          >
+            <app-track-list></app-track-list>
+          </div>
+
+          <!----------------- PLAYER ----------------->
+          <div *ngIf="activeTrack$ | async">
+            <app-player [track$]="activeTrack$"></app-player>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+<!----------------- NOT CONNECTED TO SPOTIFY ----------------->
 <ng-template #notConnected>
-  <div fxFlexFill fxAlign="center center">
-    <h3>Log in to Spotify</h3>
-    <p>You need to be connected to load your songs.</p>
-    <button mat-raised-button color="accent" (click)="loginSpotify()">
-      Login
-    </button>
+  <div fxFlexFill fxLayoutAlign="center center">
+    <div fxFlex class="text-centered">
+      <h2>Log in to Spotify</h2>
+      <p>You need to be connected to load your songs.</p>
+      <button mat-raised-button color="accent" (click)="loginSpotify()">
+        Login
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<!----------------- NO TRACKS SAVED ----------------->
+<ng-template #noPlaylist>
+  <div fxFlexFill fxLayoutAlign="center center">
+    <div fxFlex class="text-centered">
+      <!--TODO: ADD A LOADER-->
+      <h2>Almost there</h2>
+      <p>We need to load your songs from Spotify, it may take a few minutes.</p>
+      <button mat-raised-button color="accent" (click)="loadPlaylist()">
+        Load music
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<!----------------- NO PLAYLIST ACTIVE ----------------->
+<ng-template #noActivePlaylist>
+  <div fxFlexFill fxLayoutAlign="center start">
+    <div fxFlex class="margin-top">
+      <!--TODO: ADD A LOADER-->
+      <h2 class="text-centered">No playlist selected</h2>
+      <p class="text-centered">Select a playlist to load its tracks</p>
+      <img class="arrow" src="assets/arrow.png" />
+    </div>
   </div>
 </ng-template>
