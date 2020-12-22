@@ -4,11 +4,10 @@
   fxLayout="row"
 >
   <!----------------- LEFT BAR ----------------->
-
-  <div fxFlex="40" fxFlexFill class="left-bar">
-    <div fxLayout="column">
-      <div fxFlexOffset="10">
-        <mat-tab-group mat-align-tabs="center">
+  <div fxFlexOffset="10" fxFlex="25" fxFlexFill>
+    <div fxLayout="column" fxFlexFill>
+      <div fxFlexOffset="10" fxFlex="90" class="left-bar">
+        <mat-tab-group mat-align-tabs="center" fxFlexFill>
           <mat-tab label="Playlists">
             <div fxLayout="row" fxLayoutAlign="center center">
               <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
@@ -27,11 +26,12 @@
     </div>
   </div>
   <!----------------- RIGHT BAR ----------------->
-  <div fxFlex="50" fxFlexOffset="5" fxFlexFill>
+  <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
     <div fxLayout="column" fxFlexFill>
-      <div fxFlexOffset="5" fxLayout="column" fxFlexFill>
-        <div class="header" fxFlex="15">
+      <div fxLayout="column" fxFlexFill>
+        <div fxFlexOffset="5" class="header" fxFlex="15">
           <h1>Tracklist</h1>
+          <mat-divider></mat-divider>
           <p>
             {{ this.trackNumber$ | async }} tracks
             <button mat-icon-button (click)="playAll()">
@@ -46,7 +46,7 @@
         <div
           *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
           class="track-list"
-          fxFlex="60"
+          fxFlex="80"
         >
           <app-track-list></app-track-list>
         </div>

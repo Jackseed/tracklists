@@ -23,6 +23,7 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
 import { FormsModule } from '@angular/forms';
 import { PlaylistsModule } from './playlists/playlists.module';
 import { MatTabsModule } from '@angular/material/tabs';
+import {MatDividerModule} from '@angular/material/divider';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     FlexLayoutModule,
     MatSliderModule,
     MatTabsModule,
+    MatDividerModule,
     environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],

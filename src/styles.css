@@ -10,7 +10,8 @@ body {
 }
 
 .mat-card {
-  background: #000000;
+  background: #1f1f1f;
+  color: rgb(230, 230, 230);
 }
 
 .mat-tab-label {
@@ -18,7 +19,7 @@ body {
 }
 
 h1 {
-  margin: 0;
+  margin: 8px !important;
   font-size: calc(1.2rem + 2vmin) !important;
   font-weight: normal;
 }

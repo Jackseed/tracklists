@@ -4,6 +4,8 @@
 ></app-track-view>
 
 <div #anchor></div>
-<div *ngIf="hasMore$ | async">
-  <mat-spinner></mat-spinner>
+<div *ngIf="hasMore$ | async" fxLayoutAlign="center center">
+  <div fxFlex='nogrow'>
+    <mat-spinner></mat-spinner>
+  </div>
 </div>
