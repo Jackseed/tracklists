@@ -1,36 +1,53 @@
-<div *ngIf="spotifyUser$ | async as user; else notConnected">
-  <app-navbar></app-navbar>
+<div
+  *ngIf="spotifyUser$ | async as user; else notConnected"
+  fxFlexFill
+  fxLayout="row"
+  class="margin-top"
+>
+  <!----------------- LEFT BAR ----------------->
 
-  <div *ngIf="activeTrack$ | async">
-    <app-player [track$]="activeTrack$"></app-player>
+  <div fxFlex="40" fxFlexFill>
+    <mat-tab-group mat-align-tabs="center">
+      <mat-tab label="Playlists">
+        <div fxLayout="row" fxLayoutAlign="center center">
+          <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Filters">
+        <div fxLayout="row" fxLayoutAlign="center center">
+          <div fxFlex="80">
+            <app-genre-list></app-genre-list>
+            <app-filter-list></app-filter-list>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   </div>
-
-  <div fxLayout="row" class="margin-top">
-    <div fxFlex="20" fxFlexOffset="10" class="margin-10">
-      <app-genre-list></app-genre-list>
-      <div class="margin-top">
-        <app-filter-list></app-filter-list>
-      </div>
-      <div class="margin-top">
-        <app-playlist-list></app-playlist-list>
-      </div>
+  <!----------------- RIGHT BAR ----------------->
+  <div fxFlex="50" fxFlexOffset="5">
+    <!----------------- TRACK LIST ----------------->
+    <div
+      *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
+      class="track-list"
+    >
+      <app-track-list></app-track-list>
     </div>
 
-    <div fxFlex="40" fxFlexOffset="10">
-      <div *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist">
-        <app-track-list></app-track-list>
+    <!----------------- NO DATA ----------------->
+    <ng-template #noPlaylist>
+      <div fxFlexFill fxAlign="center center">
+        <h3>Almost there</h3>
+        <p>
+          We need to load your songs from Spotify, it may take a few minutes.
+        </p>
+        <button mat-raised-button color="accent" (click)="loadPlaylist()">
+          Load music
+        </button>
       </div>
-      <ng-template #noPlaylist>
-        <div fxFlexFill fxAlign="center center">
-          <h3>Almost there</h3>
-          <p>
-            We need to load your songs from Spotify, it may take a few minutes.
-          </p>
-          <button mat-raised-button color="accent" (click)="loadPlaylist()">
-            Load music
-          </button>
-        </div>
-      </ng-template>
+    </ng-template>
+    <!----------------- PLAYER ----------------->
+    <div *ngIf="activeTrack$ | async">
+      <app-player [track$]="activeTrack$"></app-player>
     </div>
   </div>
 </div>

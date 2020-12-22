@@ -11,3 +11,14 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+.mat-card {
+  background: #000000;
+}
+
+.mat-tab-label {
+  font-size: calc(1rem + 2.5vmin);
+}
+
+h1 {
+  font-size: calc(1.5rem + 3.5vmin);
+}

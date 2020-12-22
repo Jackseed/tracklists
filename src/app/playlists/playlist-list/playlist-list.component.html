@@ -1,8 +1,5 @@
 <div *ngIf="playlists$ | async as playlists">
   <mat-card>
-    <mat-card-header>
-      <mat-card-title>Playlists</mat-card-title>
-    </mat-card-header>
     <mat-card-content>
       <div *ngFor="let playlist of playlists">
         <app-playlist-view [playlist]="playlist"></app-playlist-view>

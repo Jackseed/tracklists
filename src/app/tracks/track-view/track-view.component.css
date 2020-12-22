@@ -1,3 +1,7 @@
 .card {
   margin: 12px;
 }
+
+.mat-card {
+  background: #272727;
+}
