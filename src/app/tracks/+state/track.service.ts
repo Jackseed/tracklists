@@ -47,7 +47,7 @@ export class TrackService extends CollectionService<TrackState> {
   }
 
   public getMore(page: number): Observable<Track[]> {
-    const perPage = 5;
+    const perPage = 15;
     const offset = page * perPage;
 
     return this.trackFilters

@@ -3,5 +3,18 @@
 }
 
 .mat-card {
+  background: #131313;
+  margin: 0;
+}
+
+.mat-card-avatar {
+  border-radius: 0;
+}
+
+.mat-card-subtitle {
+  margin-bottom: 0;
+}
+
+.mat-card:hover {
   background: #272727;
 }

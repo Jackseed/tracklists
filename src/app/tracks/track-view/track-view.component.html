@@ -1,6 +1,6 @@
 <div fxLayout="row" fxLayoutAlign="center center">
   <mat-card class="card" fxFlex fxFlexAlign="center center">
-    <mat-card-header>
+    <mat-card-header fxLayout="row" fxLayoutAlign="center center">
       <!-- TODO: use square images to respect spotify policy --->
       <div
         mat-card-avatar
@@ -9,17 +9,17 @@
           'background-size': 'cover'
         }"
       ></div>
-      <mat-card-title>{{ track.name }}</mat-card-title>
-      <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
-    </mat-card-header>
-
-    <mat-card-actions>
+      <div fxFlex="nogrow">
+        <mat-card-title>{{ track.name }}</mat-card-title>
+        <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
+      </div>
+      <div fxFlex></div>
       <button mat-icon-button (click)="play(track.uri)">
         <mat-icon>play_circle_outline</mat-icon>
       </button>
       <button mat-icon-button (click)="addoToPlayback(track.uri)">
         <mat-icon>playlist_add</mat-icon>
       </button>
-    </mat-card-actions>
+    </mat-card-header>
   </mat-card>
 </div>

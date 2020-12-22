@@ -2,52 +2,73 @@
   *ngIf="spotifyUser$ | async as user; else notConnected"
   fxFlexFill
   fxLayout="row"
-  class="margin-top"
 >
   <!----------------- LEFT BAR ----------------->
 
-  <div fxFlex="40" fxFlexFill>
-    <mat-tab-group mat-align-tabs="center">
-      <mat-tab label="Playlists">
-        <div fxLayout="row" fxLayoutAlign="center center">
-          <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
-        </div>
-      </mat-tab>
-      <mat-tab label="Filters">
-        <div fxLayout="row" fxLayoutAlign="center center">
-          <div fxFlex="80">
-            <app-genre-list></app-genre-list>
-            <app-filter-list></app-filter-list>
-          </div>
-        </div>
-      </mat-tab>
-    </mat-tab-group>
+  <div fxFlex="40" fxFlexFill class="left-bar">
+    <div fxLayout="column">
+      <div fxFlexOffset="10">
+        <mat-tab-group mat-align-tabs="center">
+          <mat-tab label="Playlists">
+            <div fxLayout="row" fxLayoutAlign="center center">
+              <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
+            </div>
+          </mat-tab>
+          <mat-tab label="Filters">
+            <div fxLayout="row" fxLayoutAlign="center center">
+              <div fxFlex="80">
+                <app-genre-list></app-genre-list>
+                <app-filter-list></app-filter-list>
+              </div>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </div>
   </div>
   <!----------------- RIGHT BAR ----------------->
-  <div fxFlex="50" fxFlexOffset="5">
-    <!----------------- TRACK LIST ----------------->
-    <div
-      *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
-      class="track-list"
-    >
-      <app-track-list></app-track-list>
-    </div>
+  <div fxFlex="50" fxFlexOffset="5" fxFlexFill>
+    <div fxLayout="column" fxFlexFill>
+      <div fxFlexOffset="5" fxLayout="column" fxFlexFill>
+        <div class="header" fxFlex="15">
+          <h1>Tracklist</h1>
+          <p>
+            {{ this.trackNumber$ | async }} tracks
+            <button mat-icon-button (click)="playAll()">
+              <mat-icon>play_circle_outline</mat-icon>
+            </button>
+            <button mat-icon-button (click)="savePlaylist()">
+              <mat-icon>save</mat-icon>
+            </button>
+          </p>
+        </div>
+        <!----------------- TRACK LIST ----------------->
+        <div
+          *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
+          class="track-list"
+          fxFlex="60"
+        >
+          <app-track-list></app-track-list>
+        </div>
 
-    <!----------------- NO DATA ----------------->
-    <ng-template #noPlaylist>
-      <div fxFlexFill fxAlign="center center">
-        <h3>Almost there</h3>
-        <p>
-          We need to load your songs from Spotify, it may take a few minutes.
-        </p>
-        <button mat-raised-button color="accent" (click)="loadPlaylist()">
-          Load music
-        </button>
+        <!----------------- NO DATA ----------------->
+        <ng-template #noPlaylist>
+          <div fxFlexFill fxAlign="center center">
+            <h3>Almost there</h3>
+            <p>
+              We need to load your songs from Spotify, it may take a few
+              minutes.
+            </p>
+            <button mat-raised-button color="accent" (click)="loadPlaylist()">
+              Load music
+            </button>
+          </div>
+        </ng-template>
+        <!----------------- PLAYER ----------------->
+        <div *ngIf="activeTrack$ | async">
+          <app-player [track$]="activeTrack$"></app-player>
+        </div>
       </div>
-    </ng-template>
-    <!----------------- PLAYER ----------------->
-    <div *ngIf="activeTrack$ | async">
-      <app-player [track$]="activeTrack$"></app-player>
     </div>
   </div>
 </div>
