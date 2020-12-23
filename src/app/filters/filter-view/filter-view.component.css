@@ -28,3 +28,29 @@
 .margin-top {
   margin-top: 12px;
 }
+
+
+/* test with smaller bar & sliders */
+
+/* sliders */
+/* :host ::ng-deep .p-slider-handle {
+  background: #69f0ae;
+  border: 1px solid black;
+  height: 0.7rem;
+  width: 0.7rem;
+}
+ */
+/* :host ::ng-deep .p-slider-handle-active {
+  background: white;
+  border: 1px solid black;
+} */
+
+/* horizontal bar */
+/* :host ::ng-deep .p-slider.p-slider-horizontal .p-slider-handle {
+  margin-top: -0.35rem;
+} */
+
+/* horizontal bar */
+/* :host ::ng-deep .p-slider.p-slider-horizontal {
+  height: 0.2rem;
+} */

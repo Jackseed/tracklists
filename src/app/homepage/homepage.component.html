@@ -4,7 +4,10 @@
   fxLayout="row"
 >
   <div
-    *ngIf="(user$ | async)?.playlistIds.length > 0; else noPlaylist"
+    *ngIf="
+      (user$ | async)?.playlistIds.length > 0;
+      else noTracks
+    "
     fxFlexFill
     fxLayout="row"
   >
@@ -82,15 +85,25 @@
 </ng-template>
 
 <!----------------- NO TRACKS SAVED ----------------->
-<ng-template #noPlaylist>
-  <div fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex class="text-centered">
-      <!--TODO: ADD A LOADER-->
-      <h2>Almost there</h2>
-      <p>We need to load your songs from Spotify, it may take a few minutes.</p>
-      <button mat-raised-button color="accent" (click)="loadPlaylist()">
-        Load music
-      </button>
+<ng-template #noTracks>
+  <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
+    <div fxFlex="nogrow">
+      <div fxFlex="nogrow" class="text-centered">
+        <h2>Almost there</h2>
+        <p>
+          We need to load your songs from Spotify, it may take a few minutes.
+        </p>
+        <button mat-raised-button color="accent" (click)="loadPlaylist()">
+          Load music
+        </button>
+      </div>
+    </div>
+    <div
+      fxFlex="nogrow"
+      class="text-centered margin-5"
+      *ngIf="(isStoreLoading$ | async)"
+    >
+      <mat-spinner></mat-spinner>
     </div>
   </div>
 </ng-template>
@@ -99,7 +112,6 @@
 <ng-template #noActivePlaylist>
   <div fxFlexFill fxLayoutAlign="center start">
     <div fxFlex class="margin-top">
-      <!--TODO: ADD A LOADER-->
       <h2 class="text-centered">No playlist selected</h2>
       <p class="text-centered">Select a playlist to load its tracks</p>
       <img class="arrow" src="assets/arrow.png" />

@@ -23,7 +23,8 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
 import { FormsModule } from '@angular/forms';
 import { PlaylistsModule } from './playlists/playlists.module';
 import { MatTabsModule } from '@angular/material/tabs';
-import {MatDividerModule} from '@angular/material/divider';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import {MatDividerModule} from '@angular/material/divider';
     MatSliderModule,
     MatTabsModule,
     MatDividerModule,
+    MatProgressSpinnerModule,
     environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],

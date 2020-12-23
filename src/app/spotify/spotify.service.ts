@@ -12,10 +12,8 @@ import {
   tap,
 } from 'rxjs/operators';
 import firebase from 'firebase/app';
-import { AuthQuery, AuthService } from '../auth/+state';
+import { AuthQuery, AuthService, AuthStore } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
-import { TrackStore } from '../tracks/+state/track.store';
-import { TrackQuery } from '../tracks/+state/track.query';
 import {
   Track,
   Artist,
@@ -24,8 +22,10 @@ import {
   SpotifyAudioFeatures,
   SpotifyPlaylistTrack,
   SpotifySavedTrack,
-} from '../tracks/+state/track.model';
-import { TrackService } from '../tracks/+state';
+  TrackQuery,
+  TrackService,
+  TrackStore,
+} from '../tracks/+state';
 
 declare global {
   interface Window {
@@ -42,6 +42,7 @@ export class SpotifyService {
   db = firebase.firestore();
 
   constructor(
+    private authStore: AuthStore,
     private authQuery: AuthQuery,
     private authService: AuthService,
     private trackStore: TrackStore,
@@ -96,6 +97,7 @@ export class SpotifyService {
   }
 
   public async savePlaylists() {
+    this.authStore.setLoading(true);
     // get active user's playlists by batches
     const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
     // extract the tracks
@@ -240,13 +242,16 @@ export class SpotifyService {
       });
     });
 
-    batchArray.forEach(
-      async (batch) =>
-        await batch
-          .commit()
-          .then((_) => console.log(`batch of genres saved`))
-          .catch((error) => console.log(error, batch))
-    );
+    batchArray.forEach(async (batch, i, batches) => {
+      await batch
+        .commit()
+        .then((_) => console.log(`batch of genres saved`))
+        .catch((error) => console.log(error, batch));
+      if (i === batches.length - 1) {
+        console.log('coucou');
+        this.authStore.setLoading(false);
+      }
+    });
   }
 
   private async getLikedTracksByBatches(): Promise<Track[]> {
@@ -460,10 +465,12 @@ export class SpotifyService {
   public async getAudioFeatures(trackIds: string[]): Promise<Track[]> {
     const url = 'https://api.spotify.com/v1/audio-features/';
     let queryParam: string = '?ids=';
+    // add all the trackIds
     for (const trackId of trackIds) {
       queryParam = queryParam + trackId + ',';
     }
-
+    // remove last comma
+    queryParam = queryParam.substring(0, queryParam.length - 1);
     return await (await this.getPromisedObjects(url, queryParam))
       .pipe(
         map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>

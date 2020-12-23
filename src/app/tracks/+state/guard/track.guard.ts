@@ -3,13 +3,17 @@ import { CollectionGuard } from 'akita-ng-fire';
 import { switchMap } from 'rxjs/operators';
 import { PlaylistQuery } from 'src/app/playlists/+state';
 import { TrackService } from '../track.service';
-import { TrackState } from '../track.store';
+import { TrackState, TrackStore } from '../track.store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TrackGuard extends CollectionGuard<TrackState> {
-  constructor(service: TrackService, private playlistQuery: PlaylistQuery) {
+  constructor(
+    service: TrackService,
+    private store: TrackStore,
+    private playlistQuery: PlaylistQuery
+  ) {
     super(service);
   }
 
@@ -23,6 +27,7 @@ export class TrackGuard extends CollectionGuard<TrackState> {
         for (const playlist of playlists) {
           trackIds = trackIds.concat(playlist.trackIds);
         }
+        this.store.set({});
         return this.service.syncManyDocs(trackIds);
       })
     );

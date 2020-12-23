@@ -22,6 +22,7 @@ export class HomepageComponent implements OnInit {
   public tracks$: Observable<Track[]>;
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
+  public isStoreLoading$: Observable<boolean>;
 
   constructor(
     private authQuery: AuthQuery,
@@ -49,6 +50,8 @@ export class HomepageComponent implements OnInit {
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]
     >;
+    this.isStoreLoading$ = this.authQuery.selectLoading();
+    this.authQuery.selectLoading().subscribe(console.log);
   }
 
   public loginSpotify() {
