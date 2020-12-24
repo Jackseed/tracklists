@@ -14,6 +14,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { FlexLayoutModule } from '@angular/flex-layout';
+
 @NgModule({
   declarations: [
     FilterViewComponent,
@@ -34,6 +36,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatChipsModule,
     MatIconModule,
+    FlexLayoutModule,
   ],
   exports: [
     FilterViewComponent,

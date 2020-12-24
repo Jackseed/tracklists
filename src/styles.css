@@ -6,7 +6,6 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 .mat-card {
@@ -20,26 +19,51 @@ body {
 
 h1 {
   margin: 8px !important;
-  font-size: calc(1.2rem + 2vmin) !important;
+  font-size: calc(1.2rem + 3vmin) !important;
   font-weight: normal;
+  font-family: "Yantramanav", sans-serif !important;
 }
 
 h2 {
   margin: 0;
-  font-size: calc(1rem + 2.5vmin);
+  font-size: calc(1rem + 2.5vmin) !important;
   font-weight: normal;
+  font-family: "Yantramanav", sans-serif !important;
 }
 h3 {
-  margin: 0;
+  margin: 0 !important;
   font-size: calc(1.1rem + 1.5vmin);
   font-weight: normal;
+  font-family: "Yantramanav", sans-serif !important;
 }
 p {
   margin: 0;
   font-size: calc(0.8rem + 0.5vmin);
   font-weight: normal;
+  font-family: "Raleway", "Helvetica Neue", sans-serif;
 }
 span {
   margin: 0;
   font-size: calc(0.7rem + 0.5vmin);
+  font-family: "Raleway", "Helvetica Neue", sans-serif;
+}
+
+.mat-tab-label {
+  margin: 0;
+  font-size: calc(1rem + 2.5vmin) !important;
+  font-weight: normal;
+  font-family: "Yantramanav", sans-serif !important;
+}
+
+.mat-card-title {
+  margin: 0;
+  font-size: calc(0.8rem + 0.5vmin);
+  font-weight: normal;
+  font-family: "Yantramanav", "Helvetica Neue", sans-serif;
+}
+
+.mat-card-subtitle {
+  margin: 0;
+  font-size: calc(0.7rem + 0.5vmin);
+  font-family: "Raleway", "Helvetica Neue", sans-serif;
 }
