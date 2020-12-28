@@ -9,6 +9,8 @@ import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-homepage',
@@ -33,10 +35,18 @@ export class HomepageComponent implements OnInit {
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private matIconRegistry: MatIconRegistry,
+    private domSanitizer: DomSanitizer
   ) {}
 
   async ngOnInit() {
+    this.matIconRegistry.addSvgIcon(
+      'arrow',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        `../assets/purple_arrow.svg`
+      )
+    );
     this.user$ = this.authQuery.selectActive();
     const url = this.router.url;
     if (!url.includes('access_token')) {

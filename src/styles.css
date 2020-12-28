@@ -20,19 +20,25 @@ body {
 h1 {
   margin: 8px !important;
   font-size: calc(1.2rem + 3vmin) !important;
-  font-weight: normal;
+  font-weight: bold !important;
   font-family: "Yantramanav", sans-serif !important;
 }
 
 h2 {
   margin: 0;
   font-size: calc(1rem + 2.5vmin) !important;
-  font-weight: normal;
+  font-weight: bold !important;
   font-family: "Yantramanav", sans-serif !important;
 }
 h3 {
+  margin: 10px !important;
+  font-size: calc(1.1rem + 1.5vmin) !important;
+  font-weight: normal;
+  font-family: "Yantramanav", sans-serif !important;
+}
+h4 {
   margin: 0 !important;
-  font-size: calc(1.1rem + 1.5vmin);
+  font-size: calc(0.7rem + 1vmin) !important;
   font-weight: normal;
   font-family: "Yantramanav", sans-serif !important;
 }
@@ -51,7 +57,7 @@ span {
 .mat-tab-label {
   margin: 0;
   font-size: calc(1rem + 2.5vmin) !important;
-  font-weight: normal;
+  font-weight: bold !important;
   font-family: "Yantramanav", sans-serif !important;
 }
 
@@ -67,3 +73,8 @@ span {
   font-size: calc(0.7rem + 0.5vmin);
   font-family: "Raleway", "Helvetica Neue", sans-serif;
 }
+
+.mat-checkbox-background {
+  background-color: rgb(204, 204, 204);
+}
+

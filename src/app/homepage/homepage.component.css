@@ -25,4 +25,6 @@
   height: 150px;
 }
 
-
+.icon {
+  transform: scale(5);
+}

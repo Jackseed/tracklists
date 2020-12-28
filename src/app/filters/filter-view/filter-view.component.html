@@ -1,7 +1,7 @@
 <div class="margin-top">
-  <h3>{{ filter.label }}</h3>
-  <div fxLayout="row" fxLayoutAlign="space-between center">
-    <mat-icon fxFlex="10" [svgIcon]=filter.min></mat-icon>
+  <h4>{{ filter.label }}</h4>
+  <div class="margin-top" fxLayout="row" fxLayoutAlign="space-between center">
+    <mat-icon class="icon" fxFlex="10" [svgIcon]="filter.min"></mat-icon>
     <p-slider
       fxFlex="65"
       (ngModelChange)="onChange()"
@@ -11,7 +11,6 @@
       [max]="1"
       [step]="0.1"
     ></p-slider>
-    <mat-icon fxFlex="10" [svgIcon]=filter.max></mat-icon>
+    <mat-icon class="icon" fxFlex="10" [svgIcon]="filter.max"></mat-icon>
   </div>
 </div>
-

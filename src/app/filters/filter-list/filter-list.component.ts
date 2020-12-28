@@ -10,44 +10,38 @@ export class FilterListComponent implements OnInit {
     {
       property: 'energy',
       label: 'Energy',
-      min: 'sleepy',
-      max: 'energy',
-    },
-    {
-      property: 'instrumentalness',
-      label: 'Instrumental',
-      min: 'sleepy',
-      max: 'energy',
+      min: 'sleep',
+      max: 'coffee',
     },
     {
       property: 'danceability',
       label: 'Dancy',
-      min: 'sleepy',
-      max: 'energy',
-    },
-    {
-      property: 'acousticness',
-      label: 'Accoustic',
-      min: 'sleepy',
-      max: 'energy',
-    },
-    {
-      property: 'liveness',
-      label: 'Live music',
-      min: 'sleepy',
-      max: 'energy',
-    },
-    {
-      property: 'speechiness',
-      label: 'Lyrics',
-      min: 'sleepy',
-      max: 'energy',
+      min: 'armchair',
+      max: 'disco',
     },
     {
       property: 'valence',
       label: 'Happyness',
-      min: 'sleepy',
-      max: 'energy',
+      min: 'rainy',
+      max: 'sun',
+    },
+    {
+      property: 'instrumentalness',
+      label: 'Instrumental',
+      min: 'sing',
+      max: 'note',
+    },
+    {
+      property: 'acousticness',
+      label: 'Accoustic',
+      min: 'electronic',
+      max: 'piano',
+    },
+    {
+      property: 'liveness',
+      label: 'Live music',
+      min: 'headset',
+      max: 'tickets',
     },
   ];
   constructor() {}

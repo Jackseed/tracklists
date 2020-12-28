@@ -4,10 +4,7 @@
   fxLayout="row"
 >
   <div
-    *ngIf="
-      (user$ | async)?.playlistIds.length > 0;
-      else noTracks
-    "
+    *ngIf="(user$ | async)?.playlistIds.length > 0; else noTracks"
     fxFlexFill
     fxLayout="row"
   >
@@ -18,12 +15,12 @@
           <mat-tab-group mat-align-tabs="center" fxFlexFill>
             <mat-tab label="Playlists">
               <div fxLayout="row" fxLayoutAlign="center center">
-                <div fxFlex="80"><app-playlist-list></app-playlist-list></div>
+                <div fxFlex="90"><app-playlist-list></app-playlist-list></div>
               </div>
             </mat-tab>
             <mat-tab label="Filters">
               <div fxLayout="row" fxLayoutAlign="center center">
-                <div fxFlex="80">
+                <div fxFlex="90">
                   <app-genre-list></app-genre-list>
                   <app-filter-list></app-filter-list>
                 </div>
@@ -101,7 +98,7 @@
     <div
       fxFlex="nogrow"
       class="text-centered margin-5"
-      *ngIf="(isStoreLoading$ | async)"
+      *ngIf="isStoreLoading$ | async"
     >
       <mat-spinner></mat-spinner>
     </div>
@@ -110,11 +107,12 @@
 
 <!----------------- NO PLAYLIST ACTIVE ----------------->
 <ng-template #noActivePlaylist>
-  <div fxFlexFill fxLayoutAlign="center start">
-    <div fxFlex class="margin-top">
-      <h2 class="text-centered">No playlist selected</h2>
-      <p class="text-centered">Select a playlist to load its tracks</p>
-      <img class="arrow" src="assets/arrow.png" />
-    </div>
+  <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
+    <div fxFlex="15"></div>
+    <h3 fxFlex="nogrow" class="text-centered">No playlist selected</h3>
+    <p fxFlex="nogrow" class="text-centered">
+      Select a playlist to load its tracks
+    </p>
+    <mat-icon fxFlexOffset="10" fxFlex="nogrow" class="icon" svgIcon="arrow"></mat-icon>
   </div>
 </ng-template>
