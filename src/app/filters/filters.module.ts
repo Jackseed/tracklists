@@ -8,7 +8,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
 import { GenreListComponent } from './genre-filters/genre-list/genre-list.component';
-import { GenreViewComponent } from './genre-filters/genre-view/genre-view.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -17,12 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
-  declarations: [
-    FilterViewComponent,
-    FilterListComponent,
-    GenreListComponent,
-    GenreViewComponent,
-  ],
+  declarations: [FilterViewComponent, FilterListComponent, GenreListComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -42,7 +36,6 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     FilterViewComponent,
     FilterListComponent,
     GenreListComponent,
-    GenreViewComponent,
   ],
 })
 export class FiltersModule {}

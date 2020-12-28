@@ -15,7 +15,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { PlayerComponent } from './player/player.component';
 import { FiltersModule } from './filters/filters.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { NavbarComponent } from './navbar/navbar.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
@@ -31,7 +30,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     AppComponent,
     HomepageComponent,
     PlayerComponent,
-    NavbarComponent,
     SecToMinPipe,
   ],
   imports: [

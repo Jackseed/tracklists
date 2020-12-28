@@ -1,37 +1,43 @@
-<form>
-  <mat-form-field appearance="legacy" color="accent">
-    <mat-label>Selected Genres</mat-label>
-    <mat-chip-list #chipList aria-label="Fruit selection">
-      <mat-chip
-        *ngFor="let activeGenre of activeGenres$ | async"
-        [selectable]="selectable"
-        [removable]="removable"
-        (removed)="remove(activeGenre.id)"
-        color="primary"
+<div class="margin-top">
+  <h4>Genres</h4>
+  <form>
+    <mat-form-field appearance="legacy" color="accent">
+      <mat-label>Pop, rock, rap,..</mat-label>
+      <mat-chip-list #chipList aria-label="Fruit selection">
+        <mat-chip
+          *ngFor="let activeGenre of activeGenres$ | async"
+          [selectable]="selectable"
+          [removable]="removable"
+          (removed)="remove(activeGenre.id)"
+          color="primary"
+        >
+          {{ activeGenre.id }} ({{ activeGenre.trackIds.length }})
+          <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+        </mat-chip>
+        <input
+          #genreInput
+          type="text"
+          placeholder="Genres"
+          aria-label="Genres"
+          matInput
+          [formControl]="genreControl"
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipList"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          (matChipInputTokenEnd)="add($event)"
+        />
+      </mat-chip-list>
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="selected($event)"
       >
-        {{ activeGenre.id }} ({{ activeGenre.trackIds.length }})
-        <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-      </mat-chip>
-      <input
-        #genreInput
-        type="text"
-        placeholder="Genres"
-        aria-label="Genres"
-        matInput
-        [formControl]="genreControl"
-        [matAutocomplete]="auto"
-        [matChipInputFor]="chipList"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        (matChipInputTokenEnd)="add($event)"
-      />
-    </mat-chip-list>
-    <mat-autocomplete
-      #auto="matAutocomplete"
-      (optionSelected)="selected($event)"
-    >
-      <mat-option *ngFor="let genre of filteredGenres$ | async" [value]="genre">
-        {{ genre.id }} ({{ genre.trackIds.length }})
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
-</form>
+        <mat-option
+          *ngFor="let genre of filteredGenres$ | async"
+          [value]="genre"
+        >
+          {{ genre.id }} ({{ genre.trackIds.length }})
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </form>
+</div>
