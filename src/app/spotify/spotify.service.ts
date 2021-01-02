@@ -180,7 +180,6 @@ export class SpotifyService {
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks);
 
-    
     // create liked tracks as a playlist
     const user = this.authQuery.getActive();
     const playlist: Playlist = {
@@ -356,11 +355,10 @@ export class SpotifyService {
       const artists = await this.getArtists(bactchArtistIds);
       let genres: string[][];
       if (artists) {
-        genres = artists.map((artist) => artist.genres);
+        genres = artists.map((artist) => (artist ? artist.genres : []));
         // first attempt to handle errors by returning empty genres
       } else {
         genres = Array.from(Array(bactchArtistIds.length), () => []);
-        console.log(genres);
       }
       totalGenres = totalGenres.concat(genres);
     }
