@@ -1,8 +1,13 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firestore } from 'firebase/app';
-import { timer } from 'rxjs';
+import { Observable, of, timer } from 'rxjs';
 import {
+  catchError,
   delayWhen,
   filter,
   first,
@@ -175,6 +180,7 @@ export class SpotifyService {
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks);
 
+    
     // create liked tracks as a playlist
     const user = this.authQuery.getActive();
     const playlist: Playlist = {
@@ -348,7 +354,14 @@ export class SpotifyService {
         artistLimit * (i + 1)
       );
       const artists = await this.getArtists(bactchArtistIds);
-      const genres = artists.map((artist) => artist.genres);
+      let genres: string[][];
+      if (artists) {
+        genres = artists.map((artist) => artist.genres);
+        // first attempt to handle errors by returning empty genres
+      } else {
+        genres = Array.from(Array(bactchArtistIds.length), () => []);
+        console.log(genres);
+      }
       totalGenres = totalGenres.concat(genres);
     }
     return totalGenres;
@@ -367,8 +380,12 @@ export class SpotifyService {
       const batch = this.db.batch();
 
       for (const object of bactchObject) {
-        const ref = collection.doc(object.id);
-        batch.set(ref, object);
+        if (object.id) {
+          const ref = collection.doc(object.id);
+          batch.set(ref, object);
+        } else {
+          console.log('cant save object', object);
+        }
       }
 
       batch
@@ -474,9 +491,13 @@ export class SpotifyService {
     return await (await this.getPromisedObjects(url, queryParam))
       .pipe(
         map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>
-          audioFeat.audio_features.map((feature) =>
-            createAudioFeatures(feature)
-          )
+          audioFeat.audio_features.map((feature) => {
+            if (feature === null) {
+              console.log(feature);
+              return;
+            }
+            return createAudioFeatures(feature);
+          })
         ),
         first()
       )
@@ -493,7 +514,10 @@ export class SpotifyService {
 
     return await (await this.getPromisedObjects(url, queryParam))
       .pipe(
-        map((artists: { artists: Artist[] }) => artists.artists),
+        map((artists: { artists: Artist[] }) => {
+          console.log(artists.artists);
+          return artists.artists;
+        }),
         first()
       )
       .toPromise();
@@ -517,12 +541,26 @@ export class SpotifyService {
     return this.http.get(`${url + queryParam}`, { headers }).pipe(
       retryWhen((error) => {
         return error.pipe(
-          tap((error) => console.log('error status: ', error.status)),
+          tap((error) => console.log('error: ', error)),
+          map((error) => {
+            if (error.status === 400) {
+              console.log('400 here');
+              throw error;
+            } else {
+              return error;
+            }
+          }),
           filter((error) => error.status === 429),
           delayWhen(() => timer(5000)),
           tap(() => console.log('retrying...')),
           take(3)
         );
+      }),
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 400) {
+          console.log('salut');
+          return of([{}]);
+        }
       })
     );
   }
