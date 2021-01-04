@@ -39,12 +39,16 @@ export class GenreService extends CollectionService<GenreState> {
               const stateGenre = this.query.getEntity(genre.id);
               if (!stateGenre) return;
               let filteredTrackIds: string[] = stateGenre.trackIds;
+              // remove the tracks from the removed playlist
               for (const trackId of genre.trackIds) {
                 filteredTrackIds = filteredTrackIds.filter(
                   (id) => id != trackId
                 );
               }
-              this.store.update(genre.id, { trackIds: filteredTrackIds });
+              // if there are still tracks in the genre, update it, else remove it
+              filteredTrackIds.length > 0
+                ? this.store.update(genre.id, { trackIds: filteredTrackIds })
+                : this.store.remove(genre.id);
             }
           })
         ),

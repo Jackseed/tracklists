@@ -39,11 +39,12 @@ export class GenreListComponent implements OnInit {
 
   ngOnInit(): void {
     this.genres$ = this.query.selectAll();
+
     this.activeGenres$ = this.query.selectActive();
     this.filteredGenres$ = this.genreControl.valueChanges.pipe(
       startWith(''),
       switchMap((text) => (text ? this.textFilter(text) : this.genres$)),
-      // filter the already selected genres
+      // remove the already selected genres from genre list
       map((genres) =>
         genres.filter((genre) => {
           const activeGenreIds = this.query.getActiveId();
@@ -55,6 +56,7 @@ export class GenreListComponent implements OnInit {
     this.activeGenres$
       .pipe(
         untilDestroyed(this),
+        // remove genre filter on tracks when no genre
         tap((genres) =>
           genres.length === 0 ? this.trackService.removeFilter('genres') : false
         ),

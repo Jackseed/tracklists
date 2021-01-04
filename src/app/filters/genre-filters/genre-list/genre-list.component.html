@@ -3,7 +3,7 @@
   <form>
     <mat-form-field appearance="legacy" color="accent">
       <mat-label>Pop, rock, rap,..</mat-label>
-      <mat-chip-list #chipList aria-label="Fruit selection">
+      <mat-chip-list #chipList>
         <mat-chip
           *ngFor="let activeGenre of activeGenres$ | async"
           [selectable]="selectable"
