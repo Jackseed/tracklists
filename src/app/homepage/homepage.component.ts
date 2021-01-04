@@ -21,7 +21,6 @@ export class HomepageComponent implements OnInit {
   public spotifyUser$: Observable<SpotifyUser>;
   public activeTrack$: Observable<Track>;
   public user$: Observable<User>;
-  public tracks$: Observable<Track[]>;
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
   public isStoreLoading$: Observable<boolean>;
@@ -94,11 +93,13 @@ export class HomepageComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
+        // creates the playlist and get the result from Spotify
         const playlist: Playlist = await this.spotifyService.createPlaylist(
           result
         );
-        console.log(playlist);
-        this.tracks$
+        // add tracks to the newly created playlist
+        this.trackService
+          .selectAll()
           .pipe(
             tap((tracks) =>
               this.spotifyService.addTracksToPlaylistByBatches(
