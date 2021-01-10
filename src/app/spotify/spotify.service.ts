@@ -137,12 +137,12 @@ export class SpotifyService {
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks);
 
-    // write playlist ids in user doc
+    // write playlist ids & track ids in user doc
     const user = this.authQuery.getActive();
     const userRef = this.db.collection('users').doc(user.id);
     const playlistIds = playlists.map((playlist) => playlist.id);
     userRef
-      .update({ playlistIds })
+      .update({ playlistIds, trackIds })
       .then((_) => console.log('playlistIds saved on user'))
       .catch((error) => console.log(error));
 
@@ -183,8 +183,8 @@ export class SpotifyService {
     // create liked tracks as a playlist
     const user = this.authQuery.getActive();
     const playlist: Playlist = {
-      id: `${user.name}LikedTracks`,
-      name: `${user.name}'s liked tracks`,
+      id: `${user.id}LikedTracks`,
+      name: `Liked tracks`,
       trackIds,
       type: 'likedTracks',
     };
@@ -197,10 +197,13 @@ export class SpotifyService {
       .then((_) => console.log('liked tracks saved as a playlist'))
       .catch((error) => console.log(error));
 
-    // add the liked tracks playlist in the user doc
+    // add the liked tracks playlist & the trackIds in the user doc
     const userRef = this.db.collection('users').doc(user.id);
     userRef
-      .update({ playlistIds: firestore.FieldValue.arrayUnion(playlist.id) })
+      .update({
+        playlistIds: firestore.FieldValue.arrayUnion(playlist.id),
+        trackIds: firestore.FieldValue.arrayUnion(...trackIds),
+      })
       .then((_) => console.log('liked tracks playlist added on user'))
       .catch((error) => console.log(error));
 

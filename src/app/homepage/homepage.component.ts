@@ -119,4 +119,8 @@ export class HomepageComponent implements OnInit {
       duration: 2000,
     });
   }
+
+  public refreshData() {
+    this.spotifyService.savePlaylists();
+  }
 }
