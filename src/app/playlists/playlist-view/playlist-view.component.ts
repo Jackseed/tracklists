@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { GenreService } from 'src/app/filters/genre-filters/+state';
 import { TrackService } from 'src/app/tracks/+state';
 import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
@@ -11,7 +13,7 @@ import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
 })
 export class PlaylistViewComponent implements OnInit {
   @Input() playlist: Playlist;
-  public isActive: boolean;
+  public isActive$: Observable<boolean>;
 
   constructor(
     private store: PlaylistStore,
@@ -21,7 +23,9 @@ export class PlaylistViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isActive = this.query.hasActive(this.playlist.id);
+    this.isActive$ = this.query
+      .selectActiveId()
+      .pipe(map((playlistIds) => playlistIds.includes(this.playlist.id)));
   }
 
   public setActive(event: MatCheckboxChange) {

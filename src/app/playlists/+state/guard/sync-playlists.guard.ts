@@ -23,7 +23,7 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
     return this.authQuery.selectActive().pipe(
       pluck('playlistIds'),
       // set all playlist active
-      //tap((playlistIds) => this.store.setActive(playlistIds)),
+      tap((_) => this.store.setActive([])),
       switchMap((playlistIds) => this.service.syncManyDocs(playlistIds))
     );
   }

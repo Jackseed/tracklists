@@ -20,7 +20,7 @@ export class TrackGuard extends CollectionGuard<TrackState> {
   sync() {
     return this.authQuery.selectActive().pipe(
       pluck('trackIds'),
-      //tap((trackIds) => this.store.setActive(trackIds)),
+      tap((_) => this.store.setActive([])),
       switchMap((trackIds) => this.service.syncManyDocs(trackIds))
     );
   }
