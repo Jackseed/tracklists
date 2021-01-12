@@ -53,7 +53,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatTabsModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    environment.production ? [] : AkitaNgDevtools.forRoot(),
+    // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],

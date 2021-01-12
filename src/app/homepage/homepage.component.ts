@@ -19,7 +19,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class HomepageComponent implements OnInit {
   public spotifyUser$: Observable<SpotifyUser>;
-  public activeTrack$: Observable<Track>;
+  public activeTracks$: Observable<Track[]>;
   public user$: Observable<User>;
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
@@ -54,8 +54,10 @@ export class HomepageComponent implements OnInit {
     this.authService.saveToken();
     this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
     this.spotifyService.initializePlayer();
-    this.activeTrack$ = this.trackQuery.selectActive();
-    this.trackNumber$ = this.trackService.tracksLength$;
+    this.activeTracks$ = this.trackQuery.selectActive();
+    this.trackNumber$ = this.trackQuery
+      .selectActiveId()
+      .pipe(map((ids) => (ids ? ids.length : 0)));
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]
     >;

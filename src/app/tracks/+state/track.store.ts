@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { Track } from './track.model';
 import {
   EntityState,
-  ActiveState,
   EntityStore,
   StoreConfig,
   EntityUIStore,
+  MultiActiveState,
 } from '@datorama/akita';
 
 export type TrackUI = {
@@ -15,7 +15,7 @@ export type TrackUI = {
 
 export interface TrackState
   extends EntityState<Track, string>,
-    ActiveState<string> {}
+    MultiActiveState {}
 
 export interface TrackUIState extends EntityState<TrackUI> {}
 
@@ -30,5 +30,14 @@ export class TrackStore extends EntityStore<TrackState> {
       position: 0,
       paused: false,
     });
+    this.loadFromStorage();
+  }
+
+  loadFromStorage() {
+    const data = localStorage.getItem('trackStore');
+    if (data) {
+      this._setState((state) => JSON.parse(data));
+      console.log('loading state ', data);
+    }
   }
 }

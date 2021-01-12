@@ -55,7 +55,7 @@
             class="track-list"
             fxFlex="80"
             *ngIf="
-              (activePlaylistIds$ | async)?.length > 0;
+              (activeTracks$ | async)?.length > 0;
               else noActivePlaylist
             "
           >
@@ -63,9 +63,9 @@
           </div>
 
           <!----------------- PLAYER ----------------->
-          <div *ngIf="activeTrack$ | async">
+<!--           <div *ngIf="activeTrack$ | async">
             <app-player [track$]="activeTrack$"></app-player>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

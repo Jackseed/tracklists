@@ -6,6 +6,7 @@ import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 import { map } from 'rxjs/operators';
+import { Playlist } from 'src/app/playlists/+state';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -42,20 +43,37 @@ export class TrackService extends CollectionService<TrackState> {
   }
 
   selectAll(): Observable<Track[]> {
+    const activeIds = this.query.getActiveId();
+    const ids = activeIds ? activeIds : [];
     // @ts-ignore zs it was not an hashMap with not asObject
-    return this.trackFilters.selectAllByFilters();
+    return this.trackFilters.selectAllByFilters({
+      // limit selection to active tracks
+      filterBy: (track) => ids.includes(track.id),
+    });
   }
 
   public getMore(page: number): Observable<Track[]> {
+    const activeIds = this.query.getActiveId();
+    const ids = activeIds ? activeIds : [];
     const perPage = 15;
     const offset = page * perPage;
 
     return this.trackFilters
-      .selectAllByFilters()
+      .selectAllByFilters({
+        // limit selection to active tracks
+        filterBy: (track) => ids.includes(track.id),
+      })
       .pipe(map((tracks: Track[]) => tracks.slice(0, offset)));
   }
 
   public get tracksLength$() {
     return this.selectAll().pipe(map((tracks) => tracks.length));
+  }
+
+  public addActive(playlist: Playlist) {
+    this.store.addActive(playlist.trackIds);
+  }
+  public removeActive(playlist: Playlist) {
+    this.store.removeActive(playlist.trackIds);
   }
 }

@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 import { GenreService } from 'src/app/filters/genre-filters/+state';
-import { Playlist, PlaylistStore } from '../+state';
+import { TrackService } from 'src/app/tracks/+state';
+import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
 
 @Component({
   selector: 'app-playlist-view',
@@ -9,16 +11,26 @@ import { Playlist, PlaylistStore } from '../+state';
 })
 export class PlaylistViewComponent implements OnInit {
   @Input() playlist: Playlist;
+  public isActive: boolean;
 
   constructor(
     private store: PlaylistStore,
-    private genreService: GenreService
+    private query: PlaylistQuery,
+    private genreService: GenreService,
+    private trackService: TrackService
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.isActive = this.query.hasActive(this.playlist.id);
+  }
 
-  public setActive() {
+  public setActive(event: MatCheckboxChange) {
     this.store.toggleActive(this.playlist.id);
     this.genreService.toggle(this.playlist.id);
+    if (event.checked) {
+      this.trackService.addActive(this.playlist);
+    } else {
+      this.trackService.removeActive(this.playlist);
+    }
   }
 }

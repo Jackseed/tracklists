@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { EntityUIQuery, QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState, TrackUIState } from './track.store';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { debounceTime, map } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState> {
@@ -11,6 +11,16 @@ export class TrackQuery extends QueryEntity<TrackState> {
   constructor(protected store: TrackStore) {
     super(store);
     this.createUIQuery();
+    this.saveToStorage();
+  }
+
+  saveToStorage() {
+    this.select()
+      .pipe(debounceTime(2000))
+      .subscribe((state) => {
+        localStorage.setItem('trackStore', JSON.stringify(state));
+        console.log('saving state ', state);
+      });
   }
 
   selectPosition(trackId: string): Observable<number> {
