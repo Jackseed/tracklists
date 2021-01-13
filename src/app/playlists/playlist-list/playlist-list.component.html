@@ -2,9 +2,9 @@
   <mat-card>
     <mat-card-content>
       <div>
-        <mat-checkbox color="accent" (change)="setAllActive($event)">
+        <mat-slide-toggle color="accent" (change)="setAllActive($event)">
           Select all
-        </mat-checkbox>
+        </mat-slide-toggle>
       </div>
       <div *ngFor="let playlist of playlists">
         <app-playlist-view [playlist]="playlist"></app-playlist-view>

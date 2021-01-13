@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Observable } from 'rxjs';
-import { map, take, tap } from 'rxjs/operators';
+import { first, map, tap } from 'rxjs/operators';
 import { GenreService } from 'src/app/filters/genre-filters/+state';
 import { TrackService } from 'src/app/tracks/+state';
 import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
@@ -32,16 +32,18 @@ export class PlaylistListComponent implements OnInit {
         tap((playlistIds) =>
           playlistIds.map((playlistId) => {
             const playlist = this.query.getEntity(playlistId);
-            this.store.toggleActive(playlistId);
-            this.genreService.toggle(playlistId);
             if (event.checked) {
               this.trackService.addActive(playlist);
+              this.store.addActive(playlistId);
+              this.genreService.addPlaylistGenres(playlistId);
             } else {
+              this.store.removeActive(playlistId);
               this.trackService.removeActive(playlist);
+              this.genreService.removePlaylistGenres(playlistId);
             }
           })
         ),
-        take(1)
+        first()
       )
       .subscribe();
   }

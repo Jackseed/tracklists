@@ -71,7 +71,6 @@ export class TrackService extends CollectionService<TrackState> {
   }
 
   public addActive(playlist: Playlist) {
-    console.log(playlist);
     this.store.addActive(playlist.trackIds);
   }
   public removeActive(playlist: Playlist) {
