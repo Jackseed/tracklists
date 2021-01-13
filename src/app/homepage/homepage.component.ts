@@ -55,9 +55,10 @@ export class HomepageComponent implements OnInit {
     this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
     this.spotifyService.initializePlayer();
     this.activeTracks$ = this.trackQuery.selectActive();
-    this.trackNumber$ = this.trackQuery
+    this.trackNumber$ = this.trackService.tracksLength$;
+    /* this.trackNumber$ = this.trackQuery
       .selectActiveId()
-      .pipe(map((ids) => (ids ? ids.length : 0)));
+      .pipe(map((ids) => (ids ? ids.length : 0))); */
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]
     >;
