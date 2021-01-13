@@ -45,7 +45,6 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   public onScroll() {
     this.page++;
     this.tracks$ = this.service.getMore(this.page);
-    this.tracks$.subscribe(console.log);
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
     );

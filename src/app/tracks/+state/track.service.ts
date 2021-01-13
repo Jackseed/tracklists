@@ -75,8 +75,6 @@ export class TrackService extends CollectionService<TrackState> {
   public get tracksLength$() {
     return this.selectAll().pipe(
       map((tracks) => {
-        console.log(tracks);
-        console.log(tracks.length);
         return tracks.length;
       })
     );

@@ -63,7 +63,6 @@ export class HomepageComponent implements OnInit {
       string[]
     >;
     this.isStoreLoading$ = this.authQuery.selectLoading();
-    this.authQuery.selectLoading().subscribe(console.log);
   }
 
   public loginSpotify() {
