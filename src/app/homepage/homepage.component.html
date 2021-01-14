@@ -1,9 +1,11 @@
 <div
   *ngIf="spotifyUser$ | async as user; else notConnected"
   fxFlexFill
-  fxLayout="row"
+  fxLayout="column"
+  fxLayoutAlign="start center"
 >
   <div
+    fxFlex="85"
     *ngIf="(user$ | async)?.playlistIds.length > 0; else noTracks"
     fxFlexFill
     fxLayout="row"
@@ -53,21 +55,23 @@
           <!----------------- TRACK LIST ----------------->
           <div
             class="track-list"
-            fxFlex="80"
+            fxFlex
             *ngIf="(activeTracks$ | async)?.length > 0; else noActivePlaylist"
           >
             <app-track-list></app-track-list>
-          </div>
-
-          <!----------------- PLAYER ----------------->
-          <div *ngIf="playingTrack$ | async">
-            <app-player [track$]="playingTrack$"></app-player>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <!----------------- PLAYER ----------------->
+  <div fxFlexFill fxFlex fxLayout="row">
+    <div fxFlexOffset="10" fxFlex="70">
+      <app-player [track$]="playingTrack$"></app-player>
+    </div>
+  </div>
 </div>
+
 <!----------------- NOT CONNECTED TO SPOTIFY ----------------->
 <ng-template #notConnected>
   <div fxFlexFill fxLayoutAlign="center center">

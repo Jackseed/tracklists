@@ -1,10 +1,16 @@
-<div
-  fxLayout="row"
-  fxLayoutAlign="center center"
-  *ngIf="track$ | async as track"
->
-  <mat-card class="card" fxFlex fxLayoutAlign="center center" fxLayout="row">
-    <mat-card-header fxFlex="nogrow">
+<div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
+  <mat-card
+    fxFlexFill
+    class="card"
+    fxFlex
+    fxLayoutAlign="center center"
+    fxLayout="row"
+  >
+    <mat-card-header
+      fxFlexOffset="3"
+      fxFlex="30"
+      *ngIf="track$ | async as track"
+    >
       <div
         mat-card-avatar
         [ngStyle]="{
@@ -16,12 +22,17 @@
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
     <div
-      fxFlexOffset="3"
+      fxFlexOffset="10"
       fxFlex
       fxLayoutAlign="center center"
       fxLayout="column"
     >
-      <mat-card-actions fxFlexFill fxLayout="row" fxLayoutAlign="center center">
+      <mat-card-actions
+        fxFlexFill
+        fxLayout="row"
+        fxLayoutAlign="center center"
+        *ngIf="track$ | async as track"
+      >
         <button fxFlex="nogrow" mat-icon-button (click)="play()">
           <mat-icon>play_circle_outline</mat-icon>
         </button>
@@ -47,6 +58,7 @@
         fxFlex="90"
         fxLayoutAlign="center center"
         fxLayout="row"
+        *ngIf="track$ | async as track"
       >
         <p class="right">{{ value | secToMin }}</p>
         <mat-slider
