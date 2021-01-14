@@ -8,4 +8,16 @@ export class PlaylistService extends CollectionService<PlaylistState> {
   constructor(store: PlaylistStore) {
     super(store);
   }
+
+  public addActive(playlistId: string) {
+    this.store.addActive(playlistId);
+  }
+
+  public removeActive(playlistId: string) {
+    this.store.removeActive(playlistId);
+  }
+
+  public toggleActive(playlistId: string) {
+    this.store.toggleActive(playlistId);
+  }
 }

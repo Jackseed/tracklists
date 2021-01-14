@@ -3,9 +3,10 @@ import { EntityUIQuery, QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState, TrackUIState } from './track.store';
 import { Observable } from 'rxjs';
 import { debounceTime, map } from 'rxjs/operators';
+import { Track } from './track.model';
 
 @Injectable({ providedIn: 'root' })
-export class TrackQuery extends QueryEntity<TrackState> {
+export class TrackQuery extends QueryEntity<TrackState, Track> {
   ui: EntityUIQuery<TrackUIState>;
 
   constructor(protected store: TrackStore) {

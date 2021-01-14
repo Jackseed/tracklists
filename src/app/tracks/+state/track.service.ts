@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 import { map, switchMap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
+import { HashMap } from '@datorama/akita';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -44,15 +45,17 @@ export class TrackService extends CollectionService<TrackState> {
 
   selectAll(): Observable<Track[]> {
     const activeIds$ = this.query.selectActiveId();
-    // @ts-ignore zs it was not an hashMap with not asObject
-    return activeIds$.pipe(
+
+    const tracks$ = activeIds$.pipe(
       switchMap((ids) =>
         this.trackFilters.selectAllByFilters({
-          // limit selection to active tracks
+          // limit filtered selection to active tracks
           filterBy: (track) => ids.includes(track.id),
         })
       )
     );
+    // @ts-ignore zs it was not an hashMap with not asObject
+    return tracks$;
   }
 
   public getMore(page: number): Observable<Track[]> {

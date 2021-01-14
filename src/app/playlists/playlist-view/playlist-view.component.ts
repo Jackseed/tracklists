@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GenreService } from 'src/app/filters/genre-filters/+state';
 import { TrackService } from 'src/app/tracks/+state';
-import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
+import { Playlist, PlaylistQuery, PlaylistService } from '../+state';
 
 @Component({
   selector: 'app-playlist-view',
@@ -16,7 +16,7 @@ export class PlaylistViewComponent implements OnInit {
   public isActive$: Observable<boolean>;
 
   constructor(
-    private store: PlaylistStore,
+    private service: PlaylistService,
     private query: PlaylistQuery,
     private genreService: GenreService,
     private trackService: TrackService
@@ -29,7 +29,7 @@ export class PlaylistViewComponent implements OnInit {
   }
 
   public setActive(event: MatCheckboxChange) {
-    this.store.toggleActive(this.playlist.id);
+    this.service.toggleActive(this.playlist.id);
     this.genreService.toggle(this.playlist.id);
     if (event.checked) {
       this.trackService.addActive(this.playlist);

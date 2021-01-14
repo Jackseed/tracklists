@@ -17,6 +17,18 @@ export class GenreService extends CollectionService<GenreState> {
     super(store);
   }
 
+  public addActive(genreId: string) {
+    this.store.addActive(genreId);
+  }
+
+  public removeActive(genreId: string) {
+    this.store.removeActive(genreId);
+  }
+
+  public toggleActive(genreId: string) {
+    this.store.toggleActive(genreId);
+  }
+
   // add genres to the store
   public addPlaylistGenres(playlistId: string) {
     this.db

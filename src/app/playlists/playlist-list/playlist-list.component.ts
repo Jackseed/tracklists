@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { first, map, tap } from 'rxjs/operators';
 import { GenreService } from 'src/app/filters/genre-filters/+state';
 import { TrackService } from 'src/app/tracks/+state';
-import { Playlist, PlaylistQuery, PlaylistStore } from '../+state';
+import { Playlist, PlaylistQuery, PlaylistService } from '../+state';
 
 @Component({
   selector: 'app-playlist-list',
@@ -16,7 +16,7 @@ export class PlaylistListComponent implements OnInit {
 
   constructor(
     private query: PlaylistQuery,
-    private store: PlaylistStore,
+    private service: PlaylistService,
     private trackService: TrackService,
     private genreService: GenreService
   ) {}
@@ -34,10 +34,10 @@ export class PlaylistListComponent implements OnInit {
             const playlist = this.query.getEntity(playlistId);
             if (event.checked) {
               this.trackService.addActive(playlist);
-              this.store.addActive(playlistId);
+              this.service.addActive(playlistId);
               this.genreService.addPlaylistGenres(playlistId);
             } else {
-              this.store.removeActive(playlistId);
+              this.service.removeActive(playlistId);
               this.trackService.removeActive(playlist);
               this.genreService.removePlaylistGenres(playlistId);
             }
