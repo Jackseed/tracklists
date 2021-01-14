@@ -41,13 +41,25 @@
             <mat-divider></mat-divider>
             <p>
               {{ this.trackNumber$ | async }} tracks
-              <button mat-icon-button (click)="playAll()">
+              <button
+                mat-icon-button
+                (click)="playAll()"
+                matTooltip="Play tracklist"
+              >
                 <mat-icon>play_circle_outline</mat-icon>
               </button>
-              <button mat-icon-button (click)="savePlaylist()">
+              <button
+                mat-icon-button
+                (click)="savePlaylist()"
+                matTooltip="Save as playlist"
+              >
                 <mat-icon>save</mat-icon>
               </button>
-              <button mat-icon-button (click)="refreshData()">
+              <button
+                mat-icon-button
+                (click)="refreshData()"
+                matTooltip="Reload Spotify tracks"
+              >
                 <mat-icon>refresh</mat-icon>
               </button>
             </p>

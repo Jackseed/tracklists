@@ -54,12 +54,10 @@ export class PlayerComponent implements OnInit {
         }),
         tap((paused) => {
           if (!paused && !this.isTicking) {
-            console.log(this.value);
             interval = window.setInterval((_) => {
               this.value += 1;
               this.isTicking = true;
             }, 1000);
-            console.log(this.value);
           }
         })
       )

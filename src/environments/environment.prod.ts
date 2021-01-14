@@ -6,7 +6,7 @@ export const environment = {
     clientId: 'ef247ad2b6a6480ab274d9f32b27dfe9',
     clientSecret: '5c6e323a217c4a908670b26b8d0a6edc',
     responseType: 'token',
-    redirectURI: 'https://listy-bcc65.web.app/home',
+    redirectURI: 'https://tracklists.io/home',
   },
 
   firebaseConfig: {
