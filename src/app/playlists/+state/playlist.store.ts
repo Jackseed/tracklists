@@ -20,12 +20,11 @@ export class PlaylistStore extends EntityStore<PlaylistState> {
     super(initialState);
     this.loadFromStorage();
   }
-
+  // call storage instead of firebase
   loadFromStorage() {
     const data = localStorage.getItem('playlistStore');
     if (data) {
-      this._setState((state) => JSON.parse(data));
-      console.log('loading playlist state ', data);
+      this._setState((_) => JSON.parse(data));
     }
   }
 }

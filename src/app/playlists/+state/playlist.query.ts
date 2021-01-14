@@ -10,12 +10,12 @@ export class PlaylistQuery extends QueryEntity<PlaylistState> {
     this.saveToStorage();
   }
 
+  // save to storage to avoid calling firebase
   saveToStorage() {
     this.select()
       .pipe(debounceTime(2000))
       .subscribe((state) => {
         localStorage.setItem('playlistStore', JSON.stringify(state));
-        console.log('saving playlist state ', state);
       });
   }
 }

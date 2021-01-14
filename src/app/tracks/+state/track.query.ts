@@ -14,13 +14,12 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     this.createUIQuery();
     this.saveToStorage();
   }
-
+  // save to storage to avoid calling firebase
   saveToStorage() {
     this.select()
       .pipe(debounceTime(2000))
       .subscribe((state) => {
         localStorage.setItem('trackStore', JSON.stringify(state));
-        console.log('saving state ', state);
       });
   }
 

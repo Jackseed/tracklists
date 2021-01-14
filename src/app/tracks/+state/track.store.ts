@@ -32,12 +32,11 @@ export class TrackStore extends EntityStore<TrackState> {
     });
     this.loadFromStorage();
   }
-
+  // call storage instead of firebase
   loadFromStorage() {
     const data = localStorage.getItem('trackStore');
     if (data) {
-      this._setState((state) => JSON.parse(data));
-      console.log('loading state ', data);
+      this._setState((_) => JSON.parse(data));
     }
   }
 }
