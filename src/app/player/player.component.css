@@ -2,3 +2,26 @@
   text-align: right;
   margin: 0;
 }
+
+.mat-card-avatar {
+  border-radius: 0;
+}
+
+.mat-card-actions,
+.mat-card-subtitle,
+.mat-card-content {
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.mat-icon {
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+}
+
+.mat-icon-button {
+  width: 30px;
+  height: 30px;
+}

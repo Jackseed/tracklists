@@ -3,8 +3,8 @@
   fxLayoutAlign="center center"
   *ngIf="track$ | async as track"
 >
-  <mat-card class="card" fxFlex fxFlexAlign="center center">
-    <mat-card-header>
+  <mat-card class="card" fxFlex fxLayoutAlign="center center" fxLayout="row">
+    <mat-card-header fxFlex="nogrow">
       <div
         mat-card-avatar
         [ngStyle]="{
@@ -15,29 +15,51 @@
       <mat-card-title>{{ track.name }}</mat-card-title>
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
-    <mat-card-content fxLayoutAlign="center center" fxLayout="row">
-      <p fxFlex class="right">{{ value | secToMin }}</p>
-      <mat-slider
-        fxFlex
-        color="accent"
-        min="0"
-        [max]="track.duration_ms / 1000"
-        [(ngModel)]="value"
-        (ngModelChange)="onChangeSlider()"
+    <div
+      fxFlexOffset="3"
+      fxFlex
+      fxLayoutAlign="center center"
+      fxLayout="column"
+    >
+      <mat-card-actions fxFlexFill fxLayout="row" fxLayoutAlign="center center">
+        <button fxFlex="nogrow" mat-icon-button (click)="play()">
+          <mat-icon>play_circle_outline</mat-icon>
+        </button>
+        <button
+          fxFlex="nogrow"
+          fxFlexOffset="3"
+          mat-icon-button
+          (click)="pause()"
+        >
+          <mat-icon>pause_circle_outline</mat-icon>
+        </button>
+        <button
+          fxFlex="nogrow"
+          fxFlexOffset="3"
+          mat-icon-button
+          (click)="playNext()"
+        >
+          <mat-icon>skip_next</mat-icon>
+        </button>
+      </mat-card-actions>
+      <mat-card-content
+        fxFlexFill
+        fxFlex="90"
+        fxLayoutAlign="center center"
+        fxLayout="row"
       >
-      </mat-slider>
-      <p fxFlex>{{ track.duration_ms / 1000 | secToMin }}</p>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-icon-button (click)="play()">
-        <mat-icon>play_circle_outline</mat-icon>
-      </button>
-      <button mat-icon-button (click)="pause()">
-        <mat-icon>pause_circle_outline</mat-icon>
-      </button>
-      <button mat-icon-button (click)="playNext()">
-        <mat-icon>skip_next</mat-icon>
-      </button>
-    </mat-card-actions>
+        <p class="right">{{ value | secToMin }}</p>
+        <mat-slider
+          fxFlex
+          color="accent"
+          min="0"
+          [max]="track.duration_ms / 1000"
+          [(ngModel)]="value"
+          (ngModelChange)="onChangeSlider()"
+        >
+        </mat-slider>
+        <p>{{ track.duration_ms / 1000 | secToMin }}</p>
+      </mat-card-content>
+    </div>
   </mat-card>
 </div>

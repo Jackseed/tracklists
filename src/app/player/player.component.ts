@@ -37,7 +37,7 @@ export class PlayerComponent implements OnInit {
           return (this.value = position / 1000);
         })
       )
-      .subscribe(console.log);
+      .subscribe();
     this.paused$ = this.track$.pipe(
       filter((track) => !!track),
       switchMap((track) => this.query.selectPaused(track.id))
