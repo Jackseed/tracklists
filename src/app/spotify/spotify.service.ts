@@ -79,7 +79,7 @@ export class SpotifyService {
       if (!state) return;
       const track = state.track_window.current_track;
       const pause = this.playerQuery.getPaused(track.id);
-      
+
       this.playerService.add(track);
       this.playerService.setActive(track.id);
       this.playerService.updatePosition(track.id, state.position);
@@ -589,7 +589,13 @@ export class SpotifyService {
     return this.postRequests(baseUrl, queryParam, null);
   }
 
-  public async playNext() {
+  public async previous() {
+    const baseUrl = 'https://api.spotify.com/v1/me/player/previous';
+
+    return this.postRequests(baseUrl, '', null);
+  }
+
+  public async next() {
     const baseUrl = 'https://api.spotify.com/v1/me/player/next';
 
     return this.postRequests(baseUrl, '', null);

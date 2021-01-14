@@ -33,7 +33,21 @@
         fxLayoutAlign="center center"
         *ngIf="track$ | async as track"
       >
-        <button fxFlex="nogrow" mat-icon-button (click)="play()">
+        <button
+          fxFlex="nogrow"
+          fxFlexOffset="3"
+          mat-icon-button
+          (click)="previous()"
+        >
+          <mat-icon>skip_previous</mat-icon>
+        </button>
+        <button
+          fxFlex="nogrow"
+          fxFlexOffset="3"
+          mat-icon-button
+          (click)="play()"
+          *ngIf="paused$ | async"
+        >
           <mat-icon>play_circle_outline</mat-icon>
         </button>
         <button
@@ -41,6 +55,7 @@
           fxFlexOffset="3"
           mat-icon-button
           (click)="pause()"
+          *ngIf="!(paused$ | async)"
         >
           <mat-icon>pause_circle_outline</mat-icon>
         </button>
@@ -48,7 +63,7 @@
           fxFlex="nogrow"
           fxFlexOffset="3"
           mat-icon-button
-          (click)="playNext()"
+          (click)="next()"
         >
           <mat-icon>skip_next</mat-icon>
         </button>

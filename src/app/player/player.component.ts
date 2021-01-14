@@ -74,8 +74,11 @@ export class PlayerComponent implements OnInit {
   public async pause() {
     await this.spotifyService.pause();
   }
-  public async playNext() {
-    await this.spotifyService.playNext();
+  public async previous() {
+    await this.spotifyService.previous();
+  }
+  public async next() {
+    await this.spotifyService.next();
   }
 
   public async onChangeSlider() {
