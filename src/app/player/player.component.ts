@@ -14,7 +14,6 @@ import { PlayerQuery } from './+state';
 })
 export class PlayerComponent implements OnInit {
   @Input() track$: Observable<Track>;
-  position$: Observable<number>;
   paused$: Observable<boolean>;
   value = 0;
   isTicking = false;
@@ -33,10 +32,12 @@ export class PlayerComponent implements OnInit {
         filter((track) => !!track),
         switchMap((track) => this.query.selectPosition(track.id)),
         map((position) => {
-          this.value = position / 1000;
+          clearInterval(interval);
+          this.isTicking = false;
+          return (this.value = position / 1000);
         })
       )
-      .subscribe();
+      .subscribe(console.log);
     this.paused$ = this.track$.pipe(
       filter((track) => !!track),
       switchMap((track) => this.query.selectPaused(track.id))
@@ -53,18 +54,16 @@ export class PlayerComponent implements OnInit {
         }),
         tap((paused) => {
           if (!paused && !this.isTicking) {
+            console.log(this.value);
             interval = window.setInterval((_) => {
               this.value += 1;
               this.isTicking = true;
             }, 1000);
+            console.log(this.value);
           }
         })
       )
       .subscribe();
-    const elements = document.getElementsByClassName('mat-slider-thumb');
-    while (elements.length > 0) {
-      elements[0].parentNode.removeChild(elements[0]);
-    }
   }
 
   // TODO pause when space bar

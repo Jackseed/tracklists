@@ -60,7 +60,6 @@ export class HomepageComponent implements OnInit {
     this.activeTracks$ = this.trackQuery.selectActive();
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
-    this.playingTrack$.subscribe(console.log);
 
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]

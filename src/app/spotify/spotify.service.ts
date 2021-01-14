@@ -76,15 +76,15 @@ export class SpotifyService {
 
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
-      if (!state) {
-        return;
-      }
+      if (!state) return;
+
+      console.log('state change, new state: ', state);
       const track = state.track_window.current_track;
-      console.log(track);
       const pause = this.playerQuery.getPaused(track.id);
       this.playerService.add(track);
       this.playerService.setActive(track.id);
       this.playerService.updatePosition(track.id, state.position);
+      // update playing track with state paused
       state.paused === pause
         ? false
         : this.playerService.updatePaused(track.id, state.paused);
