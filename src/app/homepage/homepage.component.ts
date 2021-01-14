@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { PlayerQuery, PlayerTrack } from '../player/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -24,6 +25,7 @@ export class HomepageComponent implements OnInit {
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
   public isStoreLoading$: Observable<boolean>;
+  public playingTrack$: Observable<PlayerTrack>;
 
   constructor(
     private authQuery: AuthQuery,
@@ -31,6 +33,7 @@ export class HomepageComponent implements OnInit {
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playlistQuery: PlaylistQuery,
+    private playerQuery: PlayerQuery,
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -56,9 +59,9 @@ export class HomepageComponent implements OnInit {
     this.spotifyService.initializePlayer();
     this.activeTracks$ = this.trackQuery.selectActive();
     this.trackNumber$ = this.trackService.tracksLength$;
-    /* this.trackNumber$ = this.trackQuery
-      .selectActiveId()
-      .pipe(map((ids) => (ids ? ids.length : 0))); */
+    this.playingTrack$ = this.playerQuery.selectActive();
+    this.playingTrack$.subscribe(console.log);
+
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]
     >;

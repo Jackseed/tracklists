@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firestore } from 'firebase/app';
-import { Observable, of, timer } from 'rxjs';
+import { of, timer } from 'rxjs';
 import {
   catchError,
   delayWhen,
@@ -27,10 +27,9 @@ import {
   SpotifyAudioFeatures,
   SpotifyPlaylistTrack,
   SpotifySavedTrack,
-  TrackQuery,
-  TrackService,
-  TrackStore,
 } from '../tracks/+state';
+import { PlayerService } from '../player/+state/player.service';
+import { PlayerQuery } from '../player/+state';
 
 declare global {
   interface Window {
@@ -50,9 +49,8 @@ export class SpotifyService {
     private authStore: AuthStore,
     private authQuery: AuthQuery,
     private authService: AuthService,
-    private trackStore: TrackStore,
-    private trackQuery: TrackQuery,
-    private trackService: TrackService,
+    private playerQuery: PlayerQuery,
+    private playerService: PlayerService,
     private http: HttpClient
   ) {}
 
@@ -78,13 +76,18 @@ export class SpotifyService {
 
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
+      if (!state) {
+        return;
+      }
       const track = state.track_window.current_track;
-      const pause = this.trackQuery.getPaused(track.id);
-      this.trackStore.setActive(track.id);
-      this.trackService.updatePosition(track.id, state.position);
+      console.log(track);
+      const pause = this.playerQuery.getPaused(track.id);
+      this.playerService.add(track);
+      this.playerService.setActive(track.id);
+      this.playerService.updatePosition(track.id, state.position);
       state.paused === pause
         ? false
-        : this.trackService.updatePaused(track.id, state.paused);
+        : this.playerService.updatePaused(track.id, state.paused);
     });
   }
 

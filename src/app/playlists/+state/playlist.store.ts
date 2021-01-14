@@ -15,7 +15,7 @@ const initialState = {
 };
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'playlists' })
-export class PlaylistStore extends EntityStore<PlaylistState> {
+export class PlaylistStore extends EntityStore<PlaylistState, Playlist> {
   constructor() {
     super(initialState);
     this.loadFromStorage();

@@ -3,7 +3,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { SpotifyService } from '../spotify/spotify.service';
-import { Track, TrackQuery } from '../tracks/+state';
+import { Track } from '../tracks/+state';
+import { PlayerQuery } from './+state';
 
 @UntilDestroy()
 @Component({
@@ -19,7 +20,7 @@ export class PlayerComponent implements OnInit {
   isTicking = false;
 
   constructor(
-    private query: TrackQuery,
+    private query: PlayerQuery,
     private spotifyService: SpotifyService
   ) {}
 
@@ -65,6 +66,7 @@ export class PlayerComponent implements OnInit {
       elements[0].parentNode.removeChild(elements[0]);
     }
   }
+
   // TODO pause when space bar
 
   public async play() {
@@ -76,6 +78,7 @@ export class PlayerComponent implements OnInit {
   public async playNext() {
     await this.spotifyService.playNext();
   }
+
   public async onChangeSlider() {
     await this.spotifyService.seekPosition(this.value * 1000);
   }

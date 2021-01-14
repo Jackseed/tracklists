@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 import { map, switchMap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
-import { HashMap } from '@datorama/akita';
+
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'tracks' })
@@ -17,14 +17,6 @@ export class TrackService extends CollectionService<TrackState> {
   constructor(store: TrackStore, private query: TrackQuery) {
     super(store);
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
-  }
-
-  public updatePosition(trackId: string, position: number) {
-    this.store.ui.upsert(trackId, { position });
-  }
-
-  public updatePaused(trackId: string, paused: boolean) {
-    this.store.ui.upsert(trackId, { paused });
   }
 
   setFilter(filter: AkitaFilter<TrackState>) {

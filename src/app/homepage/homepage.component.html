@@ -54,18 +54,15 @@
           <div
             class="track-list"
             fxFlex="80"
-            *ngIf="
-              (activeTracks$ | async)?.length > 0;
-              else noActivePlaylist
-            "
+            *ngIf="(activeTracks$ | async)?.length > 0; else noActivePlaylist"
           >
             <app-track-list></app-track-list>
           </div>
 
           <!----------------- PLAYER ----------------->
-<!--           <div *ngIf="activeTrack$ | async">
-            <app-player [track$]="activeTrack$"></app-player>
-          </div> -->
+          <div *ngIf="playingTrack$ | async">
+            <app-player [track$]="playingTrack$"></app-player>
+          </div>
         </div>
       </div>
     </div>
@@ -116,6 +113,11 @@
     <p fxFlex="nogrow" class="text-centered">
       Select a playlist to load its tracks
     </p>
-    <mat-icon fxFlexOffset="10" fxFlex="nogrow" class="icon" svgIcon="arrow"></mat-icon>
+    <mat-icon
+      fxFlexOffset="10"
+      fxFlex="nogrow"
+      class="icon"
+      svgIcon="arrow"
+    ></mat-icon>
   </div>
 </ng-template>

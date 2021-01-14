@@ -4,32 +4,18 @@ import {
   EntityState,
   EntityStore,
   StoreConfig,
-  EntityUIStore,
   MultiActiveState,
 } from '@datorama/akita';
-
-export type TrackUI = {
-  position: number;
-  paused: boolean;
-};
 
 export interface TrackState
   extends EntityState<Track, string>,
     MultiActiveState {}
 
-export interface TrackUIState extends EntityState<TrackUI> {}
-
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'tracks' })
-export class TrackStore extends EntityStore<TrackState> {
-  ui: EntityUIStore<TrackUIState>;
-
+export class TrackStore extends EntityStore<TrackState, Track> {
   constructor() {
     super();
-    this.createUIStore().setInitialEntityState({
-      position: 0,
-      paused: false,
-    });
     this.loadFromStorage();
   }
   // call storage instead of firebase
