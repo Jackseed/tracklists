@@ -1,30 +1,23 @@
 import { Injectable } from '@angular/core';
-import { EntityUIQuery, QueryEntity } from '@datorama/akita';
-import { TrackStore, TrackState, TrackUIState } from './track.store';
+import { QueryEntity } from '@datorama/akita';
+import { TrackStore, TrackState } from './track.store';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { debounceTime, map } from 'rxjs/operators';
+import { Track } from './track.model';
 
 @Injectable({ providedIn: 'root' })
-export class TrackQuery extends QueryEntity<TrackState> {
-  ui: EntityUIQuery<TrackUIState>;
-
+export class TrackQuery extends QueryEntity<TrackState, Track> {
   constructor(protected store: TrackStore) {
     super(store);
-    this.createUIQuery();
+    this.saveToStorage();
   }
-
-  selectPosition(trackId: string): Observable<number> {
-    return this.ui.selectEntity(trackId, 'position');
-  }
-
-  selectPaused(trackId: string): Observable<boolean> {
-    return this.ui.selectEntity(trackId, 'paused');
-  }
-
-  getPaused(trackId: string): boolean {
-    const track = this.ui.getEntity(trackId);
-    if (!track) return;
-    return track.paused;
+  // save to storage to avoid calling firebase
+  saveToStorage() {
+    this.select()
+      .pipe(debounceTime(2000))
+      .subscribe((state) => {
+        localStorage.setItem('trackStore', JSON.stringify(state));
+      });
   }
 
   selectGenres(): Observable<string[][]> {

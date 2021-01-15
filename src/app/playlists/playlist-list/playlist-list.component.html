@@ -1,6 +1,11 @@
 <div *ngIf="playlists$ | async as playlists">
   <mat-card>
     <mat-card-content>
+      <div>
+        <mat-slide-toggle color="primary" (change)="setAllActive($event)">
+          Select all
+        </mat-slide-toggle>
+      </div>
       <div *ngFor="let playlist of playlists">
         <app-playlist-view [playlist]="playlist"></app-playlist-view>
       </div>

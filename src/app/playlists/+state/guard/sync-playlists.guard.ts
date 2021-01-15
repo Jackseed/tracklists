@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { CollectionGuard } from 'akita-ng-fire';
-import { PlaylistState, PlaylistService, PlaylistStore } from '..';
-import { distinctUntilChanged, pluck, switchMap, tap } from 'rxjs/operators';
+import { PlaylistState, PlaylistService } from '..';
+import { pluck, switchMap, tap } from 'rxjs/operators';
 import { AuthQuery } from 'src/app/auth/+state';
+import { PlaylistStore } from '../playlist.store';
+import { TrackService } from 'src/app/tracks/+state';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +13,8 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
   constructor(
     service: PlaylistService,
     private store: PlaylistStore,
-    private authQuery: AuthQuery
+    private authQuery: AuthQuery,
+    private trackService: TrackService
   ) {
     super(service);
   }
@@ -19,8 +22,8 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
   sync() {
     return this.authQuery.selectActive().pipe(
       pluck('playlistIds'),
-      distinctUntilChanged((prev, curr) => prev.length === curr.length),
-      tap((_) => this.store.reset()),
+      // set all playlist active
+      tap((_) => this.store.setActive([])),
       switchMap((playlistIds) => this.service.syncManyDocs(playlistIds))
     );
   }

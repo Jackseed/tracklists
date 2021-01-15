@@ -15,8 +15,16 @@ const initialState = {
 };
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'playlists' })
-export class PlaylistStore extends EntityStore<PlaylistState> {
+export class PlaylistStore extends EntityStore<PlaylistState, Playlist> {
   constructor() {
     super(initialState);
+    this.loadFromStorage();
+  }
+  // call storage instead of firebase
+  loadFromStorage() {
+    const data = localStorage.getItem('playlistStore');
+    if (data) {
+      this._setState((_) => JSON.parse(data));
+    }
   }
 }

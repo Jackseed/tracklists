@@ -1,9 +1,11 @@
 <div
   *ngIf="spotifyUser$ | async as user; else notConnected"
   fxFlexFill
-  fxLayout="row"
+  fxLayout="column"
+  fxLayoutAlign="start center"
 >
   <div
+    fxFlex="85"
     *ngIf="(user$ | async)?.playlistIds.length > 0; else noTracks"
     fxFlexFill
     fxLayout="row"
@@ -39,35 +41,49 @@
             <mat-divider></mat-divider>
             <p>
               {{ this.trackNumber$ | async }} tracks
-              <button mat-icon-button (click)="playAll()">
+              <button
+                mat-icon-button
+                (click)="playAll()"
+                matTooltip="Play tracklist"
+              >
                 <mat-icon>play_circle_outline</mat-icon>
               </button>
-              <button mat-icon-button (click)="savePlaylist()">
+              <button
+                mat-icon-button
+                (click)="savePlaylist()"
+                matTooltip="Save as playlist"
+              >
                 <mat-icon>save</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="refreshData()"
+                matTooltip="Reload Spotify tracks"
+              >
+                <mat-icon>refresh</mat-icon>
               </button>
             </p>
           </div>
           <!----------------- TRACK LIST ----------------->
           <div
             class="track-list"
-            fxFlex="80"
-            *ngIf="
-              (activePlaylistIds$ | async)?.length > 0;
-              else noActivePlaylist
-            "
+            fxFlex
+            *ngIf="(activeTracks$ | async)?.length > 0; else noActivePlaylist"
           >
             <app-track-list></app-track-list>
-          </div>
-
-          <!----------------- PLAYER ----------------->
-          <div *ngIf="activeTrack$ | async">
-            <app-player [track$]="activeTrack$"></app-player>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <!----------------- PLAYER ----------------->
+  <div fxFlexFill fxFlex fxLayout="row">
+    <div fxFlexOffset="10" fxFlex="70">
+      <app-player [track$]="playingTrack$"></app-player>
+    </div>
+  </div>
 </div>
+
 <!----------------- NOT CONNECTED TO SPOTIFY ----------------->
 <ng-template #notConnected>
   <div fxFlexFill fxLayoutAlign="center center">
@@ -113,6 +129,11 @@
     <p fxFlex="nogrow" class="text-centered">
       Select a playlist to load its tracks
     </p>
-    <mat-icon fxFlexOffset="10" fxFlex="nogrow" class="icon" svgIcon="arrow"></mat-icon>
+    <mat-icon
+      fxFlexOffset="10"
+      fxFlex="nogrow"
+      class="icon"
+      svgIcon="arrow"
+    ></mat-icon>
   </div>
 </ng-template>

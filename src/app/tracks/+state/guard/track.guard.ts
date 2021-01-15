@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CollectionGuard } from 'akita-ng-fire';
-import { switchMap } from 'rxjs/operators';
-import { PlaylistQuery } from 'src/app/playlists/+state';
+import { pluck, switchMap, tap } from 'rxjs/operators';
+import { AuthQuery } from 'src/app/auth/+state';
 import { TrackService } from '../track.service';
 import { TrackState, TrackStore } from '../track.store';
 
@@ -12,24 +12,16 @@ export class TrackGuard extends CollectionGuard<TrackState> {
   constructor(
     service: TrackService,
     private store: TrackStore,
-    private playlistQuery: PlaylistQuery
+    private authQuery: AuthQuery
   ) {
     super(service);
   }
 
   sync() {
-    const activePlaylists$ = this.playlistQuery.selectActive();
-
-    return activePlaylists$.pipe(
-      switchMap((playlists) => {
-        let trackIds: string[] = [];
-
-        for (const playlist of playlists) {
-          trackIds = trackIds.concat(playlist.trackIds);
-        }
-        this.store.set({});
-        return this.service.syncManyDocs(trackIds);
-      })
+    return this.authQuery.selectActive().pipe(
+      pluck('trackIds'),
+      tap((_) => this.store.setActive([])),
+      switchMap((trackIds) => this.service.syncManyDocs(trackIds))
     );
   }
 }

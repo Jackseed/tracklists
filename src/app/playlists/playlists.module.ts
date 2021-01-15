@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @NgModule({
   declarations: [
@@ -27,6 +27,7 @@ import { MatButtonModule } from '@angular/material/button';
     FormsModule,
     MatDialogModule,
     MatButtonModule,
+    MatSlideToggleModule,
   ],
   exports: [
     PlaylistListComponent,

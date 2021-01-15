@@ -10,7 +10,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { filter, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { TrackService } from 'src/app/tracks/+state';
-import { Genre, GenreQuery, GenreStore } from '../+state';
+import { Genre, GenreQuery, GenreService } from '../+state';
 
 @UntilDestroy()
 @Component({
@@ -32,7 +32,7 @@ export class GenreListComponent implements OnInit {
   @ViewChild('auto') matAutocomplete: MatAutocomplete;
 
   constructor(
-    private store: GenreStore,
+    private service: GenreService,
     private query: GenreQuery,
     private trackService: TrackService
   ) {}
@@ -41,6 +41,8 @@ export class GenreListComponent implements OnInit {
     this.genres$ = this.query.selectAll();
 
     this.activeGenres$ = this.query.selectActive();
+
+    // genre list filtered by user search inputs
     this.filteredGenres$ = this.genreControl.valueChanges.pipe(
       startWith(''),
       switchMap((text) => (text ? this.textFilter(text) : this.genres$)),
@@ -53,6 +55,7 @@ export class GenreListComponent implements OnInit {
       )
     );
 
+    // filter tracks depending on active genres
     this.activeGenres$
       .pipe(
         untilDestroyed(this),
@@ -62,7 +65,6 @@ export class GenreListComponent implements OnInit {
         ),
         filter((genres) => genres.length > 0),
         map((genres) => genres.map((genre) => genre.trackIds)),
-        // @ts-ignore: Unreachable code error
         map((arrTrackIds) => arrTrackIds.flat()),
         tap((trackIds) =>
           this.trackService.setFilter({
@@ -80,7 +82,7 @@ export class GenreListComponent implements OnInit {
 
     // Set selected genre active
     if ((value || '').trim()) {
-      this.store.addActive(value);
+      this.service.addActive(value);
     }
 
     // Reset the input value
@@ -92,11 +94,11 @@ export class GenreListComponent implements OnInit {
   }
 
   remove(genreId: string): void {
-    this.store.removeActive(genreId);
+    this.service.removeActive(genreId);
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {
-    this.store.addActive(event.option.value.id);
+    this.service.addActive(event.option.value.id);
     this.genreInput.nativeElement.value = '';
     this.genreControl.setValue(null);
   }

@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { PlayerQuery, PlayerTrack } from '../player/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -19,11 +20,12 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class HomepageComponent implements OnInit {
   public spotifyUser$: Observable<SpotifyUser>;
-  public activeTrack$: Observable<Track>;
+  public activeTracks$: Observable<Track[]>;
   public user$: Observable<User>;
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
   public isStoreLoading$: Observable<boolean>;
+  public playingTrack$: Observable<PlayerTrack>;
 
   constructor(
     private authQuery: AuthQuery,
@@ -31,6 +33,7 @@ export class HomepageComponent implements OnInit {
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playlistQuery: PlaylistQuery,
+    private playerQuery: PlayerQuery,
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -54,13 +57,14 @@ export class HomepageComponent implements OnInit {
     this.authService.saveToken();
     this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
     this.spotifyService.initializePlayer();
-    this.activeTrack$ = this.trackQuery.selectActive();
+    this.activeTracks$ = this.trackQuery.selectActive();
     this.trackNumber$ = this.trackService.tracksLength$;
+    this.playingTrack$ = this.playerQuery.selectActive();
+
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]
     >;
     this.isStoreLoading$ = this.authQuery.selectLoading();
-    this.authQuery.selectLoading().subscribe(console.log);
   }
 
   public loginSpotify() {
@@ -118,5 +122,9 @@ export class HomepageComponent implements OnInit {
     this._snackBar.open(message, '', {
       duration: 2000,
     });
+  }
+
+  public refreshData() {
+    this.spotifyService.savePlaylists();
   }
 }

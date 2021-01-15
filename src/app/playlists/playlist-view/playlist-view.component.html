@@ -1,3 +1,7 @@
-<mat-checkbox color="accent" (change)="setActive()">
+<mat-checkbox
+  color="accent"
+  (change)="setActive($event)"
+  [ngModel]="isActive$ | async"
+>
   {{ playlist.name }}
 </mat-checkbox>

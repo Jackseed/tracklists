@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firestore } from 'firebase/app';
-import { Observable, of, timer } from 'rxjs';
+import { of, timer } from 'rxjs';
 import {
   catchError,
   delayWhen,
@@ -27,10 +27,9 @@ import {
   SpotifyAudioFeatures,
   SpotifyPlaylistTrack,
   SpotifySavedTrack,
-  TrackQuery,
-  TrackService,
-  TrackStore,
 } from '../tracks/+state';
+import { PlayerService } from '../player/+state/player.service';
+import { PlayerQuery } from '../player/+state';
 
 declare global {
   interface Window {
@@ -50,9 +49,8 @@ export class SpotifyService {
     private authStore: AuthStore,
     private authQuery: AuthQuery,
     private authService: AuthService,
-    private trackStore: TrackStore,
-    private trackQuery: TrackQuery,
-    private trackService: TrackService,
+    private playerQuery: PlayerQuery,
+    private playerService: PlayerService,
     private http: HttpClient
   ) {}
 
@@ -78,13 +76,17 @@ export class SpotifyService {
 
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
+      if (!state) return;
       const track = state.track_window.current_track;
-      const pause = this.trackQuery.getPaused(track.id);
-      this.trackStore.setActive(track.id);
-      this.trackService.updatePosition(track.id, state.position);
+      const pause = this.playerQuery.getPaused(track.id);
+
+      this.playerService.add(track);
+      this.playerService.setActive(track.id);
+      this.playerService.updatePosition(track.id, state.position);
+      // update playing track with state paused
       state.paused === pause
         ? false
-        : this.trackService.updatePaused(track.id, state.paused);
+        : this.playerService.updatePaused(track.id, state.paused);
     });
   }
 
@@ -137,12 +139,12 @@ export class SpotifyService {
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks);
 
-    // write playlist ids in user doc
+    // write playlist ids & track ids in user doc
     const user = this.authQuery.getActive();
     const userRef = this.db.collection('users').doc(user.id);
     const playlistIds = playlists.map((playlist) => playlist.id);
     userRef
-      .update({ playlistIds })
+      .update({ playlistIds, trackIds })
       .then((_) => console.log('playlistIds saved on user'))
       .catch((error) => console.log(error));
 
@@ -183,8 +185,8 @@ export class SpotifyService {
     // create liked tracks as a playlist
     const user = this.authQuery.getActive();
     const playlist: Playlist = {
-      id: `${user.name}LikedTracks`,
-      name: `${user.name}'s liked tracks`,
+      id: `${user.id}LikedTracks`,
+      name: `Liked tracks`,
       trackIds,
       type: 'likedTracks',
     };
@@ -197,10 +199,13 @@ export class SpotifyService {
       .then((_) => console.log('liked tracks saved as a playlist'))
       .catch((error) => console.log(error));
 
-    // add the liked tracks playlist in the user doc
+    // add the liked tracks playlist & the trackIds in the user doc
     const userRef = this.db.collection('users').doc(user.id);
     userRef
-      .update({ playlistIds: firestore.FieldValue.arrayUnion(playlist.id) })
+      .update({
+        playlistIds: firestore.FieldValue.arrayUnion(playlist.id),
+        trackIds: firestore.FieldValue.arrayUnion(...trackIds),
+      })
       .then((_) => console.log('liked tracks playlist added on user'))
       .catch((error) => console.log(error));
 
@@ -563,19 +568,7 @@ export class SpotifyService {
     );
   }
 
-  public async addTracksToPlaylistByBatches(
-    playlistId: string,
-    tracks: Track[]
-  ) {
-    const limit = 100;
-
-    // add tracks by batches
-    for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
-      const bactchTracks = tracks.slice(limit * i, limit * (i + 1));
-      console.log('batch ', i, bactchTracks);
-      this.addTracksToPlaylist(playlistId, bactchTracks);
-    }
-  }
+  // PLAYER
 
   public async addToPlayback(trackUri: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
@@ -584,37 +577,16 @@ export class SpotifyService {
     return this.postRequests(baseUrl, queryParam, null);
   }
 
-  public async playNext() {
-    const baseUrl = 'https://api.spotify.com/v1/me/player/next';
+  public async previous() {
+    const baseUrl = 'https://api.spotify.com/v1/me/player/previous';
 
     return this.postRequests(baseUrl, '', null);
   }
 
-  public async createPlaylist(name: string) {
-    const user = this.authQuery.getActive();
-    const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
-    const body = { name };
+  public async next() {
+    const baseUrl = 'https://api.spotify.com/v1/me/player/next';
 
-    return this.postRequests(baseUrl, '', body);
-  }
-
-  private async addTracksToPlaylist(playlistId: string, tracks: Track[]) {
-    const uris = tracks.map((track) => track.uri);
-    const baseUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-    const body = { uris };
-
-    return this.postRequests(baseUrl, '', body);
-  }
-
-  private async postRequests(baseUrl: string, queryParam: string, body) {
-    const headers = await this.getHeaders();
-
-    return this.http
-      .post(`${baseUrl + queryParam}`, body, {
-        headers,
-      })
-      .pipe(first())
-      .toPromise();
+    return this.postRequests(baseUrl, '', null);
   }
 
   public async play(trackUris?: string[]) {
@@ -640,11 +612,61 @@ export class SpotifyService {
     return this.putRequests(baseUrl, queryParam, null);
   }
 
+  public async addToLikedTracks(trackId: string) {
+    const baseUrl = 'https://api.spotify.com/v1/me/tracks';
+    const queryParam = `?ids=${trackId}`;
+
+    return this.putRequests(baseUrl, queryParam, null);
+  }
+
   private async putRequests(baseUrl: string, queryParam: string, body) {
     const headers = await this.getHeaders();
 
     return this.http
       .put(`${baseUrl + queryParam}`, body, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
+
+  // PLAYLISTS
+
+  public async createPlaylist(name: string) {
+    const user = this.authQuery.getActive();
+    const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    const body = { name };
+
+    return this.postRequests(baseUrl, '', body);
+  }
+
+  public async addTracksToPlaylistByBatches(
+    playlistId: string,
+    tracks: Track[]
+  ) {
+    const limit = 100;
+
+    // add tracks by batches
+    for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
+      const bactchTracks = tracks.slice(limit * i, limit * (i + 1));
+      console.log('batch ', i, bactchTracks);
+      this.addTracksToPlaylist(playlistId, bactchTracks);
+    }
+  }
+
+  private async addTracksToPlaylist(playlistId: string, tracks: Track[]) {
+    const uris = tracks.map((track) => track.uri);
+    const baseUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+    const body = { uris };
+
+    return this.postRequests(baseUrl, '', body);
+  }
+
+  private async postRequests(baseUrl: string, queryParam: string, body) {
+    const headers = await this.getHeaders();
+
+    return this.http
+      .post(`${baseUrl + queryParam}`, body, {
         headers,
       })
       .pipe(first())

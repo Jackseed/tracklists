@@ -13,10 +13,10 @@
         <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
       </div>
       <div fxFlex></div>
-      <button mat-icon-button (click)="play(track.uri)">
+      <button mat-icon-button (click)="play(track.uri)" matTooltip="Play">
         <mat-icon>play_circle_outline</mat-icon>
       </button>
-      <button mat-icon-button (click)="addoToPlayback(track.uri)">
+      <button mat-icon-button (click)="addoToPlayback(track.uri)" matTooltip="Add to queue">
         <mat-icon>playlist_add</mat-icon>
       </button>
     </mat-card-header>
