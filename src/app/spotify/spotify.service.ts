@@ -568,19 +568,7 @@ export class SpotifyService {
     );
   }
 
-  public async addTracksToPlaylistByBatches(
-    playlistId: string,
-    tracks: Track[]
-  ) {
-    const limit = 100;
-
-    // add tracks by batches
-    for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
-      const bactchTracks = tracks.slice(limit * i, limit * (i + 1));
-      console.log('batch ', i, bactchTracks);
-      this.addTracksToPlaylist(playlistId, bactchTracks);
-    }
-  }
+  // PLAYER
 
   public async addToPlayback(trackUri: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
@@ -599,33 +587,6 @@ export class SpotifyService {
     const baseUrl = 'https://api.spotify.com/v1/me/player/next';
 
     return this.postRequests(baseUrl, '', null);
-  }
-
-  public async createPlaylist(name: string) {
-    const user = this.authQuery.getActive();
-    const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
-    const body = { name };
-
-    return this.postRequests(baseUrl, '', body);
-  }
-
-  private async addTracksToPlaylist(playlistId: string, tracks: Track[]) {
-    const uris = tracks.map((track) => track.uri);
-    const baseUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-    const body = { uris };
-
-    return this.postRequests(baseUrl, '', body);
-  }
-
-  private async postRequests(baseUrl: string, queryParam: string, body) {
-    const headers = await this.getHeaders();
-
-    return this.http
-      .post(`${baseUrl + queryParam}`, body, {
-        headers,
-      })
-      .pipe(first())
-      .toPromise();
   }
 
   public async play(trackUris?: string[]) {
@@ -651,11 +612,61 @@ export class SpotifyService {
     return this.putRequests(baseUrl, queryParam, null);
   }
 
+  public async addToLikedTracks(trackId: string) {
+    const baseUrl = 'https://api.spotify.com/v1/me/tracks';
+    const queryParam = `?ids=${trackId}`;
+
+    return this.putRequests(baseUrl, queryParam, null);
+  }
+
   private async putRequests(baseUrl: string, queryParam: string, body) {
     const headers = await this.getHeaders();
 
     return this.http
       .put(`${baseUrl + queryParam}`, body, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
+
+  // PLAYLISTS
+
+  public async createPlaylist(name: string) {
+    const user = this.authQuery.getActive();
+    const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    const body = { name };
+
+    return this.postRequests(baseUrl, '', body);
+  }
+
+  public async addTracksToPlaylistByBatches(
+    playlistId: string,
+    tracks: Track[]
+  ) {
+    const limit = 100;
+
+    // add tracks by batches
+    for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
+      const bactchTracks = tracks.slice(limit * i, limit * (i + 1));
+      console.log('batch ', i, bactchTracks);
+      this.addTracksToPlaylist(playlistId, bactchTracks);
+    }
+  }
+
+  private async addTracksToPlaylist(playlistId: string, tracks: Track[]) {
+    const uris = tracks.map((track) => track.uri);
+    const baseUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+    const body = { uris };
+
+    return this.postRequests(baseUrl, '', body);
+  }
+
+  private async postRequests(baseUrl: string, queryParam: string, body) {
+    const headers = await this.getHeaders();
+
+    return this.http
+      .post(`${baseUrl + queryParam}`, body, {
         headers,
       })
       .pipe(first())
