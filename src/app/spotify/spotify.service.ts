@@ -590,6 +590,11 @@ export class SpotifyService {
   }
 
   public async play(trackUris?: string[]) {
+    // Not documented by spotify but it looks like there is a limit around 700 tracks
+    const urisLimit = 700;
+    if (trackUris.length > urisLimit)
+      trackUris = trackUris.slice(0, urisLimit - 1);
+
     const user = this.authQuery.getActive();
     const baseUrl = 'https://api.spotify.com/v1/me/player/play';
     const queryParam =

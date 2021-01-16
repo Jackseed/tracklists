@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { debounceTime } from 'rxjs/operators';
+import { Playlist } from './playlist.model';
 import { PlaylistState, PlaylistStore } from './playlist.store';
 
 @Injectable({ providedIn: 'root' })
@@ -17,5 +18,11 @@ export class PlaylistQuery extends QueryEntity<PlaylistState> {
       .subscribe((state) => {
         localStorage.setItem('playlistStore', JSON.stringify(state));
       });
+  }
+
+  public get likedTracksPlaylist(): Playlist {
+    return this.getAll({
+      filterBy: (playlist) => playlist.type === 'likedTracks',
+    })[0];
   }
 }
