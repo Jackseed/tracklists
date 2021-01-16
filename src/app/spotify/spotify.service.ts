@@ -133,11 +133,15 @@ export class SpotifyService {
     console.log('playlist tracks: ', fullTracks);
     // write playlists by batches
     const playlistCollection = this.db.collection('playlists');
-    await this.firestoreWriteBatches(playlistCollection, playlists);
+    await this.firestoreWriteBatches(
+      playlistCollection,
+      playlists,
+      'playlists'
+    );
 
     // write tracks by batches
     const trackCollection = this.db.collection('tracks');
-    await this.firestoreWriteBatches(trackCollection, fullTracks);
+    await this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
 
     // write playlist ids & track ids in user doc
     const user = this.authQuery.getActive();
@@ -180,7 +184,7 @@ export class SpotifyService {
 
     // write tracks by batches
     const trackCollection = this.db.collection('tracks');
-    await this.firestoreWriteBatches(trackCollection, fullTracks);
+    await this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
 
     // create liked tracks as a playlist
     const user = this.authQuery.getActive();
@@ -372,9 +376,13 @@ export class SpotifyService {
 
   private async firestoreWriteBatches(
     collection: firebase.firestore.CollectionReference,
-    objects
+    objects,
+    type: string
   ) {
-    const firebaseWriteLimit = 500;
+    let firebaseWriteLimit;
+    // tracks write twice, including userId
+    type === 'tracks' ? (firebaseWriteLimit = 250) : (firebaseWriteLimit = 500);
+    const userId = this.authQuery.getActiveId();
     for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
       const bactchObject = objects.slice(
         firebaseWriteLimit * i,
@@ -385,7 +393,14 @@ export class SpotifyService {
       for (const object of bactchObject) {
         if (object.id) {
           const ref = collection.doc(object.id);
-          batch.set(ref, object);
+          // if it's tracks, add also userId
+          type === 'tracks'
+            ? batch.set(
+                ref,
+                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
+                { merge: true }
+              )
+            : batch.set(ref, object, { merge: true });
         } else {
           console.log('cant save object', object);
         }
@@ -393,7 +408,7 @@ export class SpotifyService {
 
       batch
         .commit()
-        .then((_) => console.log(`batch of object ${i} saved`))
+        .then((_) => console.log(`batch of ${type} ${i} saved`))
         .catch((error) => console.log(error));
     }
   }

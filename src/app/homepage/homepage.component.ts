@@ -65,6 +65,7 @@ export class HomepageComponent implements OnInit {
       string[]
     >;
     this.isStoreLoading$ = this.authQuery.selectLoading();
+    this.trackService.setFirestoreTracks();
   }
 
   public loginSpotify() {
@@ -126,5 +127,9 @@ export class HomepageComponent implements OnInit {
 
   public refreshData() {
     this.spotifyService.savePlaylists();
+  }
+
+  public signOut() {
+    this.authService.signOut();
   }
 }

@@ -141,12 +141,13 @@ export class AuthService extends CollectionService<AuthState> {
     return errorMessage;
   }
 
-  async signOut() {
-    await this.router.navigate(['/welcome']);
-
-    if (this.router.url.includes('welcome')) {
-      await this.afAuth.signOut();
-      this.store.reset();
-    }
+  public signOut() {
+    this.afAuth
+      .signOut()
+      .then((_) =>
+        this.router
+          .navigate(['/welcome'])
+          .then((_) => this.router.navigate(['/welcome']))
+      );
   }
 }

@@ -2,12 +2,18 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
 import { Observable } from 'rxjs';
-import { debounceTime, map } from 'rxjs/operators';
+import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { Track } from './track.model';
+import { AuthQuery } from 'src/app/auth/+state';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState, Track> {
-  constructor(protected store: TrackStore) {
+  constructor(
+    protected store: TrackStore,
+    private authQuery: AuthQuery,
+    private afs: AngularFirestore
+  ) {
     super(store);
     this.saveToStorage();
   }
@@ -24,5 +30,20 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     return this.selectAll().pipe(
       map((tracks) => tracks.map((track) => track.genres))
     );
+  }
+
+  public get getUserTracks(): Observable<Track[]> {
+    const userId$ = this.authQuery.selectActiveId();
+    const tracks$ = userId$.pipe(
+      switchMap(
+        (userId) =>
+          this.afs
+            .collection('tracks', (ref) =>
+              ref.where('userIds', 'array-contains', userId)
+            )
+            .valueChanges() as Observable<Track[]>
+      )
+    );
+    return tracks$;
   }
 }

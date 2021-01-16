@@ -9,12 +9,12 @@ export class PlaylistService extends CollectionService<PlaylistState> {
     super(store);
   }
 
-  public addActive(playlistId: string) {
-    this.store.addActive(playlistId);
+  public addActive(playlistIds: string[]) {
+    this.store.addActive(playlistIds);
   }
 
-  public removeActive(playlistId: string) {
-    this.store.removeActive(playlistId);
+  public removeActive(playlistIds: string[]) {
+    this.store.removeActive(playlistIds);
   }
 
   public toggleActive(playlistId: string) {
