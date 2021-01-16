@@ -32,9 +32,9 @@ export class PlaylistViewComponent implements OnInit {
     this.service.toggleActive(this.playlist.id);
     this.genreService.toggle(this.playlist.id);
     if (event.checked) {
-      this.trackService.addActive(this.playlist);
+      this.trackService.addActive(this.playlist.trackIds);
     } else {
-      this.trackService.removeActive(this.playlist);
+      this.trackService.removeActive(this.playlist.trackIds);
     }
   }
 }

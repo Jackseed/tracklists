@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { SpotifyService } from 'src/app/spotify/spotify.service';
-import { Track } from '../+state';
+import { Track, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-view',
@@ -9,7 +9,10 @@ import { Track } from '../+state';
 })
 export class TrackViewComponent implements OnInit {
   @Input() track: Track;
-  constructor(private spotifyService: SpotifyService) {}
+  constructor(
+    private service: TrackService,
+    private spotifyService: SpotifyService
+  ) {}
 
   ngOnInit(): void {}
 
@@ -18,5 +21,8 @@ export class TrackViewComponent implements OnInit {
   }
   public async addoToPlayback(trackUri: string) {
     await this.spotifyService.addToPlayback(trackUri);
+  }
+  public remove() {
+    this.service.removeActive([this.track.id]);
   }
 }

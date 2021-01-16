@@ -87,8 +87,8 @@ export class TrackService {
     );
   }
 
-  public addActive(playlist: Playlist) {
-    this.store.addActive(playlist.trackIds);
+  public addActive(trackIds: string[]) {
+    this.store.addActive(trackIds);
   }
 
   public addAllActive() {
@@ -96,8 +96,8 @@ export class TrackService {
     const trackIds = tracks.map((track) => track.id);
     this.store.addActive(trackIds);
   }
-  public removeActive(playlist: Playlist) {
-    this.store.removeActive(playlist.trackIds);
+  public removeActive(trackIds: string[]) {
+    this.store.removeActive(trackIds);
   }
 
   public removeAllActive() {
