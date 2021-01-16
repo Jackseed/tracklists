@@ -23,6 +23,7 @@ export interface Track {
   speechiness?: number;
   valence?: number;
   tempo?: number;
+  userIds?: string[];
 }
 
 export interface Album {
@@ -162,7 +163,6 @@ export function createTrack(params: Partial<Track>) {
 }
 
 export function createAudioFeatures(params: Partial<Track>) {
-
   return {
     id: params.id,
     key: params.key,
