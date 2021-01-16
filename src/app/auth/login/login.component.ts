@@ -66,7 +66,6 @@ export class LoginComponent implements OnInit {
     if (errorMessage) console.log(errorMessage);
     if (snackBarMessage) {
       this.snackBar.open(snackBarMessage);
-      this.form.reset();
     }
 
     this.loading = false;

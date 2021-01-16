@@ -128,4 +128,8 @@ export class HomepageComponent implements OnInit {
   public refreshData() {
     this.spotifyService.savePlaylists();
   }
+
+  public signOut() {
+    this.authService.signOut();
+  }
 }
