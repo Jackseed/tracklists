@@ -90,7 +90,19 @@ export class TrackService {
   public addActive(playlist: Playlist) {
     this.store.addActive(playlist.trackIds);
   }
+
+  public addAllActive() {
+    const tracks = this.query.getAll();
+    const trackIds = tracks.map((track) => track.id);
+    this.store.addActive(trackIds);
+  }
   public removeActive(playlist: Playlist) {
     this.store.removeActive(playlist.trackIds);
+  }
+
+  public removeAllActive() {
+    const tracks = this.query.getAll();
+    const trackIds = tracks.map((track) => track.id);
+    this.store.removeActive(trackIds);
   }
 }

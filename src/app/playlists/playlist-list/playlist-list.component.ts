@@ -29,16 +29,20 @@ export class PlaylistListComponent implements OnInit {
     this.playlists$
       .pipe(
         map((playlist) => playlist.map((playlist) => playlist.id)),
+        tap((playlistIds) => {
+          if (event.checked) {
+            this.trackService.addAllActive();
+            this.service.addActive(playlistIds);
+          } else {
+            this.trackService.removeAllActive();
+            this.service.removeActive(playlistIds);
+          }
+        }),
         tap((playlistIds) =>
           playlistIds.map((playlistId) => {
-            const playlist = this.query.getEntity(playlistId);
             if (event.checked) {
-              this.trackService.addActive(playlist);
-              this.service.addActive(playlistId);
               this.genreService.addPlaylistGenres(playlistId);
             } else {
-              this.service.removeActive(playlistId);
-              this.trackService.removeActive(playlist);
               this.genreService.removePlaylistGenres(playlistId);
             }
           })
