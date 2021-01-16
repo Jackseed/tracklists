@@ -1,22 +1,33 @@
 import { Injectable } from '@angular/core';
 import { TrackStore, TrackState } from './track.store';
-import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
-import { map, switchMap } from 'rxjs/operators';
+import { filter, first, map, switchMap, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 
-
 @Injectable({ providedIn: 'root' })
-@CollectionConfig({ path: 'tracks' })
-export class TrackService extends CollectionService<TrackState> {
+export class TrackService {
   trackFilters: AkitaFiltersPlugin<TrackState>;
 
-  constructor(store: TrackStore, private query: TrackQuery) {
-    super(store);
+  constructor(private store: TrackStore, private query: TrackQuery) {
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
+  }
+
+  public setFirestoreTracks() {
+    // if data can be loaded from localStorage, don't call firestore
+    const data = localStorage.getItem('trackStore');
+    if (data) return;
+    const tracks$ = this.query.getUserTracks;
+    tracks$
+      .pipe(
+        tap((tracks) => {
+          this.store.set(tracks);
+          this.store.setActive([]);
+        }, first())
+      )
+      .subscribe();
   }
 
   setFilter(filter: AkitaFilter<TrackState>) {
@@ -39,6 +50,7 @@ export class TrackService extends CollectionService<TrackState> {
     const activeIds$ = this.query.selectActiveId();
 
     const tracks$ = activeIds$.pipe(
+      filter((ids) => !!ids),
       switchMap((ids) =>
         this.trackFilters.selectAllByFilters({
           // limit filtered selection to active tracks

@@ -23,6 +23,7 @@ export class TrackStore extends EntityStore<TrackState, Track> {
     const data = localStorage.getItem('trackStore');
     if (data) {
       this._setState((_) => JSON.parse(data));
+      this.setActive([]);
     }
   }
 }
