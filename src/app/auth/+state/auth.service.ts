@@ -33,6 +33,7 @@ export class AuthService extends CollectionService<AuthState> {
     'user-library-read',
     'playlist-modify-public',
     'playlist-modify-private',
+    'user-library-modify',
   ].join('%20');
 
   constructor(

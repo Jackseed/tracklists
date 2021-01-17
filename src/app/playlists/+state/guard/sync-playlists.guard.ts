@@ -4,7 +4,6 @@ import { PlaylistState, PlaylistService } from '..';
 import { pluck, switchMap, tap } from 'rxjs/operators';
 import { AuthQuery } from 'src/app/auth/+state';
 import { PlaylistStore } from '../playlist.store';
-import { TrackService } from 'src/app/tracks/+state';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +12,7 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
   constructor(
     service: PlaylistService,
     private store: PlaylistStore,
-    private authQuery: AuthQuery,
-    private trackService: TrackService
+    private authQuery: AuthQuery
   ) {
     super(service);
   }

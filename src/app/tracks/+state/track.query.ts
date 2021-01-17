@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { Track } from './track.model';
 import { AuthQuery } from 'src/app/auth/+state';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { PlaylistQuery } from 'src/app/playlists/+state';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState, Track> {
   constructor(
     protected store: TrackStore,
     private authQuery: AuthQuery,
-    private afs: AngularFirestore
+    private afs: AngularFirestore,
+    private playlistQuery: PlaylistQuery
   ) {
     super(store);
     this.saveToStorage();
@@ -32,7 +34,7 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     );
   }
 
-  public get getUserTracks(): Observable<Track[]> {
+  public get getUserTracks$(): Observable<Track[]> {
     const userId$ = this.authQuery.selectActiveId();
     const tracks$ = userId$.pipe(
       switchMap(
@@ -45,5 +47,20 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
       )
     );
     return tracks$;
+  }
+
+  public get selectLikedTracks$(): Observable<Track[]> {
+    const likedTracks$ = this.playlistQuery.likedTracksPlaylist.pipe(
+      map((playlist) => playlist.trackIds),
+      switchMap((trackIds) => this.selectMany(trackIds))
+    );
+    return likedTracks$;
+  }
+
+  public isLiked$(trackId: string): Observable<boolean> {
+    return this.selectLikedTracks$.pipe(
+      map((tracks) => tracks.map((track) => track.id)),
+      switchMap((trackIds) => of(trackIds.includes(trackId)))
+    );
   }
 }

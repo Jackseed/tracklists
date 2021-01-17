@@ -1,6 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { SpotifyService } from 'src/app/spotify/spotify.service';
-import { Track, TrackService } from '../+state';
+import { Track, TrackQuery, TrackService } from '../+state';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { PlaylistQuery, PlaylistService } from 'src/app/playlists/+state';
+import { first, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-track-view',
@@ -9,20 +13,43 @@ import { Track, TrackService } from '../+state';
 })
 export class TrackViewComponent implements OnInit {
   @Input() track: Track;
+  isLiked$: Observable<boolean>;
   constructor(
+    private query: TrackQuery,
     private service: TrackService,
-    private spotifyService: SpotifyService
+    private spotifyService: SpotifyService,
+    private playlistQuery: PlaylistQuery,
+    private playlistService: PlaylistService,
+    private _snackBar: MatSnackBar
   ) {}
 
-  ngOnInit(): void {}
-
-  public async play(trackUri: string) {
-    await this.spotifyService.play([trackUri]);
+  ngOnInit(): void {
+    this.isLiked$ = this.query.isLiked$(this.track.id);
   }
-  public async addoToPlayback(trackUri: string) {
-    await this.spotifyService.addToPlayback(trackUri);
+
+  public async play() {
+    await this.spotifyService.play([this.track.uri]);
+  }
+  public async addoToPlayback() {
+    await this.spotifyService.addToPlayback(this.track.uri);
   }
   public remove() {
     this.service.removeActive([this.track.id]);
+  }
+
+  public async like() {
+    const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
+    likedTracksPlaylist$
+      .pipe(
+        tap(async (playlist) => {
+          this.playlistService.addTrack(playlist.id, this.track.id);
+          await this.spotifyService.addToLikedTracks(this.track.id);
+          this._snackBar.open('Added to Liked tracks', '', {
+            duration: 2000,
+          });
+        }),
+        first()
+      )
+      .subscribe();
   }
 }

@@ -5,7 +5,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AngularFireAnalytics } from '@angular/fire/analytics';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-login',
@@ -24,8 +23,7 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private analytics: AngularFireAnalytics,
-    private router: Router,
-    private afAuth: AngularFireAuth
+    private router: Router
   ) {}
 
   ngOnInit(): void {

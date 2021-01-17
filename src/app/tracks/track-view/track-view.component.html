@@ -13,13 +13,37 @@
         <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
       </div>
       <div fxFlex></div>
-      <button mat-icon-button (click)="play(track.uri)" matTooltip="Play">
+      <button
+        *ngIf="isLiked$ | async"
+        mat-icon-button
+        (click)="play()"
+        matTooltip="Unlike"
+      >
+        <mat-icon>favorite</mat-icon>
+      </button>
+      <button
+        *ngIf="!(isLiked$ | async)"
+        mat-icon-button
+        (click)="like()"
+        matTooltip="Like"
+      >
+        <mat-icon>favorite_border</mat-icon>
+      </button>
+      <button mat-icon-button (click)="play()" matTooltip="Play">
         <mat-icon>play_circle_outline</mat-icon>
       </button>
-      <button mat-icon-button (click)="addoToPlayback(track.uri)" matTooltip="Add to queue">
+      <button
+        mat-icon-button
+        (click)="addoToPlayback()"
+        matTooltip="Add to queue"
+      >
         <mat-icon>playlist_add</mat-icon>
       </button>
-      <button mat-icon-button (click)="remove()" matTooltip="Remove from tracklist">
+      <button
+        mat-icon-button
+        (click)="remove()"
+        matTooltip="Remove from tracklist"
+      >
         <mat-icon>cancel</mat-icon>
       </button>
     </mat-card-header>

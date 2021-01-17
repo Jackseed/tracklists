@@ -19,7 +19,7 @@ export class TrackService {
     // if data can be loaded from localStorage, don't call firestore
     const data = localStorage.getItem('trackStore');
     if (data) return;
-    const tracks$ = this.query.getUserTracks;
+    const tracks$ = this.query.getUserTracks$;
     tracks$
       .pipe(
         tap((tracks) => {

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
-import { debounceTime } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
 import { Playlist } from './playlist.model';
 import { PlaylistState, PlaylistStore } from './playlist.store';
 
@@ -20,9 +21,10 @@ export class PlaylistQuery extends QueryEntity<PlaylistState> {
       });
   }
 
-  public get likedTracksPlaylist(): Playlist {
-    return this.getAll({
+  public get likedTracksPlaylist(): Observable<Playlist> {
+    return this.selectAll({
       filterBy: (playlist) => playlist.type === 'likedTracks',
-    })[0];
+      limitTo: 1,
+    }).pipe(switchMap((playlists) => of(playlists[0])));
   }
 }
