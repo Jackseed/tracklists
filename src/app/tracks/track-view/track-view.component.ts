@@ -52,4 +52,20 @@ export class TrackViewComponent implements OnInit {
       )
       .subscribe();
   }
+
+  public async unlike() {
+    const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
+    likedTracksPlaylist$
+      .pipe(
+        tap(async (playlist) => {
+          this.playlistService.removeTrack(playlist.id, this.track.id);
+          await this.spotifyService.removeFromLikedTracks(this.track.id);
+          this._snackBar.open('Removed from Liked tracks', '', {
+            duration: 2000,
+          });
+        }),
+        first()
+      )
+      .subscribe();
+  }
 }

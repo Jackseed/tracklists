@@ -650,6 +650,25 @@ export class SpotifyService {
       .toPromise();
   }
 
+  public async removeFromLikedTracks(trackId: string) {
+    const baseUrl = 'https://api.spotify.com/v1/me/tracks';
+    const queryParam = `?ids=${trackId}`;
+
+    return this.deleteRequests(baseUrl, queryParam, null);
+  }
+
+  private async deleteRequests(baseUrl: string, queryParam: string, body) {
+    const headers = await this.getHeaders();
+
+    return this.http
+      .delete(`${baseUrl + queryParam}`, {
+        headers,
+        observe: body,
+      })
+      .pipe(first())
+      .toPromise();
+  }
+
   // PLAYLISTS
 
   public async createPlaylist(name: string) {
