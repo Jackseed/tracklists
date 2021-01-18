@@ -1,10 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
-import { filter, map, switchMap, tap } from 'rxjs/operators';
+import { filter, first, map, switchMap, tap } from 'rxjs/operators';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track } from '../tracks/+state';
-import { PlayerQuery } from './+state';
+import { PlayerQuery, PlayerService } from './+state';
 
 @UntilDestroy()
 @Component({
@@ -15,15 +17,25 @@ import { PlayerQuery } from './+state';
 export class PlayerComponent implements OnInit {
   @Input() track$: Observable<Track>;
   paused$: Observable<boolean>;
+  shuffle$: Observable<boolean>;
   value = 0;
   isTicking = false;
 
   constructor(
     private query: PlayerQuery,
-    private spotifyService: SpotifyService
+    private service: PlayerService,
+    private spotifyService: SpotifyService,
+    private matIconRegistry: MatIconRegistry,
+    private domSanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
+    this.matIconRegistry.addSvgIcon(
+      'shuffle',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        `../../assets/shuffle.svg`
+      )
+    );
     let interval;
     // get track position
     this.track$
@@ -42,6 +54,9 @@ export class PlayerComponent implements OnInit {
       filter((track) => !!track),
       switchMap((track) => this.query.selectPaused(track.id))
     );
+
+    this.shuffle$ = this.query.selectShuffle();
+    this.shuffle$.subscribe(console.log);
     // if the track is played, add 1 to value every sec
     this.paused$
       .pipe(
@@ -81,5 +96,14 @@ export class PlayerComponent implements OnInit {
 
   public async onChangeSlider() {
     await this.spotifyService.seekPosition(this.value * 1000);
+  }
+
+  public shuffle() {
+    this.shuffle$
+      .pipe(
+        tap((shuffle) => this.service.updateShuffle(!shuffle)),
+        first()
+      )
+      .subscribe(console.log);
   }
 }

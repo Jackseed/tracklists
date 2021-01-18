@@ -36,3 +36,11 @@
   height: 40px;
   line-height: 40px;
 }
+
+.icon {
+  transform: scale(0.7);
+}
+
+.green {
+  fill: #69f0ae;
+}

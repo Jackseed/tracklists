@@ -20,4 +20,8 @@ export class PlayerService {
   public updatePaused(trackId: string, paused: boolean) {
     this.store.upsert(trackId, { paused });
   }
+
+  public updateShuffle(shuffle: boolean) {
+    this.store.update({ ui: { shuffle } });
+  }
 }

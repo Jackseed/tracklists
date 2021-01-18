@@ -26,5 +26,7 @@ export class PlayerQuery extends QueryEntity<PlayerState, PlayerTrack> {
     return track.paused;
   }
 
-  
+  selectShuffle(): Observable<boolean> {
+    return this.select((state) => state.ui.shuffle);
+  }
 }

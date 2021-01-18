@@ -30,12 +30,19 @@
       <mat-card-actions
         fxFlexFill
         fxLayout="row"
-        fxLayoutAlign="center center"
+        fxLayoutAlign="start center"
         *ngIf="track$ | async as track"
       >
+        <button fxFlex="5" fxFlexOffset="32" mat-icon-button (click)="shuffle()">
+          <mat-icon
+            [ngClass]="{ green: (shuffle$ | async) }"
+            class="icon"
+            svgIcon="shuffle"
+          ></mat-icon>
+        </button>
         <button
-          fxFlex="nogrow"
-          fxFlexOffset="3"
+          fxFlex="5"
+          fxFlexOffset="5"
           mat-icon-button
           (click)="previous()"
         >
@@ -43,7 +50,7 @@
         </button>
         <button
           id="play-button"
-          fxFlex="nogrow"
+          fxFlex="8"
           fxFlexOffset="3"
           mat-icon-button
           (click)="play()"
@@ -53,7 +60,7 @@
         </button>
         <button
           id="play-button"
-          fxFlex="nogrow"
+          fxFlex="8"
           fxFlexOffset="3"
           mat-icon-button
           (click)="pause()"
@@ -61,12 +68,7 @@
         >
           <mat-icon id="play-icon">pause_circle_outline</mat-icon>
         </button>
-        <button
-          fxFlex="nogrow"
-          fxFlexOffset="3"
-          mat-icon-button
-          (click)="next()"
-        >
+        <button fxFlex="5" fxFlexOffset="3" mat-icon-button (click)="next()">
           <mat-icon>skip_next</mat-icon>
         </button>
       </mat-card-actions>
