@@ -56,7 +56,7 @@ export class PlayerComponent implements OnInit {
     );
 
     this.shuffle$ = this.query.selectShuffle();
-    this.shuffle$.subscribe(console.log);
+
     // if the track is played, add 1 to value every sec
     this.paused$
       .pipe(

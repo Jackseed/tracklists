@@ -10,6 +10,7 @@ import { AuthQuery } from './auth.query';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firestore } from 'firebase/app';
 import { Observable } from 'rxjs';
+import { resetStores } from '@datorama/akita';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -143,12 +144,11 @@ export class AuthService extends CollectionService<AuthState> {
   }
 
   public signOut() {
-    this.afAuth
-      .signOut()
-      .then((_) =>
-        this.router
-          .navigate(['/welcome'])
-          .then((_) => this.router.navigate(['/welcome']))
-      );
+    this.afAuth.signOut().then((_) =>
+      this.router.navigate(['/welcome']).then((_) => {
+        this.router.navigate(['/welcome']);
+        resetStores({ exclude: ['storeName'] });
+      })
+    );
   }
 }
