@@ -3,7 +3,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
-import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track } from '../tracks/+state';
 import { PlayerQuery, PlayerService } from './+state';
@@ -98,12 +98,8 @@ export class PlayerComponent implements OnInit {
     await this.spotifyService.seekPosition(this.value * 1000);
   }
 
-  public shuffle() {
-    this.shuffle$
-      .pipe(
-        tap((shuffle) => this.service.updateShuffle(!shuffle)),
-        first()
-      )
-      .subscribe(console.log);
+  public async shuffle() {
+    const state = this.query.getShuffle();
+    await this.spotifyService.shuffle(!state);
   }
 }

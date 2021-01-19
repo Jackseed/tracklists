@@ -29,4 +29,8 @@ export class PlayerQuery extends QueryEntity<PlayerState, PlayerTrack> {
   selectShuffle(): Observable<boolean> {
     return this.select((state) => state.ui.shuffle);
   }
+
+  getShuffle(): boolean {
+    return this.getValue().ui.shuffle;
+  }
 }

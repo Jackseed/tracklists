@@ -627,6 +627,14 @@ export class SpotifyService {
     return this.putRequests(baseUrl, '', null);
   }
 
+  public async shuffle(state: boolean) {
+    const user = this.authQuery.getActive();
+    const baseUrl = 'https://api.spotify.com/v1/me/player/shuffle';
+    const queryParam = `?state=${state}` + `&device_id=${user.deviceId}`;
+
+    return this.putRequests(baseUrl, queryParam, null);
+  }
+
   public async seekPosition(position_ms: number) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/seek';
     const queryParam = `?position_ms=${position_ms}`;
