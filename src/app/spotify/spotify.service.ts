@@ -630,7 +630,7 @@ export class SpotifyService {
   public async shuffle(state: boolean) {
     const user = this.authQuery.getActive();
     const baseUrl = 'https://api.spotify.com/v1/me/player/shuffle';
-    const queryParam = `?state=${state}` + `&device_id=${user.deviceId}`;
+    const queryParam = `?state=${state}`;
 
     return this.putRequests(baseUrl, queryParam, null);
   }
