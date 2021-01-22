@@ -42,19 +42,17 @@
       <!----------------- RIGHT BAR ----------------->
       <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
         <div fxLayout="column" fxFlexFill>
-          <div fxLayout="column" fxFlexFill>
-            <div fxFlexOffset="5" class="header" fxFlex="15">
-              <h1>Tracklist</h1>
-              <mat-divider></mat-divider>
-              <p>
-                {{ trackNumber$ | async }} tracks
-                <button
-                  mat-icon-button
-                  (click)="playAll()"
-                  matTooltip="Play tracklist"
-                >
-                  <mat-icon>play_circle_outline</mat-icon>
-                </button>
+          <div
+            fxFlexOffset="5"
+            fxLayout="column"
+            fxFlexFill
+            class="header"
+            fxFlex="15"
+          >
+            <div fxFlex="nogrow" fxAlign="row">
+              <h1>Tracklists</h1>
+              <div fxFlex></div>
+              <div fxFlex="nogrow">
                 <button
                   mat-icon-button
                   (click)="savePlaylist()"
@@ -76,16 +74,34 @@
                 >
                   <mat-icon>power_settings_new</mat-icon>
                 </button>
-              </p>
+              </div>
             </div>
-            <!----------------- TRACK LIST ----------------->
-            <div
-              class="track-list"
-              fxFlex
-              *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
-            >
-              <app-track-list></app-track-list>
+
+            <mat-divider></mat-divider>
+            <div fxFlex="nogrow" fxAlign="row" fxLayoutAlign="start center">
+              <button
+                mat-raised-button
+                color="accent"
+                class="play"
+                (click)="playAll()"
+                matTooltip="Play tracklist"
+                [disabled]="(trackNumber$ | async) === 0"
+              >
+                <mat-icon>play_circle_outline</mat-icon>
+                Play tracklist
+              </button>
+              <div fxFlex></div>
+              <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
             </div>
+          </div>
+          <!----------------- TRACK LIST ----------------->
+          <div
+            class="track-list"
+            fxFlexFill
+            fxFlex
+            *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
+          >
+            <app-track-list></app-track-list>
           </div>
         </div>
       </div>

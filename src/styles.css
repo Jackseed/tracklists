@@ -18,7 +18,7 @@ body {
 }
 
 h1 {
-  margin: 8px !important;
+  margin: 0 !important;
   font-size: calc(1.2rem + 3vmin) !important;
   font-weight: bold !important;
   font-family: "Yantramanav", sans-serif !important;
@@ -77,4 +77,3 @@ span {
 .mat-checkbox-background {
   background-color: rgb(204, 204, 204);
 }
-

@@ -5,7 +5,7 @@ import { AuthService, SpotifyUser } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
-import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
+import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,7 +21,6 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 export class HomepageComponent implements OnInit {
   public spotifyUser$: Observable<SpotifyUser>;
   public trackNumber$: Observable<number>;
-  public activePlaylistIds$: Observable<string[]>;
   public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
   public isSpinning$: Observable<boolean>;
@@ -32,7 +31,6 @@ export class HomepageComponent implements OnInit {
     private authService: AuthService,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
-    private playlistQuery: PlaylistQuery,
     private playerQuery: PlayerQuery,
     private router: Router,
     private spotifyService: SpotifyService,
@@ -43,6 +41,7 @@ export class HomepageComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    // Spotify auth token loading
     const url = this.router.url;
     if (!url.includes('access_token')) {
       this.authService.authSpotify();
@@ -50,6 +49,8 @@ export class HomepageComponent implements OnInit {
     this.authService.saveToken();
     this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
     this.spotifyService.initializePlayer();
+
+    // Tracks loading
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
     this.loadingItem$ = this.trackQuery.selectLoadingItem();
     this.isTrackStoreEmpty$ = this.trackQuery
@@ -57,6 +58,7 @@ export class HomepageComponent implements OnInit {
       .pipe(map((length) => (length === 0 ? true : false)));
     this.trackService.setFirestoreTracks();
     this.isSpinning$ = this.trackQuery.selectSpinner();
+
     this.matIconRegistry.addSvgIcon(
       'arrow',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -66,10 +68,6 @@ export class HomepageComponent implements OnInit {
 
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
-
-    this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
-      string[]
-    >;
   }
 
   public loginSpotify() {
