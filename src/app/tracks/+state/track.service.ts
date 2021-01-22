@@ -24,10 +24,8 @@ export class TrackService {
       const tracks$ = this.query.selectUserTracks$;
       tracks$
         .pipe(
-          // if empty, keeps the store loading
-          filter((tracks) => tracks.length > 0),
           tap((tracks) => {
-            this.store.set(tracks);
+            tracks ? this.store.set(tracks) : this.store.set({});
             this.store.setActive([]);
           }, first())
         )

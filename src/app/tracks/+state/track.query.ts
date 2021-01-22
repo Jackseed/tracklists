@@ -67,4 +67,5 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
   public selectSpinner(): Observable<boolean> {
     return this.select((state) => state.ui.spinner);
   }
+
 }

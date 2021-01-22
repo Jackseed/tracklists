@@ -6,81 +6,93 @@
 >
   <div
     fxFlex="85"
-    *ngIf="!(isTrackstoreLoading$ | async); else noTracks"
+    *ngIf="
+      !(isTrackstoreLoading$ | async) && !(isSpinning$ | async);
+      else loadingTracks
+    "
     fxFlexFill
-    fxLayout="row"
   >
-    <!----------------- LEFT BAR ----------------->
-    <div fxFlexOffset="10" fxFlex="25" fxFlexFill>
-      <div fxLayout="column" fxFlexFill>
-        <div fxFlexOffset="10" fxFlex="90" class="left-bar">
-          <mat-tab-group mat-align-tabs="center" fxFlexFill>
-            <mat-tab label="Playlists">
-              <div fxLayout="row" fxLayoutAlign="center center">
-                <div fxFlex="90"><app-playlist-list></app-playlist-list></div>
-              </div>
-            </mat-tab>
-            <mat-tab label="Filters">
-              <div fxLayout="row" fxLayoutAlign="center center">
-                <div fxFlex="80">
-                  <app-genre-list></app-genre-list>
-                  <app-filter-list></app-filter-list>
+    <div
+      fxFlexFill
+      *ngIf="!(isTrackStoreEmpty$ | async); else noTracks"
+      fxLayout="row"
+    >
+      <!----------------- LEFT BAR ----------------->
+      <div fxFlexOffset="10" fxFlex="25" fxFlexFill>
+        <div fxLayout="column" fxFlexFill>
+          <div fxFlexOffset="10" fxFlex="90" class="left-bar">
+            <mat-tab-group mat-align-tabs="center" fxFlexFill>
+              <mat-tab label="Playlists">
+                <div fxLayout="row" fxLayoutAlign="center center">
+                  <div fxFlex="90"><app-playlist-list></app-playlist-list></div>
                 </div>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
+              </mat-tab>
+              <mat-tab label="Filters">
+                <div fxLayout="row" fxLayoutAlign="center center">
+                  <div fxFlex="80">
+                    <app-genre-list></app-genre-list>
+                    <app-filter-list></app-filter-list>
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+          </div>
         </div>
       </div>
-    </div>
-    <!----------------- RIGHT BAR ----------------->
-    <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
-      <div fxLayout="column" fxFlexFill>
+      <!----------------- RIGHT BAR ----------------->
+      <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
         <div fxLayout="column" fxFlexFill>
-          <div fxFlexOffset="5" class="header" fxFlex="15">
-            <h1>Tracklist</h1>
-            <mat-divider></mat-divider>
-            <p>
-              {{ trackNumber$ | async }} tracks
-              <button
-                mat-icon-button
-                (click)="playAll()"
-                matTooltip="Play tracklist"
-              >
-                <mat-icon>play_circle_outline</mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="savePlaylist()"
-                matTooltip="Save as playlist"
-              >
-                <mat-icon>save</mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="refreshData()"
-                matTooltip="Reload Spotify tracks"
-              >
-                <mat-icon>refresh</mat-icon>
-              </button>
-              <button mat-icon-button (click)="signOut()" matTooltip="Log out">
-                <mat-icon>power_settings_new</mat-icon>
-              </button>
-            </p>
-          </div>
-          <!----------------- TRACK LIST ----------------->
-          <div
-            class="track-list"
-            fxFlex
-            *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
-          >
-            <app-track-list></app-track-list>
+          <div fxLayout="column" fxFlexFill>
+            <div fxFlexOffset="5" class="header" fxFlex="15">
+              <h1>Tracklist</h1>
+              <mat-divider></mat-divider>
+              <p>
+                {{ trackNumber$ | async }} tracks
+                <button
+                  mat-icon-button
+                  (click)="playAll()"
+                  matTooltip="Play tracklist"
+                >
+                  <mat-icon>play_circle_outline</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="savePlaylist()"
+                  matTooltip="Save as playlist"
+                >
+                  <mat-icon>save</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="refreshData()"
+                  matTooltip="Reload Spotify tracks"
+                >
+                  <mat-icon>refresh</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="signOut()"
+                  matTooltip="Log out"
+                >
+                  <mat-icon>power_settings_new</mat-icon>
+                </button>
+              </p>
+            </div>
+            <!----------------- TRACK LIST ----------------->
+            <div
+              class="track-list"
+              fxFlex
+              *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
+            >
+              <app-track-list></app-track-list>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
   <!----------------- PLAYER ----------------->
-  <div fxFlexFill fxFlex fxLayout="row">
+  <div fxFlexFill fxFlex fxLayout="row" *ngIf="!(isTrackStoreEmpty$ | async)">
     <div fxFlexOffset="10" fxFlex="70">
       <app-player [track$]="playingTrack$"></app-player>
     </div>
@@ -103,7 +115,7 @@
 <!----------------- NO TRACKS SAVED ----------------->
 <ng-template #noTracks>
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex="nogrow">
+    <div fxFlex="nogrow" fxFlexOffset="7.5">
       <div fxFlex="nogrow" class="text-centered">
         <h2>Almost there</h2>
         <p>
@@ -119,11 +131,19 @@
         </button>
       </div>
     </div>
-    <div
-      fxFlex="nogrow"
-      class="text-centered margin-5"
-      *ngIf="isSpinning$ | async"
-    >
+  </div>
+</ng-template>
+
+<!----------------- LOADING TRACKS ----------------->
+<ng-template #loadingTracks>
+  <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
+    <div fxFlex="nogrow">
+      <div fxFlex="nogrow" class="text-centered">
+        <h2>Loading your music</h2>
+        <p>Wait a minute, soon full of love.</p>
+      </div>
+    </div>
+    <div fxFlex="nogrow" class="text-centered margin-5">
       <mat-spinner></mat-spinner>
     </div>
   </div>
