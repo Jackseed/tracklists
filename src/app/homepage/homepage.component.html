@@ -140,8 +140,15 @@
     <div fxFlex="nogrow">
       <div fxFlex="nogrow" class="text-centered">
         <h2>Loading your music</h2>
-        <p>Wait a minute, soon full of love.</p>
+        <p>Wait a minute, it will be soon full of love.</p>
       </div>
+    </div>
+    <div
+      fxFlex="nogrow"
+      class="text-centered margin-5"
+      *ngIf="loadingItem$ | async as item"
+    >
+      <p>{{ item }}</p>
     </div>
     <div fxFlex="nogrow" class="text-centered margin-5">
       <mat-spinner></mat-spinner>

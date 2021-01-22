@@ -110,8 +110,10 @@ export class SpotifyService {
 
   public async savePlaylists() {
     this.trackStore.setLoading(true);
+
     // get active user's playlists by batches
     const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
+    this.trackService.updateLoadingItem(`Saving your playlists...`);
     // extract the tracks
     const tracks = await this.getPlaylistsTracksByBatches(playlists);
     // Get audio features
@@ -167,6 +169,7 @@ export class SpotifyService {
   }
 
   private async saveLikedTracks() {
+    this.trackService.updateLoadingItem(`Saving your liked tracks...`);
     // get liked tracks by batches
     const tracks: Track[] = await this.getLikedTracksByBatches();
     const trackIds: string[] = tracks.map((track) => track.id);

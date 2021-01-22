@@ -27,6 +27,7 @@ export class HomepageComponent implements OnInit {
   public playingTrack$: Observable<PlayerTrack>;
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
+  public loadingItem$: Observable<string>;
 
   constructor(
     private authQuery: AuthQuery,
@@ -45,7 +46,10 @@ export class HomepageComponent implements OnInit {
 
   async ngOnInit() {
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
-    this.isTrackStoreEmpty$ = this.trackQuery.selectCount().pipe(map(length => length === 0 ? true: false));
+    this.loadingItem$ = this.trackQuery.selectLoadingItem();
+    this.isTrackStoreEmpty$ = this.trackQuery
+      .selectCount()
+      .pipe(map((length) => (length === 0 ? true : false)));
     this.trackService.setFirestoreTracks();
     this.isSpinning$ = this.trackQuery.selectSpinner();
     this.matIconRegistry.addSvgIcon(
