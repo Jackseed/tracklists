@@ -56,11 +56,11 @@ export class AuthService extends CollectionService<AuthState> {
     window.location.href = this.authorizeURL;
   }
 
-  public async getSpotifyActiveUser(): Promise<Observable<SpotifyUser>> {
-    const user = await this.query.getActive();
+  public selectSpotifyActiveUser(): Observable<SpotifyUser> {
+    const user = this.query.getActive();
     const token = this.query.token;
     const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-    const spotifyUser = await this.http.get<SpotifyUser>(this.baseUrl, {
+    const spotifyUser = this.http.get<SpotifyUser>(this.baseUrl, {
       headers,
     });
     spotifyUser

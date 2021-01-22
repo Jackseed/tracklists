@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthQuery, AuthService, SpotifyUser, User } from '../auth/+state';
+import { AuthService, SpotifyUser } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
@@ -20,7 +20,6 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 })
 export class HomepageComponent implements OnInit {
   public spotifyUser$: Observable<SpotifyUser>;
-  public user$: Observable<User>;
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
   public isTrackstoreLoading$: Observable<boolean>;
@@ -30,7 +29,6 @@ export class HomepageComponent implements OnInit {
   public loadingItem$: Observable<string>;
 
   constructor(
-    private authQuery: AuthQuery,
     private authService: AuthService,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
@@ -45,6 +43,13 @@ export class HomepageComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    const url = this.router.url;
+    if (!url.includes('access_token')) {
+      this.authService.authSpotify();
+    }
+    this.authService.saveToken();
+    this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
+    this.spotifyService.initializePlayer();
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
     this.loadingItem$ = this.trackQuery.selectLoadingItem();
     this.isTrackStoreEmpty$ = this.trackQuery
@@ -58,14 +63,7 @@ export class HomepageComponent implements OnInit {
         `../assets/purple_arrow.svg`
       )
     );
-    this.user$ = this.authQuery.selectActive();
-    const url = this.router.url;
-    if (!url.includes('access_token')) {
-      this.authService.authSpotify();
-    }
-    this.authService.saveToken();
-    this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
-    this.spotifyService.initializePlayer();
+
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
 
