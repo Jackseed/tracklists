@@ -55,7 +55,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatDividerModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    environment.production ? [] : AkitaNgDevtools.forRoot(),
+    // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],

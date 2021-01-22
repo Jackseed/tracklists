@@ -9,21 +9,33 @@ import {
 
 export interface TrackState
   extends EntityState<Track, string>,
-    MultiActiveState {}
+    MultiActiveState {
+  ui: {
+    spinner: boolean;
+  };
+}
+
+const initialState = {
+  ui: { spinner: false },
+};
 
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'tracks' })
 export class TrackStore extends EntityStore<TrackState, Track> {
   constructor() {
-    super();
+    super(initialState);
     this.loadFromStorage();
   }
   // call storage instead of firebase
   loadFromStorage() {
     const data = localStorage.getItem('trackStore');
     if (data) {
-      this._setState((_) => JSON.parse(data));
-      this.setActive([]);
+      // don't set store if empty
+      if (!data.includes(':{}')) {
+        this._setState((_) => JSON.parse(data));
+        this.setActive([]);
+        this.setLoading(false);
+      }
     }
   }
 }

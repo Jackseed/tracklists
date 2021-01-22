@@ -5,7 +5,6 @@ import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 import { filter, first, map, switchMap, tap } from 'rxjs/operators';
-import { Playlist } from 'src/app/playlists/+state';
 
 @Injectable({ providedIn: 'root' })
 export class TrackService {
@@ -18,16 +17,22 @@ export class TrackService {
   public setFirestoreTracks() {
     // if data can be loaded from localStorage, don't call firestore
     const data = localStorage.getItem('trackStore');
-    if (data) return;
-    const tracks$ = this.query.getUserTracks$;
-    tracks$
-      .pipe(
-        tap((tracks) => {
-          this.store.set(tracks);
-          this.store.setActive([]);
-        }, first())
-      )
-      .subscribe();
+    // if storage data, loads it
+    if (data && !data.includes(':{}')) {
+      this.store.loadFromStorage();
+    } else {
+      const tracks$ = this.query.selectUserTracks$;
+      tracks$
+        .pipe(
+          // if empty, keeps the store loading
+          filter((tracks) => tracks.length > 0),
+          tap((tracks) => {
+            this.store.set(tracks);
+            this.store.setActive([]);
+          }, first())
+        )
+        .subscribe();
+    }
   }
 
   setFilter(filter: AkitaFilter<TrackState>) {
@@ -104,5 +109,9 @@ export class TrackService {
     const tracks = this.query.getAll();
     const trackIds = tracks.map((track) => track.id);
     this.store.removeActive(trackIds);
+  }
+
+  public updateSpinner(spinner: boolean) {
+    this.store.update({ ui: { spinner } });
   }
 }

@@ -34,7 +34,7 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     );
   }
 
-  public get getUserTracks$(): Observable<Track[]> {
+  public get selectUserTracks$(): Observable<Track[]> {
     const userId$ = this.authQuery.selectActiveId();
     const tracks$ = userId$.pipe(
       switchMap(
@@ -62,5 +62,9 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
       map((tracks) => tracks.map((track) => track.id)),
       switchMap((trackIds) => of(trackIds.includes(trackId)))
     );
+  }
+
+  public selectSpinner(): Observable<boolean> {
+    return this.select((state) => state.ui.spinner);
   }
 }

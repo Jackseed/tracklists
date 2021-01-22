@@ -6,7 +6,7 @@
 >
   <div
     fxFlex="85"
-    *ngIf="(user$ | async)?.playlistIds.length > 0; else noTracks"
+    *ngIf="!(isTrackstoreLoading$ | async); else noTracks"
     fxFlexFill
     fxLayout="row"
   >
@@ -40,7 +40,7 @@
             <h1>Tracklist</h1>
             <mat-divider></mat-divider>
             <p>
-              {{ this.trackNumber$ | async }} tracks
+              {{ trackNumber$ | async }} tracks
               <button
                 mat-icon-button
                 (click)="playAll()"
@@ -71,7 +71,7 @@
           <div
             class="track-list"
             fxFlex
-            *ngIf="(activeTracks$ | async)?.length > 0; else noActivePlaylist"
+            *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
           >
             <app-track-list></app-track-list>
           </div>
@@ -109,7 +109,12 @@
         <p>
           We need to load your songs from Spotify, it may take a few minutes.
         </p>
-        <button mat-raised-button color="accent" (click)="loadPlaylist()">
+        <button
+          *ngIf="!(isSpinning$ | async)"
+          mat-raised-button
+          color="accent"
+          (click)="loadPlaylist()"
+        >
           Load music
         </button>
       </div>
@@ -117,15 +122,15 @@
     <div
       fxFlex="nogrow"
       class="text-centered margin-5"
-      *ngIf="isStoreLoading$ | async"
+      *ngIf="isSpinning$ | async"
     >
       <mat-spinner></mat-spinner>
     </div>
   </div>
 </ng-template>
 
-<!----------------- NO PLAYLIST ACTIVE ----------------->
-<ng-template #noActivePlaylist>
+<!----------------- NO ACTIVE TRACK----------------->
+<ng-template #noActiveTrack>
   <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
     <div fxFlex="15"></div>
     <h3 fxFlex="nogrow" class="text-centered">No playlist selected</h3>

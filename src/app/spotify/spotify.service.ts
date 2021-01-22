@@ -17,7 +17,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import firebase from 'firebase/app';
-import { AuthQuery, AuthService, AuthStore } from '../auth/+state';
+import { AuthQuery, AuthService } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
 import {
   Track,
@@ -27,6 +27,8 @@ import {
   SpotifyAudioFeatures,
   SpotifyPlaylistTrack,
   SpotifySavedTrack,
+  TrackService,
+  TrackStore,
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
@@ -46,11 +48,12 @@ export class SpotifyService {
   db = firebase.firestore();
 
   constructor(
-    private authStore: AuthStore,
     private authQuery: AuthQuery,
     private authService: AuthService,
     private playerQuery: PlayerQuery,
     private playerService: PlayerService,
+    private trackStore: TrackStore,
+    private trackService: TrackService,
     private http: HttpClient
   ) {}
 
@@ -106,7 +109,7 @@ export class SpotifyService {
   }
 
   public async savePlaylists() {
-    this.authStore.setLoading(true);
+    this.trackStore.setLoading(true);
     // get active user's playlists by batches
     const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
     // extract the tracks
@@ -235,7 +238,8 @@ export class SpotifyService {
     batchArray.push(this.db.batch());
     let operationCounter = 0;
     let batchIndex = 0;
-
+    console.log(playlist.type);
+    // extract every genres of each track
     playlistTracks.forEach((track) => {
       track.genres.forEach((genre) => {
         const ref = genreCollection.doc(genre);
@@ -247,7 +251,7 @@ export class SpotifyService {
           },
           { merge: true }
         );
-
+        // count each db operation to avoid limit
         operationCounter += 2;
 
         if (operationCounter >= firebaseWriteLimit) {
@@ -257,15 +261,16 @@ export class SpotifyService {
         }
       });
     });
-
+    // push batch writing
     batchArray.forEach(async (batch, i, batches) => {
       await batch
         .commit()
-        .then((_) => console.log(`batch of genres saved`))
+        .then((_) => console.log(`batch ${i} of genres saved`))
         .catch((error) => console.log(error, batch));
-      if (i === batches.length - 1) {
-        console.log('coucou');
-        this.authStore.setLoading(false);
+      // catch last operation of a new user music loading
+      if (i === batches.length - 1 && playlist.type === 'likedTracks') {
+        this.trackService.setFirestoreTracks();
+        this.trackService.updateSpinner(false);
       }
     });
   }

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthQuery, AuthService, SpotifyUser, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
-import { Track, TrackQuery, TrackService } from '../tracks/+state';
+import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
 import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
@@ -20,12 +20,12 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 })
 export class HomepageComponent implements OnInit {
   public spotifyUser$: Observable<SpotifyUser>;
-  public activeTracks$: Observable<Track[]>;
   public user$: Observable<User>;
   public trackNumber$: Observable<number>;
   public activePlaylistIds$: Observable<string[]>;
-  public isStoreLoading$: Observable<boolean>;
+  public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
+  public isSpinning$: Observable<boolean>;
 
   constructor(
     private authQuery: AuthQuery,
@@ -43,6 +43,9 @@ export class HomepageComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
+    this.trackService.setFirestoreTracks();
+    this.isSpinning$ = this.trackQuery.selectSpinner();
     this.matIconRegistry.addSvgIcon(
       'arrow',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -57,15 +60,12 @@ export class HomepageComponent implements OnInit {
     this.authService.saveToken();
     this.spotifyUser$ = await this.authService.getSpotifyActiveUser();
     this.spotifyService.initializePlayer();
-    this.activeTracks$ = this.trackQuery.selectActive();
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
 
     this.activePlaylistIds$ = this.playlistQuery.selectActiveId() as Observable<
       string[]
     >;
-    this.isStoreLoading$ = this.authQuery.selectLoading();
-    this.trackService.setFirestoreTracks();
   }
 
   public loginSpotify() {
@@ -74,6 +74,7 @@ export class HomepageComponent implements OnInit {
 
   public loadPlaylist() {
     this.spotifyService.savePlaylists();
+    this.trackService.updateSpinner(true);
   }
 
   public playAll() {
@@ -127,6 +128,7 @@ export class HomepageComponent implements OnInit {
 
   public refreshData() {
     this.spotifyService.savePlaylists();
+    this.trackService.updateSpinner(true);
   }
 
   public signOut() {
