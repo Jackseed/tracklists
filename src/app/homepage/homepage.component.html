@@ -84,7 +84,6 @@
                 color="accent"
                 class="play"
                 (click)="playAll()"
-                matTooltip="Play tracklist"
                 [disabled]="(trackNumber$ | async) === 0"
               >
                 <mat-icon>play_circle_outline</mat-icon>
