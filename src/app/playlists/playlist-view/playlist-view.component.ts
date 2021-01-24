@@ -30,11 +30,11 @@ export class PlaylistViewComponent implements OnInit {
 
   public setActive(event: MatCheckboxChange) {
     this.service.toggleActive(this.playlist.id);
-    this.genreService.toggle(this.playlist.id);
+    this.trackService.toggleActive(this.playlist.trackIds);
     if (event.checked) {
-      this.trackService.addActive(this.playlist.trackIds);
+      this.genreService.addActive(this.playlist.genreIds, this.playlist.id);
     } else {
-      this.trackService.removeActive(this.playlist.trackIds);
+      this.genreService.removeActive(this.playlist.genreIds, this.playlist.id);
     }
   }
 }

@@ -33,20 +33,13 @@ export class PlaylistListComponent implements OnInit {
           if (event.checked) {
             this.trackService.addAllActive();
             this.service.addActive(playlistIds);
+            this.genreService.addAllActive();
           } else {
             this.trackService.removeAllActive();
             this.service.removeActive(playlistIds);
+            this.genreService.removeAllActive();
           }
         }),
-        tap((playlistIds) =>
-          playlistIds.map((playlistId) => {
-            if (event.checked) {
-              this.genreService.addPlaylistGenres(playlistId);
-            } else {
-              this.genreService.removePlaylistGenres(playlistId);
-            }
-          })
-        ),
         first()
       )
       .subscribe();

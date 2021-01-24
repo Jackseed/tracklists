@@ -90,6 +90,10 @@ export class TrackService {
     );
   }
 
+  public toggleActive(trackIds: string[]) {
+    this.store.toggleActive(trackIds);
+  }
+
   public addActive(trackIds: string[]) {
     this.store.addActive(trackIds);
   }
@@ -104,9 +108,7 @@ export class TrackService {
   }
 
   public removeAllActive() {
-    const tracks = this.query.getAll();
-    const trackIds = tracks.map((track) => track.id);
-    this.store.removeActive(trackIds);
+    this.store.setActive([]);
   }
 
   public updateSpinner(spinner: boolean) {
