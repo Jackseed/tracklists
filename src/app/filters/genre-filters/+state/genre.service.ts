@@ -1,20 +1,35 @@
 import { Injectable } from '@angular/core';
-import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { first, tap } from 'rxjs/operators';
 import { PlaylistQuery } from 'src/app/playlists/+state';
 import { Genre } from './genre.model';
 import { GenreQuery } from './genre.query';
-import { GenreState, GenreStore } from './genre.store';
+import { GenreStore } from './genre.store';
 
 @Injectable({ providedIn: 'root' })
-@CollectionConfig({ path: 'playlists/:playlistId' })
-export class GenreService extends CollectionService<GenreState> {
+export class GenreService {
   constructor(
-    store: GenreStore,
+    private store: GenreStore,
     private query: GenreQuery,
     private playlistQuery: PlaylistQuery
-  ) {
-    super(store);
+  ) {}
+
+  public setFirestoreGenres() {
+    // if data can be loaded from localStorage, don't call firestore
+    const data = localStorage.getItem('genreStore');
+    // if storage data, loads it
+    if (data && !data.includes(':{}')) {
+      this.store.loadFromStorage();
+    } else {
+      const genres$ = this.query.selectUserGenres$;
+      genres$
+        .pipe(
+          tap((genres) => {
+            genres ? this.store.set(genres) : this.store.set({});
+            this.store.setActive([]);
+          }, first())
+        )
+        .subscribe();
+    }
   }
 
   public addActive(genreId: string) {
@@ -67,8 +82,8 @@ export class GenreService extends CollectionService<GenreState> {
             if (!existingGenre) return;
             let filteredTrackIds: string[] = existingGenre.trackIds;
             // remove the tracks from the removed playlist
-            filteredTrackIds = filteredTrackIds.filter((id) =>
-              !genre.trackIds.includes(id)
+            filteredTrackIds = filteredTrackIds.filter(
+              (id) => !genre.trackIds.includes(id)
             );
             // if there are still tracks in the genre, update it, else remove it
             filteredTrackIds.length > 0

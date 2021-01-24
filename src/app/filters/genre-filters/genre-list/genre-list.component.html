@@ -11,7 +11,7 @@
           (removed)="remove(activeGenre.id)"
           color="primary"
         >
-          {{ activeGenre.id }} ({{ activeGenre.trackIds.length }})
+          {{ activeGenre.id }}
           <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
         </mat-chip>
         <input
@@ -35,7 +35,7 @@
           *ngFor="let genre of filteredGenres$ | async"
           [value]="genre"
         >
-          {{ genre.id }} ({{ genre.trackIds.length }})
+          {{ genre.id }}
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>

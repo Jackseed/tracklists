@@ -1,5 +1,7 @@
 export interface Genre {
   id: string;
-  trackIds: string[];
-  playlistIds?: string[];
+  userIds: string[];
+  playlists: {
+    [playlistId: string]: string[];
+  };
 }

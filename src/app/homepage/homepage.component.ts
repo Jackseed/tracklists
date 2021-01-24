@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
+import { GenreService } from '../filters/genre-filters/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -32,6 +33,7 @@ export class HomepageComponent implements OnInit {
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
+    private genreService: GenreService,
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -57,6 +59,7 @@ export class HomepageComponent implements OnInit {
       .selectCount()
       .pipe(map((length) => (length === 0 ? true : false)));
     this.trackService.setFirestoreTracks();
+    this.genreService.setFirestoreGenres();
     this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.matIconRegistry.addSvgIcon(

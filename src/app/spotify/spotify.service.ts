@@ -32,6 +32,7 @@ import {
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
+import { GenreService } from '../filters/genre-filters/+state';
 
 declare global {
   interface Window {
@@ -54,6 +55,7 @@ export class SpotifyService {
     private playerService: PlayerService,
     private trackStore: TrackStore,
     private trackService: TrackService,
+    private genreService: GenreService,
     private http: HttpClient
   ) {}
 
@@ -231,28 +233,27 @@ export class SpotifyService {
     const playlistTracks: Track[] = tracks.filter((track) =>
       playlist.trackIds.includes(track.id)
     );
-    const genreCollection = this.db
-      .collection('playlists')
-      .doc(playlist.id)
-      .collection('genres');
+    const genreCollection = this.db.collection('genres');
     const firebaseWriteLimit = 497;
     const batchArray = [];
+    const userId = this.authQuery.getActiveId();
     batchArray.push(this.db.batch());
     let operationCounter = 0;
     let batchIndex = 0;
-    console.log(playlist.type);
+
     // extract every genres of each track
     playlistTracks.forEach((track) => {
       track.genres.forEach((genre) => {
         const ref = genreCollection.doc(genre);
-        batchArray[batchIndex].set(
-          ref,
-          {
-            id: genre,
-            trackIds: firestore.FieldValue.arrayUnion(track.id),
-          },
-          { merge: true }
+        const genreData = {
+          id: genre,
+          userIds: firestore.FieldValue.arrayUnion(userId),
+          playlists: {},
+        };
+        genreData.playlists[playlist.id] = firestore.FieldValue.arrayUnion(
+          track.id
         );
+        batchArray[batchIndex].set(ref, genreData, { merge: true });
         // count each db operation to avoid limit
         operationCounter += 2;
 
@@ -273,6 +274,7 @@ export class SpotifyService {
       if (i === batches.length - 1 && playlist.type === 'likedTracks') {
         this.trackService.setFirestoreTracks();
         this.trackService.updateSpinner(false);
+        this.genreService.setFirestoreGenres();
       }
     });
   }

@@ -28,12 +28,6 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
       });
   }
 
-  selectGenres(): Observable<string[][]> {
-    return this.selectAll().pipe(
-      map((tracks) => tracks.map((track) => track.genres))
-    );
-  }
-
   public get selectUserTracks$(): Observable<Track[]> {
     const userId$ = this.authQuery.selectActiveId();
     const tracks$ = userId$.pipe(
