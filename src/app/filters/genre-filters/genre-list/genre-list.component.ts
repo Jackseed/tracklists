@@ -65,6 +65,7 @@ export class GenreListComponent implements OnInit {
         ),
         filter((genres) => genres.length > 0),
         map((genres) => genres.map((genre) => genre.trackIds)),
+        // flatten all trackIds of a same genre name and set it active
         map((arrTrackIds) => arrTrackIds.flat()),
         tap((trackIds) =>
           this.trackService.setFilter({

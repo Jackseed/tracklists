@@ -7,7 +7,6 @@ export interface User {
   name?: string;
   spotifyId?: string;
   deviceId?: string;
-  trackIds?: string[];
   playlistIds?: string[];
 }
 
@@ -34,6 +33,5 @@ export function createUser(params: Partial<User>) {
     id: params.id,
     email: params.email,
     playlistIds: [],
-    trackIds: [],
   };
 }

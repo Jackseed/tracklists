@@ -150,12 +150,12 @@ export class SpotifyService {
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
 
-    // write playlist ids & track ids in user doc
+    // write playlist ids in user doc
     const user = this.authQuery.getActive();
     const userRef = this.db.collection('users').doc(user.id);
     const playlistIds = playlists.map((playlist) => playlist.id);
     userRef
-      .update({ playlistIds, trackIds })
+      .update({ playlistIds })
       .then((_) => console.log('playlistIds saved on user'))
       .catch((error) => console.log(error));
 
@@ -211,12 +211,11 @@ export class SpotifyService {
       .then((_) => console.log('liked tracks saved as a playlist'))
       .catch((error) => console.log(error));
 
-    // add the liked tracks playlist & the trackIds in the user doc
+    // add the liked tracks playlist in the user doc
     const userRef = this.db.collection('users').doc(user.id);
     userRef
       .update({
         playlistIds: firestore.FieldValue.arrayUnion(playlist.id),
-        trackIds: firestore.FieldValue.arrayUnion(...trackIds),
       })
       .then((_) => console.log('liked tracks playlist added on user'))
       .catch((error) => console.log(error));
@@ -270,7 +269,7 @@ export class SpotifyService {
         .commit()
         .then((_) => console.log(`batch ${i} of genres saved`))
         .catch((error) => console.log(error, batch));
-      // catch last operation of a new user music loading
+      // catch music loading last operation & set track store
       if (i === batches.length - 1 && playlist.type === 'likedTracks') {
         this.trackService.setFirestoreTracks();
         this.trackService.updateSpinner(false);
@@ -375,7 +374,7 @@ export class SpotifyService {
       let genres: string[][];
       if (artists) {
         genres = artists.map((artist) => (artist ? artist.genres : []));
-        // first attempt to handle errors by returning empty genres
+        // handle errors by returning empty genres
       } else {
         genres = Array.from(Array(bactchArtistIds.length), () => []);
       }

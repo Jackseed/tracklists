@@ -67,9 +67,9 @@ export class GenreService extends CollectionService<GenreState> {
             if (!existingGenre) return;
             let filteredTrackIds: string[] = existingGenre.trackIds;
             // remove the tracks from the removed playlist
-            for (const trackId of genre.trackIds) {
-              filteredTrackIds = filteredTrackIds.filter((id) => id != trackId);
-            }
+            filteredTrackIds = filteredTrackIds.filter((id) =>
+              !genre.trackIds.includes(id)
+            );
             // if there are still tracks in the genre, update it, else remove it
             filteredTrackIds.length > 0
               ? this.store.update(genre.id, { trackIds: filteredTrackIds })
