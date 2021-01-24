@@ -16,6 +16,7 @@ export interface Playlist {
   type?: string;
   uri?: string;
   trackIds?: string[];
+  genreIds?: string[];
 }
 
 export interface PlaylistPaging {

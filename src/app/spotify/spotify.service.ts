@@ -161,7 +161,7 @@ export class SpotifyService {
       .then((_) => console.log('playlistIds saved on user'))
       .catch((error) => console.log(error));
 
-    // write genres on playlists
+    // write genres from playlist
     playlists.forEach((playlist) =>
       this.extractGenresFromTrackToPlaylist(playlist, fullTracks)
     );
@@ -240,10 +240,12 @@ export class SpotifyService {
     batchArray.push(this.db.batch());
     let operationCounter = 0;
     let batchIndex = 0;
+    let genres = [];
 
     // extract every genres of each track
     playlistTracks.forEach((track) => {
       track.genres.forEach((genre) => {
+        genres.indexOf(genre) === -1 ? genres.push(genre) : false;
         const ref = genreCollection.doc(genre);
         const genreData = {
           id: genre,
@@ -264,6 +266,11 @@ export class SpotifyService {
         }
       });
     });
+    // save genres on playlist
+    console.log('playlist genres: ', genres);
+    const playlistRef = this.db.collection('playlists').doc(playlist.id);
+    batchArray[batchIndex].update(playlistRef, { genreIds: genres });
+
     // push batch writing
     batchArray.forEach(async (batch, i, batches) => {
       await batch
@@ -573,7 +580,6 @@ export class SpotifyService {
           tap((error) => console.log('error: ', error)),
           map((error) => {
             if (error.status === 400) {
-              console.log('400 here');
               throw error;
             } else {
               return error;
@@ -587,7 +593,6 @@ export class SpotifyService {
       }),
       catchError((err: HttpErrorResponse) => {
         if (err.status === 400) {
-          console.log('salut');
           return of([{}]);
         }
       })
