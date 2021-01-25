@@ -9,7 +9,9 @@ import {
 import { Genre } from './genre.model';
 
 export type GenreUI = {
+  id: string;
   activeTrackIds: string[];
+  listed: boolean;
 };
 
 export interface GenreState
@@ -28,17 +30,24 @@ export class GenreStore extends EntityStore<GenreState> {
 
   constructor() {
     super(initialState);
+    this.createUIStore().setInitialEntityState((genre) => ({
+      id: genre.id,
+      activeTrackIds: [],
+      listed: false,
+    }));
     this.loadFromStorage();
-    this.createUIStore().setInitialEntityState({ activeTrackIds: [] });
+
   }
 
   // call storage instead of firebase
   public loadFromStorage() {
     const data = localStorage.getItem('genreStore');
+    const uiData = localStorage.getItem('uiGenreStore');
     if (data) {
       // don't set store if empty
       if (!data.includes(':{}')) {
         this._setState((_) => JSON.parse(data));
+        this.ui._setState((_) => JSON.parse(uiData));
         this.setActive([]);
         this.setLoading(false);
       }

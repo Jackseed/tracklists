@@ -25,23 +25,52 @@ export class GenreService {
           tap((genres) => {
             genres ? this.store.set(genres) : this.store.set({});
             this.store.setActive([]);
-          }, first())
+          }),
+          first()
         )
         .subscribe();
     }
   }
 
   public addActive(genreIds: string[], playlistId: string) {
+    const start = Date.now();
     this.store.addActive(genreIds);
-    for (const genreId of genreIds) {
+/*     for (const genreId of genreIds) {
       this.updateUiTrackIds(genreId, playlistId);
+    } */
+    const millis = Date.now() - start;
+    console.log(`seconds elapsed = ${millis}ms`);
+  }
+
+  public updateUiTrackIds(genreId: string, playlistId: string) {
+    const genre = this.query.getEntity(genreId);
+    const genreUi = this.query.ui.getEntity(genreId);
+    let activeTrackIds = genre.playlists[playlistId];
+    console.log('here');
+    // if already a genre, concat and remove duplicates
+    if (genreUi) {
+      const trackIds = genreUi.activeTrackIds.concat(
+        genre.playlists[playlistId]
+      );
+
+      activeTrackIds = trackIds.filter(
+        (item, pos) => trackIds.indexOf(item) === pos
+      );
     }
+
+    this.store.ui.update(genreId, {
+      activeTrackIds,
+    });
   }
 
   public addAllActive() {
+    const start = Date.now();
     const genres = this.query.getAll();
     const genreIds = genres.map((genre) => genre.id);
-    this.store.addActive(genreIds);
+    this.store.setActive(genreIds);
+    const mid = Date.now() - start;
+
+    console.log(`seconds elapsed for all active = ${mid}ms`);
 
     const playlists = this.playlistQuery.getAll();
     const playlistIds = playlists.map((playlist) => playlist.id);
@@ -55,15 +84,20 @@ export class GenreService {
           trackIds = trackIds.concat(genre.playlists[playlist]);
         }
       }
-
+      // remove duplicates
       const filteredTrackIds = trackIds.filter(
         (item, pos) => trackIds.indexOf(item) === pos
       );
 
-      this.store.ui.replace(genre.id, {
+      this.store.ui.update(genre.id, {
+        id: genre.id,
         activeTrackIds: filteredTrackIds,
+        listed: false,
       });
     }
+    const millis = Date.now() - start;
+
+    console.log(`seconds elapsed = ${millis}ms`);
   }
 
   public removeActive(genreIds: string[], playlistId: string) {
@@ -78,22 +112,27 @@ export class GenreService {
     this.store.ui.reset();
   }
 
-  public updateUiTrackIds(genreId: string, playlistId: string) {
-    const genre = this.query.getEntity(genreId);
-
-    this.store.ui.upsert(genreId, {
-      activeTrackIds: genre.playlists[playlistId],
-    });
-  }
-
   public removeUiTrackIds(genreId: string, playlistId: string) {
     const genre = this.query.getEntity(genreId);
+
     const activeTrackIds = this.query.ui.getEntity(genreId).activeTrackIds;
 
     this.store.ui.update(genreId, {
       activeTrackIds: activeTrackIds.filter(
         (trackId) => !genre.playlists[playlistId].includes(trackId)
       ),
+    });
+  }
+
+  public list(genreId: string) {
+    this.store.ui.update(genreId, {
+      listed: true,
+    });
+  }
+
+  public unlist(genreId: string) {
+    this.store.ui.update(genreId, {
+      listed: false,
     });
   }
 }

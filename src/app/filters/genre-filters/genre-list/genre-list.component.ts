@@ -10,7 +10,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { filter, map, startWith, switchMap, tap } from 'rxjs/operators';
 import { TrackService } from 'src/app/tracks/+state';
-import { Genre, GenreQuery, GenreService } from '../+state';
+import { Genre, GenreQuery, GenreService, GenreUI } from '../+state';
 
 @UntilDestroy()
 @Component({
@@ -20,10 +20,9 @@ import { Genre, GenreQuery, GenreService } from '../+state';
 })
 export class GenreListComponent implements OnInit {
   genreControl = new FormControl();
-  genres$: Observable<Genre[]>;
-  filteredGenres$: Observable<Genre[]>;
-  activeGenres$: Observable<Genre[]>;
-  listedGenres$: Observable<Genre[]>;
+  filteredGenres$: Observable<GenreUI[]>;
+  activeGenres$: Observable<GenreUI[]>;
+  listedGenres$: Observable<GenreUI[]>;
   selectable = true;
   removable = true;
   separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -38,25 +37,25 @@ export class GenreListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.genres$ = this.query.selectAll();
-
-    this.activeGenres$ = this.query.selectActive();
+    this.listedGenres$ = this.query.selectListedGenres$;
+    this.activeGenres$ = this.query.selectUIGenres$;
 
     // genre list filtered by user search inputs
     this.filteredGenres$ = this.genreControl.valueChanges.pipe(
       startWith(''),
-      switchMap((text) => (text ? this.textFilter(text) : this.genres$)),
+      switchMap((text) => (text ? this.textFilter(text) : this.activeGenres$)),
       // remove the already selected genres from genre list
       map((genres) =>
         genres.filter((genre) => {
-          const activeGenreIds = this.query.getActiveId();
-          return !activeGenreIds.includes(genre.id);
+          const listedGenreIds = this.query.listedGenreIds;
+          return !listedGenreIds.includes(genre.id);
         })
-      )
+      ),
+      map((genres) => genres.sort((a, b) => a.id.localeCompare(b.id)))
     );
 
-    // filter tracks depending on active genres
-    this.activeGenres$
+    // filter tracks depending on listed genres
+    this.listedGenres$
       .pipe(
         untilDestroyed(this),
         // remove genre filter on tracks when no genre
@@ -64,7 +63,7 @@ export class GenreListComponent implements OnInit {
           genres.length === 0 ? this.trackService.removeFilter('genres') : false
         ),
         filter((genres) => genres.length > 0),
-        map((genres) => genres.map((genre) => genre.trackIds)),
+        map((genres) => genres.map((genre) => genre.activeTrackIds)),
         // flatten all trackIds of a same genre name and set it active
         map((arrTrackIds) => arrTrackIds.flat()),
         tap((trackIds) =>
@@ -83,7 +82,7 @@ export class GenreListComponent implements OnInit {
 
     // Set selected genre active
     if ((value || '').trim()) {
-      this.service.addActive(value);
+      this.service.list(value);
     }
 
     // Reset the input value
@@ -95,23 +94,23 @@ export class GenreListComponent implements OnInit {
   }
 
   remove(genreId: string): void {
-    this.service.removeActive(genreId);
+    this.service.unlist(genreId);
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {
-    this.service.addActive(event.option.value.id);
+    this.service.list(event.option.value.id);
     this.genreInput.nativeElement.value = '';
     this.genreControl.setValue(null);
   }
 
-  private textFilter(value: string | Genre): Observable<Genre[]> {
+  private textFilter(value: string | Genre): Observable<GenreUI[]> {
     let filterValue;
     if (typeof value === 'string') {
       filterValue = value.toLowerCase();
     } else {
       filterValue = value.id;
     }
-    return this.genres$.pipe(
+    return this.activeGenres$.pipe(
       map((genres) =>
         genres.filter(
           (genre) => genre.id.toLowerCase().indexOf(filterValue) === 0

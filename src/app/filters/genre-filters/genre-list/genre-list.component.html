@@ -5,13 +5,13 @@
       <mat-label>Pop, rock, rap,..</mat-label>
       <mat-chip-list #chipList>
         <mat-chip
-          *ngFor="let activeGenre of activeGenres$ | async"
+          *ngFor="let listedGenre of listedGenres$ | async"
           [selectable]="selectable"
           [removable]="removable"
-          (removed)="remove(activeGenre.id)"
+          (removed)="remove(listedGenre.id)"
           color="primary"
         >
-          {{ activeGenre.id }}
+          {{ listedGenre.id }} ({{ listedGenre.activeTrackIds.length }})
           <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
         </mat-chip>
         <input
@@ -35,7 +35,7 @@
           *ngFor="let genre of filteredGenres$ | async"
           [value]="genre"
         >
-          {{ genre.id }}
+          {{ genre.id }} ({{ genre.activeTrackIds.length }})
         </mat-option>
       </mat-autocomplete>
     </mat-form-field>
