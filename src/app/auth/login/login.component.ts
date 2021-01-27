@@ -61,8 +61,9 @@ export class LoginComponent implements OnInit {
       snackBarMessage = 'Email sent';
       this.router.navigate(['/home']);
     }
-    if (errorMessage) console.log(errorMessage);
-    if (snackBarMessage) {
+    if (errorMessage) {
+      this.snackBar.open(errorMessage);
+    } else {
       this.snackBar.open(snackBarMessage);
     }
 
