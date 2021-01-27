@@ -120,24 +120,31 @@ export class SpotifyService {
     const trackIds: string[] = tracks.map((track) => track.id);
     const audioFeatures = await this.getAudioFeaturesByBatches(trackIds);
     // Get genres
-    const artistIds: string[] = tracks.map((track) => track.artists[0].id);
+
+    // adds empty genres when artist undefined
+    const emptyArtistPosition: number[] = [];
+
+    const artistIds: string[] = tracks.map((track, i) => {
+      if (track.artists[0].id) {
+        return track.artists[0].id;
+      } else {
+        emptyArtistPosition.push(i);
+        return '';
+      }
+    });
     const genres = await this.getGenresByBatches(artistIds);
+
+    for (const position of emptyArtistPosition) {
+      genres.splice(position, 0, []);
+    }
+    console.log(genres);
     // concat all items into one track
     const fullTracks: Track[] = tracks.map((track, i) => ({
       ...track,
       ...audioFeatures[i],
       genres: genres[i],
     }));
-    console.log(
-      'tracks : ',
-      tracks,
-      'audioFeatures: ',
-      audioFeatures,
-      'genres: ',
-      genres
-    );
 
-    console.log('playlist tracks: ', fullTracks);
     // write playlists by batches
     const playlistCollection = this.db.collection('playlists');
     await this.firestoreWriteBatches(
@@ -145,7 +152,7 @@ export class SpotifyService {
       playlists,
       'playlists'
     );
-
+    console.log('playlist tracks: ', fullTracks);
     // write tracks by batches
     const trackCollection = this.db.collection('tracks');
     await this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
@@ -241,7 +248,7 @@ export class SpotifyService {
     batchArray.push(this.db.batch());
     let operationCounter = 0;
     let batchIndex = 0;
-    console.log(playlist.type);
+
     // extract every genres of each track
     playlistTracks.forEach((track) => {
       track.genres.forEach((genre) => {
@@ -365,7 +372,7 @@ export class SpotifyService {
   // Get all the artists by batches to extract genres
   private async getGenresByBatches(artistIds: string[]): Promise<string[][]> {
     const artistLimit = 50;
-    let totalGenres: string[][] = [[]];
+    let totalGenres: string[][] = [];
     for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
       const bactchArtistIds = artistIds.slice(
         artistLimit * i,
@@ -375,10 +382,12 @@ export class SpotifyService {
       let genres: string[][];
       if (artists) {
         genres = artists.map((artist) => (artist ? artist.genres : []));
-        // first attempt to handle errors by returning empty genres
+
+        // handle errors by returning empty genres
       } else {
         genres = Array.from(Array(bactchArtistIds.length), () => []);
       }
+
       totalGenres = totalGenres.concat(genres);
     }
     return totalGenres;
@@ -521,7 +530,6 @@ export class SpotifyService {
         map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>
           audioFeat.audio_features.map((feature) => {
             if (feature === null) {
-              console.log(feature);
               return;
             }
             return createAudioFeatures(feature);
@@ -536,14 +544,14 @@ export class SpotifyService {
     const url = 'https://api.spotify.com/v1/artists';
     let queryParam: string = '?ids=';
     for (const artistId of artistIds) {
-      queryParam = queryParam + artistId + ',';
+      // handle empty artist
+      if (artistId !== '') queryParam = queryParam + artistId + ',';
     }
     queryParam = queryParam.substring(0, queryParam.length - 1);
 
     return await (await this.getPromisedObjects(url, queryParam))
       .pipe(
         map((artists: { artists: Artist[] }) => {
-          console.log(artists.artists);
           return artists.artists;
         }),
         first()
@@ -572,7 +580,6 @@ export class SpotifyService {
           tap((error) => console.log('error: ', error)),
           map((error) => {
             if (error.status === 400) {
-              console.log('400 here');
               throw error;
             } else {
               return error;
@@ -586,7 +593,6 @@ export class SpotifyService {
       }),
       catchError((err: HttpErrorResponse) => {
         if (err.status === 400) {
-          console.log('salut');
           return of([{}]);
         }
       })

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { first, tap } from 'rxjs/operators';
 import { PlaylistQuery } from 'src/app/playlists/+state';
+import { TrackQuery } from 'src/app/tracks/+state';
 import { Genre } from './genre.model';
 import { GenreQuery } from './genre.query';
 import { GenreState, GenreStore } from './genre.store';
@@ -12,7 +13,8 @@ export class GenreService extends CollectionService<GenreState> {
   constructor(
     store: GenreStore,
     private query: GenreQuery,
-    private playlistQuery: PlaylistQuery
+    private playlistQuery: PlaylistQuery,
+    private trackQuery: TrackQuery
   ) {
     super(store);
   }
@@ -39,12 +41,20 @@ export class GenreService extends CollectionService<GenreState> {
       .pipe(
         tap((genres: Genre[]) =>
           genres.map((genre) => {
+            const trackIds = this.trackQuery.getAll().map((track) => track.id);
             this.store.upsert(genre.id, (entity) => ({
               id: genre.id,
-              // if the genre already exists in the store, add the tracks of that genre
-              // otherwise, add its tracks
+              // if the genre already exists in the store, add the tracks to that genre
+              // otherwise, add its tracks only
+              // verify also that the track exists in the store
               trackIds: entity.trackIds
-                ? entity.trackIds.concat(genre.trackIds)
+                ? entity.trackIds.concat(
+                    genre.trackIds.filter(
+                      (trackId) =>
+                        !entity.trackIds.includes(trackId) &&
+                        trackIds.includes(trackId)
+                    )
+                  )
                 : genre.trackIds,
             }));
           })
