@@ -68,6 +68,8 @@ export class HomepageComponent implements OnInit {
 
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
+    // update spinner to false to disable loading page if page is reloaded
+    this.trackService.updateSpinner(false);
   }
 
   public loginSpotify() {
