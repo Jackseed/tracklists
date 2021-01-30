@@ -52,6 +52,9 @@ export class GenreListComponent implements OnInit {
           const activeGenreIds = this.query.getActiveId();
           return !activeGenreIds.includes(genre.id);
         })
+      ),
+      map((genres) =>
+        genres.sort((a, b) => b.trackIds.length - a.trackIds.length)
       )
     );
 
