@@ -66,7 +66,7 @@ export class HomepageComponent implements OnInit {
       )
     );
 
-    this.trackNumber$ = this.trackService.tracksLength$;
+    this.trackNumber$ = this.trackQuery.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
     // update spinner to false to disable loading page if page is reloaded
     this.trackService.updateSpinner(false);
@@ -82,8 +82,8 @@ export class HomepageComponent implements OnInit {
   }
 
   public playAll() {
-    this.trackService
-      .selectAll()
+    this.trackQuery
+      .selectFilteredTracks()
       .pipe(
         map((tracks) => tracks.map((track) => track.uri)),
         tap(async (trackUris) => await this.spotifyService.play(trackUris)),
@@ -108,8 +108,8 @@ export class HomepageComponent implements OnInit {
           result
         );
         // add tracks to the newly created playlist
-        this.trackService
-          .selectAll()
+        this.trackQuery
+          .selectFilteredTracks()
           .pipe(
             tap((tracks) =>
               this.spotifyService.addTracksToPlaylistByBatches(

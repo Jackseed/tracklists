@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { TrackStore, TrackState } from './track.store';
-import { Track } from './track.model';
 import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
-import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { first, tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class TrackService {
@@ -47,47 +46,6 @@ export class TrackService {
 
   selectFilters(): Observable<AkitaFilter<TrackState>[]> {
     return this.trackFilters.selectFilters();
-  }
-
-  selectAll(): Observable<Track[]> {
-    const activeIds$ = this.query.selectActiveId();
-
-    const tracks$ = activeIds$.pipe(
-      filter((ids) => !!ids),
-      switchMap((ids) =>
-        this.trackFilters.selectAllByFilters({
-          // limit filtered selection to active tracks
-          filterBy: (track) => ids.includes(track.id),
-        })
-      )
-    );
-    // @ts-ignore zs it was not an hashMap with not asObject
-    return tracks$;
-  }
-
-  public getMore(page: number): Observable<Track[]> {
-    const activeIds$ = this.query.selectActiveId();
-    const perPage = 15;
-    const offset = page * perPage;
-
-    return activeIds$
-      .pipe(
-        switchMap((ids) =>
-          this.trackFilters.selectAllByFilters({
-            // limit selection to active tracks
-            filterBy: (track) => ids.includes(track.id),
-          })
-        )
-      )
-      .pipe(map((tracks: Track[]) => tracks.slice(0, offset)));
-  }
-
-  public get tracksLength$() {
-    return this.selectAll().pipe(
-      map((tracks) => {
-        return tracks.length;
-      })
-    );
   }
 
   public addActive(trackIds: string[]) {

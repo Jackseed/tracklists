@@ -26,6 +26,12 @@ export class FilterListComponent implements OnInit {
       max: 'sun',
     },
     {
+      property: 'popularity',
+      label: 'Popularity',
+      min: 'sleep',
+      max: 'coffee',
+    },
+    {
       property: 'instrumentalness',
       label: 'Instrumental',
       min: 'sing',

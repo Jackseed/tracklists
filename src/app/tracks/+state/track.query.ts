@@ -2,14 +2,17 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
 import { Observable, of } from 'rxjs';
-import { debounceTime, map, switchMap } from 'rxjs/operators';
+import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { Track } from './track.model';
 import { AuthQuery } from 'src/app/auth/+state';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { PlaylistQuery } from 'src/app/playlists/+state';
+import { AkitaFiltersPlugin } from 'akita-filters-plugin';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState, Track> {
+  trackFilters: AkitaFiltersPlugin<TrackState>;
+
   constructor(
     protected store: TrackStore,
     private authQuery: AuthQuery,
@@ -18,6 +21,7 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
   ) {
     super(store);
     this.saveToStorage();
+    this.trackFilters = new AkitaFiltersPlugin<TrackState>(this);
   }
   // save to storage to avoid calling firebase
   saveToStorage() {
@@ -26,6 +30,47 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
       .subscribe((state) => {
         localStorage.setItem('trackStore', JSON.stringify(state));
       });
+  }
+
+  selectFilteredTracks(): Observable<Track[]> {
+    const activeIds$ = this.selectActiveId();
+
+    const tracks$ = activeIds$.pipe(
+      filter((ids) => !!ids),
+      switchMap((ids) =>
+        this.trackFilters.selectAllByFilters({
+          // limit filtered selection to active tracks
+          filterBy: (track) => ids.includes(track.id),
+        })
+      )
+    );
+    // @ts-ignore zs it was not an hashMap with not asObject
+    return tracks$;
+  }
+
+  public getMore(page: number): Observable<Track[]> {
+    const activeIds$ = this.selectActiveId();
+    const perPage = 15;
+    const offset = page * perPage;
+
+    return activeIds$
+      .pipe(
+        switchMap((ids) =>
+          this.trackFilters.selectAllByFilters({
+            // limit selection to active tracks
+            filterBy: (track) => ids.includes(track.id),
+          })
+        )
+      )
+      .pipe(map((tracks: Track[]) => tracks.slice(0, offset)));
+  }
+
+  public get tracksLength$() {
+    return this.selectFilteredTracks().pipe(
+      map((tracks) => {
+        return tracks.length;
+      })
+    );
   }
 
   selectGenres(): Observable<string[][]> {
@@ -70,5 +115,9 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
   public selectLoadingItem(): Observable<string> {
     return this.select((state) => state.ui.loadingItem);
+  }
+
+  public selectReleaseYear(): Observable<boolean> {
+    return this.select((state) => state.ui.spinner);
   }
 }

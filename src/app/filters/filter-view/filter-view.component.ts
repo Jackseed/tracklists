@@ -39,12 +39,23 @@ export class FilterViewComponent implements OnInit {
   }
 
   public onChange() {
-    this.trackService.setFilter({
-      id: this.filter.property,
-      value: this.rangeValues,
-      predicate: (entity) =>
-        this.rangeValues[0] < entity[this.filter.property] &&
-        entity[this.filter.property] < this.rangeValues[1],
-    });
+    // convert value to 0-100 for Popularity
+    if (this.filter.property === 'popularity') {
+      this.trackService.setFilter({
+        id: this.filter.property,
+        value: this.rangeValues.map((value) => value * 100),
+        predicate: (track) =>
+          this.rangeValues[0] * 100 < track[this.filter.property] &&
+          track[this.filter.property] < this.rangeValues[1] * 100,
+      });
+    } else {
+      this.trackService.setFilter({
+        id: this.filter.property,
+        value: this.rangeValues,
+        predicate: (track) =>
+          this.rangeValues[0] < track[this.filter.property] &&
+          track[this.filter.property] < this.rangeValues[1],
+      });
+    }
   }
 }
