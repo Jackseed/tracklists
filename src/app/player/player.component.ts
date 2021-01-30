@@ -70,8 +70,11 @@ export class PlayerComponent implements OnInit {
         tap((paused) => {
           if (!paused && !this.isTicking) {
             interval = window.setInterval((_) => {
-              this.value += 1;
-              this.isTicking = true;
+              const activeTrack = this.query.getActive();
+              if (this.value <= activeTrack.duration_ms / 1000) {
+                this.value += 1;
+                this.isTicking = true;
+              }
             }, 1000);
           }
         })
@@ -95,7 +98,7 @@ export class PlayerComponent implements OnInit {
   }
 
   public async onChangeSlider() {
-    await this.spotifyService.seekPosition(this.value * 1000);
+    await this.spotifyService.seekPosition(Math.round(this.value * 1000));
   }
 
   public async shuffle() {

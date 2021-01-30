@@ -29,6 +29,7 @@ import {
   SpotifySavedTrack,
   TrackService,
   TrackStore,
+  TrackQuery,
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
@@ -53,6 +54,7 @@ export class SpotifyService {
     private playerQuery: PlayerQuery,
     private playerService: PlayerService,
     private trackStore: TrackStore,
+    private trackQuery: TrackQuery,
     private trackService: TrackService,
     private http: HttpClient
   ) {}
@@ -80,8 +82,13 @@ export class SpotifyService {
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
       if (!state) return;
+      // gets it from db as there has been some errors
+      const track = {
+        ...this.trackQuery.getEntity(state.track_window.current_track.id),
+        position: state.track_window.current_track.id.position,
+        paused: state.track_window.current_track.id.paused,
+      };
 
-      const track = state.track_window.current_track;
       const pause = this.playerQuery.getPaused(track.id);
 
       this.playerService.add(track);
@@ -137,7 +144,6 @@ export class SpotifyService {
     for (const position of emptyArtistPosition) {
       genres.splice(position, 0, []);
     }
-    console.log(genres);
     // concat all items into one track
     const fullTracks: Track[] = tracks.map((track, i) => ({
       ...track,
@@ -601,6 +607,21 @@ export class SpotifyService {
 
   // PLAYER
 
+  public async getCurrentPlayback(): Promise<any> {
+    const url = 'https://api.spotify.com/v1/me/player';
+    const queryParam = '';
+
+    const currentPlayback = await (
+      await this.getPromisedObjects(url, queryParam)
+    )
+      .pipe(first())
+      .toPromise();
+
+    console.log(currentPlayback);
+
+    return currentPlayback;
+  }
+
   public async addToPlayback(trackUri: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
     const queryParam = `?uri=${trackUri}`;
@@ -623,7 +644,7 @@ export class SpotifyService {
   public async play(trackUris?: string[]) {
     // Not documented by spotify but it looks like there is a limit around 700 tracks
     const urisLimit = 700;
-    if (trackUris.length > urisLimit)
+    if (trackUris?.length > urisLimit)
       trackUris = trackUris.slice(0, urisLimit - 1);
 
     const user = this.authQuery.getActive();
@@ -631,7 +652,6 @@ export class SpotifyService {
     const queryParam =
       user.deviceId && trackUris ? `?device_id=${user.deviceId}` : '';
     const body = trackUris ? { uris: trackUris } : null;
-
     return this.putRequests(baseUrl, queryParam, body);
   }
 

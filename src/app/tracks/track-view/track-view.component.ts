@@ -27,7 +27,7 @@ export class TrackViewComponent implements OnInit {
     this.isLiked$ = this.query.isLiked$(this.track.id);
   }
 
-  public async play() {
+  public async play() { 
     await this.spotifyService.play([this.track.uri]);
   }
   public async addoToPlayback() {

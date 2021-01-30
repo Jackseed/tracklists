@@ -9,7 +9,10 @@ export class SecToMinPipe implements PipeTransform {
     return (
       minutes.toString() +
       ':' +
-      Math.round((value - minutes * 60)).toString().padStart(2, '0')
+      // remove seconds counted through minutes
+      Math.round(value - minutes * 60)
+        .toString()
+        .padStart(2, '0')
     );
   }
 }

@@ -33,4 +33,6 @@ export class PlayerQuery extends QueryEntity<PlayerState, PlayerTrack> {
   getShuffle(): boolean {
     return this.getValue().ui.shuffle;
   }
+
+
 }
