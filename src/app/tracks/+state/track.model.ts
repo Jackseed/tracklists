@@ -31,6 +31,7 @@ export interface Album {
   name?: string;
   images?: Image[];
   genres?: string[];
+  release_year?: number;
   release_date?: string;
   release_date_precision?: 'year' | 'month' | 'day';
 }
@@ -219,6 +220,9 @@ export function createAlbum(params: Partial<Album>) {
     images: params.images.map((image) => createImage(image)),
     // TODO: check if genre is working
     genres: params.genres ? params.genres : [],
+    release_year: params.release_date
+      ? parseFloat(params.release_date.slice(0, 4))
+      : null,
     release_date: params.release_date ? params.release_date : '',
     release_date_precision: params.release_date_precision
       ? params.release_date_precision
