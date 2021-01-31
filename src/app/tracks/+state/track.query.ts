@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
 import { Observable, of } from 'rxjs';
-import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { Track } from './track.model';
+import { debounceTime, map, switchMap } from 'rxjs/operators';
+import { MinMax, Track } from './track.model';
 import { AuthQuery } from 'src/app/auth/+state';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { PlaylistQuery } from 'src/app/playlists/+state';
@@ -30,47 +30,6 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
       .subscribe((state) => {
         localStorage.setItem('trackStore', JSON.stringify(state));
       });
-  }
-
-  selectFilteredTracks(): Observable<Track[]> {
-    const activeIds$ = this.selectActiveId();
-
-    const tracks$ = activeIds$.pipe(
-      filter((ids) => !!ids),
-      switchMap((ids) =>
-        this.trackFilters.selectAllByFilters({
-          // limit filtered selection to active tracks
-          filterBy: (track) => ids.includes(track.id),
-        })
-      )
-    );
-    // @ts-ignore zs it was not an hashMap with not asObject
-    return tracks$;
-  }
-
-  public getMore(page: number): Observable<Track[]> {
-    const activeIds$ = this.selectActiveId();
-    const perPage = 15;
-    const offset = page * perPage;
-
-    return activeIds$
-      .pipe(
-        switchMap((ids) =>
-          this.trackFilters.selectAllByFilters({
-            // limit selection to active tracks
-            filterBy: (track) => ids.includes(track.id),
-          })
-        )
-      )
-      .pipe(map((tracks: Track[]) => tracks.slice(0, offset)));
-  }
-
-  public get tracksLength$() {
-    return this.selectFilteredTracks().pipe(
-      map((tracks) => {
-        return tracks.length;
-      })
-    );
   }
 
   selectGenres(): Observable<string[][]> {
@@ -117,17 +76,28 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     return this.select((state) => state.ui.loadingItem);
   }
 
-  public selectReleaseYears(): Observable<number[]> {
-    return this.selectFilteredTracks().pipe(
-      map((tracks) =>
-        tracks.map((track) => parseFloat(track.album.release_date.slice(0, 4)))
-      )
+  public get getExtremeReleaseYears(): MinMax {
+    const releaseYears = this.getAll().map((track) =>
+      parseFloat(track.album.release_date.slice(0, 4))
     );
+
+    const extremes = {
+      min: Math.min(...releaseYears),
+      max: Math.max(...releaseYears),
+    };
+
+    return extremes;
   }
 
-  public selectTempo(): Observable<number[]> {
-    return this.selectFilteredTracks().pipe(
-      map((tracks) => tracks.map((track) => track.tempo))
-    );
+  public get getExtremeTempos(): MinMax {
+    const tempos = this.getAll().map((track) => track.tempo);
+
+    const extremes = {
+      // remove 0
+      min: Math.floor(Math.min(...tempos.filter(Boolean))),
+      max: Math.ceil(Math.max(...tempos)),
+    };
+
+    return extremes;
   }
 }

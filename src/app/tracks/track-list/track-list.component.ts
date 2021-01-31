@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Track, TrackQuery } from '../+state';
+import { Track, TrackQuery, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-list',
@@ -23,16 +23,16 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   public page: number = 0;
   public hasMore$: Observable<boolean>;
 
-  constructor(private query: TrackQuery) {}
+  constructor(private query: TrackQuery, private service: TrackService) {}
 
   ngOnInit(): void {
-    this.tracks$ = this.query.getMore(this.page);
+    this.tracks$ = this.service.getMore(this.page);
 
     this.observer = new IntersectionObserver(([entry]) => {
       entry.isIntersecting && this.onScroll();
     });
 
-    this.trackNumber$ = this.query.tracksLength$;
+    this.trackNumber$ = this.service.tracksLength$;
 
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
@@ -45,7 +45,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public onScroll() {
     this.page++;
-    this.tracks$ = this.query.getMore(this.page);
+    this.tracks$ = this.service.getMore(this.page);
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
     );

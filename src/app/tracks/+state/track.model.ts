@@ -6,7 +6,7 @@ export interface Track {
   added_by?: SpotifyUser;
   uri?: string;
   album?: Album;
-  artists?: Artist[] ;
+  artists?: Artist[];
   genres?: string[];
   duration_ms?: number;
   name?: string;
@@ -144,6 +144,11 @@ export interface SpotifyAudioFeatures {
   track_href: string;
   type: string;
   uri: string;
+}
+
+export interface MinMax {
+  min: number;
+  max: number;
 }
 
 export function createTrack(params: Partial<Track>) {

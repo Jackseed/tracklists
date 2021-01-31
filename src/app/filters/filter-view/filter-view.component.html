@@ -6,11 +6,10 @@
       fxFlex="65"
       (ngModelChange)="onChange()"
       nzRange
-      [nzMin]="0"
-      [nzMax]="1"
-      [nzStep]="0.01"
+      [nzMin]="filter.extremeValues.min"
+      [nzMax]="filter.extremeValues.max"
+      [nzStep]="filter.step"
       [(ngModel)]="rangeValues"
-      [nzTooltipVisible]="'never'"
     ></nz-slider>
     <mat-icon fxFlex="10" [svgIcon]="filter.max"></mat-icon>
   </div>

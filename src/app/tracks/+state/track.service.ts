@@ -3,7 +3,8 @@ import { TrackStore, TrackState } from './track.store';
 import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
-import { first, tap } from 'rxjs/operators';
+import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { Track } from './track.model';
 
 @Injectable({ providedIn: 'root' })
 export class TrackService {
@@ -30,6 +31,61 @@ export class TrackService {
         )
         .subscribe();
     }
+  }
+
+  selectFilteredTracks(): Observable<Track[]> {
+    const activeIds$ = this.query.selectActiveId();
+
+    const tracks$ = activeIds$.pipe(
+      filter((ids) => !!ids),
+      switchMap((ids) =>
+        this.trackFilters.selectAllByFilters({
+          // limit filtered selection to active tracks
+          filterBy: (track) => ids.includes(track.id),
+        })
+      )
+    );
+    // @ts-ignore zs it was not an hashMap with not asObject
+    return tracks$;
+  }
+
+  public getMore(page: number): Observable<Track[]> {
+    const activeIds$ = this.query.selectActiveId();
+    const perPage = 15;
+    const offset = page * perPage;
+
+    return activeIds$
+      .pipe(
+        switchMap((ids) =>
+          this.trackFilters.selectAllByFilters({
+            // limit selection to active tracks
+            filterBy: (track) => ids.includes(track.id),
+          })
+        )
+      )
+      .pipe(map((tracks: Track[]) => tracks.slice(0, offset)));
+  }
+
+  public get tracksLength$() {
+    return this.selectFilteredTracks().pipe(
+      map((tracks) => {
+        return tracks.length;
+      })
+    );
+  }
+
+  public selectReleaseYears(): Observable<number[]> {
+    return this.selectFilteredTracks().pipe(
+      map((tracks) =>
+        tracks.map((track) => parseFloat(track.album.release_date.slice(0, 4)))
+      )
+    );
+  }
+
+  public selectTempo(): Observable<number[]> {
+    return this.selectFilteredTracks().pipe(
+      map((tracks) => tracks.map((track) => track.tempo))
+    );
   }
 
   setFilter(filter: AkitaFilter<TrackState>) {

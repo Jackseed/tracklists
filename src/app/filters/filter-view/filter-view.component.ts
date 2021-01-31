@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { TrackService } from 'src/app/tracks/+state';
+import { MinMax, TrackService } from 'src/app/tracks/+state';
 
 @Component({
   selector: 'app-filter-view',
@@ -14,8 +14,10 @@ export class FilterViewComponent implements OnInit {
     property: string;
     min: string;
     max: string;
+    extremeValues: MinMax;
+    step: number;
   };
-  rangeValues: number[] = [0, 1];
+  rangeValues: number[];
 
   constructor(
     private trackService: TrackService,
@@ -24,6 +26,10 @@ export class FilterViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.rangeValues = [
+      this.filter.extremeValues.min,
+      this.filter.extremeValues.max,
+    ];
     this.matIconRegistry.addSvgIcon(
       this.filter.min,
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -39,15 +45,8 @@ export class FilterViewComponent implements OnInit {
   }
 
   public onChange() {
-    // convert value to 0-100 for Popularity
-    if (this.filter.property === 'popularity') {
-      this.trackService.setFilter({
-        id: this.filter.property,
-        value: this.rangeValues.map((value) => value * 100),
-        predicate: (track) =>
-          this.rangeValues[0] * 100 < track[this.filter.property] &&
-          track[this.filter.property] < this.rangeValues[1] * 100,
-      });
+    // release year is more nested
+    if (this.filter.property === 'releaseYear') {
     } else {
       this.trackService.setFilter({
         id: this.filter.property,
