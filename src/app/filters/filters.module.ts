@@ -14,6 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { NzSliderModule } from 'ng-zorro-antd/slider';
 
 @NgModule({
   declarations: [FilterViewComponent, FilterListComponent, GenreListComponent],
@@ -31,6 +32,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     MatChipsModule,
     MatIconModule,
     FlexLayoutModule,
+    NzSliderModule
   ],
   exports: [
     FilterViewComponent,

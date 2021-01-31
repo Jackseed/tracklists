@@ -117,7 +117,17 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     return this.select((state) => state.ui.loadingItem);
   }
 
-  public selectReleaseYear(): Observable<boolean> {
-    return this.select((state) => state.ui.spinner);
+  public selectReleaseYears(): Observable<number[]> {
+    return this.selectFilteredTracks().pipe(
+      map((tracks) =>
+        tracks.map((track) => parseFloat(track.album.release_date.slice(0, 4)))
+      )
+    );
+  }
+
+  public selectTempo(): Observable<number[]> {
+    return this.selectFilteredTracks().pipe(
+      map((tracks) => tracks.map((track) => track.tempo))
+    );
   }
 }

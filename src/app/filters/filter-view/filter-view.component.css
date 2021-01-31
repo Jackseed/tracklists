@@ -6,6 +6,20 @@
   background: linear-gradient(to right, #def0e7, #97ecc3 50%, #05f782 100%);
 }
 
+:host ::ng-deep .ant-slider-track {
+  border-color: black !important;
+  background-color: #69f0ae !important;
+
+  --antd-wave-shadow-color: black !important;
+}
+
+:host ::ng-deep .ant-slider-handle {
+  border-color: #69f0ae !important;
+  background-color: #69f0ae !important;
+
+  --antd-wave-shadow-color: black !important;
+}
+
 :host ::ng-deep .p-slider-handle {
   background: #69f0ae;
   border: 1px solid black;
