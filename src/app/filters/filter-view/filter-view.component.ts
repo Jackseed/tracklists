@@ -46,7 +46,14 @@ export class FilterViewComponent implements OnInit {
 
   public onChange() {
     // release year is more nested
-    if (this.filter.property === 'releaseYear') {
+    if (this.filter.property === 'release_year') {
+      this.trackService.setFilter({
+        id: this.filter.property,
+        value: this.rangeValues,
+        predicate: (track) =>
+          this.rangeValues[0] < track.album[this.filter.property] &&
+          track.album[this.filter.property] < this.rangeValues[1],
+      });
     } else {
       this.trackService.setFilter({
         id: this.filter.property,

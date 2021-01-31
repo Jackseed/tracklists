@@ -11,7 +11,7 @@ export class FilterListComponent implements OnInit {
   extremeTempos = this.trackQuery.getExtremeTempos;
   filters = [
     {
-      property: 'releaseYear',
+      property: 'release_year',
       label: 'Release Year',
       min: 'sleep',
       max: 'coffee',

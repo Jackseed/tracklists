@@ -77,7 +77,10 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
   }
 
   public get getExtremeReleaseYears(): MinMax {
-    const releaseYears = this.getAll().map((track) => track.album.release_year);
+    let releaseYears = this.getAll().map((track) =>
+      track.album.release_year ? track.album.release_year : null
+    );
+    releaseYears = releaseYears.filter((year) => year);
 
     const extremes = {
       min: Math.min(...releaseYears),
