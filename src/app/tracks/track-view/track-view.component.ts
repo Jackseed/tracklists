@@ -4,7 +4,8 @@ import { SpotifyService } from 'src/app/spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../+state';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlaylistQuery, PlaylistService } from 'src/app/playlists/+state';
-import { first, tap } from 'rxjs/operators';
+import { first, map, tap } from 'rxjs/operators';
+import { PlayerQuery } from 'src/app/player/+state';
 
 @Component({
   selector: 'app-track-view',
@@ -14,20 +15,26 @@ import { first, tap } from 'rxjs/operators';
 export class TrackViewComponent implements OnInit {
   @Input() track: Track;
   isLiked$: Observable<boolean>;
+  isPlaying$: Observable<boolean>;
+
   constructor(
     private query: TrackQuery,
     private service: TrackService,
     private spotifyService: SpotifyService,
     private playlistQuery: PlaylistQuery,
     private playlistService: PlaylistService,
+    private playerQuery: PlayerQuery,
     private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.isLiked$ = this.query.isLiked$(this.track.id);
+    this.isPlaying$ = this.playerQuery
+      .selectActiveId()
+      .pipe(map((trackId) => trackId === this.track.id));
   }
 
-  public async play() { 
+  public async play() {
     await this.spotifyService.play([this.track.uri]);
   }
   public async addoToPlayback() {

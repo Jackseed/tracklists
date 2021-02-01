@@ -1,5 +1,10 @@
 <div fxLayout="row" fxLayoutAlign="center center">
-  <mat-card class="card" fxFlex fxFlexAlign="center center">
+  <mat-card
+    class="card"
+    [ngClass]="{ playing: (isPlaying$ | async) }"
+    fxFlex
+    fxFlexAlign="center center"
+  >
     <mat-card-header fxLayout="row" fxLayoutAlign="center center">
       <div
         mat-card-avatar
