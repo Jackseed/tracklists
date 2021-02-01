@@ -11,22 +11,6 @@ export class FilterListComponent implements OnInit {
   extremeTempos = this.trackQuery.getExtremeTempos;
   filters = [
     {
-      property: 'release_year',
-      label: 'Release Year',
-      min: 'sleep',
-      max: 'coffee',
-      extremeValues: this.extremeYears,
-      step: 1,
-    },
-    {
-      property: 'tempo',
-      label: 'BPM',
-      min: 'sleep',
-      max: 'coffee',
-      extremeValues: this.extremeTempos,
-      step: 1,
-    },
-    {
       property: 'energy',
       label: 'Energy',
       min: 'sleep',
@@ -62,12 +46,28 @@ export class FilterListComponent implements OnInit {
     {
       property: 'popularity',
       label: 'Popularity',
-      min: 'sleep',
-      max: 'coffee',
+      min: 'question',
+      max: 'star',
       extremeValues: {
         min: 0,
         max: 100,
       },
+      step: 1,
+    },
+    {
+      property: 'release_year',
+      label: 'Release Year',
+      min: 'phonogram',
+      max: 'ipod',
+      extremeValues: this.extremeYears,
+      step: 1,
+    },
+    {
+      property: 'tempo',
+      label: 'BPM',
+      min: 'bump',
+      max: 'pulse',
+      extremeValues: this.extremeTempos,
       step: 1,
     },
     {
