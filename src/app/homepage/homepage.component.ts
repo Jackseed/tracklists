@@ -70,7 +70,6 @@ export class HomepageComponent implements OnInit {
     this.playingTrack$ = this.playerQuery.selectActive();
     // update spinner to false to disable loading page if page is reloaded
     this.trackService.updateSpinner(false);
-
   }
 
   public loginSpotify() {
@@ -134,6 +133,7 @@ export class HomepageComponent implements OnInit {
   public refreshData() {
     this.spotifyService.savePlaylists();
     this.trackService.updateSpinner(true);
+    this.trackService.loadFromFirebase();
   }
 
   public signOut() {

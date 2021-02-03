@@ -21,16 +21,19 @@ export class TrackService {
     if (data && !data.includes(':{}')) {
       this.store.loadFromStorage();
     } else {
-      const tracks$ = this.query.selectUserTracks$;
-      tracks$
-        .pipe(
-          tap((tracks) => {
-            tracks ? this.store.set(tracks) : this.store.set({});
-            this.store.setActive([]);
-          }, first())
-        )
-        .subscribe();
+      this.loadFromFirebase();
     }
+  }
+
+  public loadFromFirebase() {
+    this.query.selectUserTracks$
+      .pipe(
+        tap((tracks) => {
+          tracks ? this.store.set(tracks) : this.store.set({});
+          this.store.setActive([]);
+        }, first())
+      )
+      .subscribe();
   }
 
   selectFilteredTracks(): Observable<Track[]> {
