@@ -5,7 +5,7 @@
   fxLayoutAlign="start center"
 >
   <div
-    fxFlex="85"
+    [fxFlex]="(playingTrack$ | async) ? 85 : 100"
     *ngIf="
       !(isTrackstoreLoading$ | async) && !(isSpinning$ | async);
       else loadingTracks
@@ -107,7 +107,12 @@
     </div>
   </div>
   <!----------------- PLAYER ----------------->
-  <div fxFlexFill fxFlex fxLayout="row" *ngIf="!(isTrackStoreEmpty$ | async)">
+  <div
+    fxFlexFill
+    fxFlex="15"
+    fxLayout="row"
+    *ngIf="!(isTrackStoreEmpty$ | async) && (playingTrack$ | async)"
+  >
     <div fxFlexOffset="10" fxFlex="70">
       <app-player [track$]="playingTrack$"></app-player>
     </div>

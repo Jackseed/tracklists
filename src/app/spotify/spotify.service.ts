@@ -66,7 +66,7 @@ export class SpotifyService {
 
     // instantiate the player
     const player = new Player({
-      name: 'Listy player',
+      name: 'Tracklists',
       getOAuthToken: (callback) => {
         callback(token);
       },
