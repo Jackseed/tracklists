@@ -34,8 +34,21 @@ export class TrackViewComponent implements OnInit {
       .pipe(map((trackId) => trackId === this.track.id));
   }
 
+  // play playback from the selected track
   public async play() {
-    await this.spotifyService.play([this.track.uri]);
+    this.service
+      .selectFilteredTracks()
+      .pipe(
+        map((tracks) => tracks.map((track) => track.uri)),
+        // remove the tracks before the selected one
+        map((ids) => {
+          const index = ids.indexOf(this.track.uri);
+          return ids.slice(index);
+        }),
+        tap(async (ids) => await this.spotifyService.play(ids)),
+        first()
+      )
+      .subscribe();
   }
   public async addoToPlayback() {
     await this.spotifyService.addToPlayback(this.track.uri);
