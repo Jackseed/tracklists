@@ -82,11 +82,21 @@ export class SpotifyService {
     // when player state change, set active the track
     player.on('player_state_changed', async (state) => {
       if (!state) return;
+
       // gets it from db as there has been some errors
+      let dbTrack = this.trackQuery.getEntity(
+        state.track_window.current_track.id
+      );
+      // prevents error due to Track Relinking
+      if (!dbTrack)
+        dbTrack = this.trackQuery.getEntity(
+          state.track_window.current_track.linked_from.id
+        );
+
       const track = {
-        ...this.trackQuery.getEntity(state.track_window.current_track.id),
-        position: state.track_window.current_track.id.position,
-        paused: state.track_window.current_track.id.paused,
+        ...dbTrack,
+        position: state.position,
+        paused: state.paused,
       };
 
       const pause = this.playerQuery.getPaused(track.id);

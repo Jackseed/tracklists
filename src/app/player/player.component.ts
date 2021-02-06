@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track } from '../tracks/+state';
-import { PlayerQuery, PlayerService } from './+state';
+import { PlayerQuery } from './+state';
 
 @UntilDestroy()
 @Component({
@@ -23,7 +23,6 @@ export class PlayerComponent implements OnInit {
 
   constructor(
     private query: PlayerQuery,
-    private service: PlayerService,
     private spotifyService: SpotifyService,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer
