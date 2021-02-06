@@ -8,12 +8,13 @@ import {
 } from '@angular/core';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Track, TrackQuery, TrackService } from '../+state';
+import { Track, TrackQuery, TrackService, TrackStore } from '../+state';
 
 @Component({
   selector: 'app-track-list',
   templateUrl: './track-list.component.html',
   styleUrls: ['./track-list.component.css'],
+  providers: [TrackStore, TrackQuery],
 })
 export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('anchor') anchor: ElementRef<HTMLElement>;
@@ -23,7 +24,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   public page: number = 0;
   public hasMore$: Observable<boolean>;
 
-  constructor(private query: TrackQuery, private service: TrackService) {}
+  constructor(private service: TrackService) {}
 
   ngOnInit(): void {
     this.tracks$ = this.service.getMore(this.page);

@@ -23,7 +23,7 @@ export class FilterListComponent implements OnInit {
     },
     {
       property: 'danceability',
-      label: 'Dancy',
+      label: 'Danceability',
       min: 'armchair',
       max: 'disco',
       extremeValues: {
@@ -83,7 +83,7 @@ export class FilterListComponent implements OnInit {
     },
     {
       property: 'acousticness',
-      label: 'Accoustic',
+      label: 'Acoustic',
       min: 'electronic',
       max: 'piano',
       extremeValues: {

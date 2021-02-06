@@ -3,8 +3,8 @@ import { Track } from './track.model';
 import {
   EntityState,
   EntityStore,
-  StoreConfig,
   MultiActiveState,
+  guid,
 } from '@datorama/akita';
 
 export interface TrackState
@@ -21,10 +21,9 @@ const initialState = {
 };
 
 @Injectable({ providedIn: 'root' })
-@StoreConfig({ name: 'tracks' })
 export class TrackStore extends EntityStore<TrackState, Track> {
   constructor() {
-    super(initialState);
+    super(initialState, { name: `tracks-${guid()}` });
     this.loadFromStorage();
   }
   // call storage instead of firebase

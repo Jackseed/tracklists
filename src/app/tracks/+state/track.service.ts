@@ -8,7 +8,7 @@ import { Track } from './track.model';
 
 @Injectable({ providedIn: 'root' })
 export class TrackService {
-  trackFilters: AkitaFiltersPlugin<TrackState>;
+  private trackFilters: AkitaFiltersPlugin<TrackState>;
 
   constructor(private store: TrackStore, private query: TrackQuery) {
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
