@@ -151,6 +151,5 @@ export class HomepageComponent implements OnInit {
 
   public switchRecommended() {
     this.isRecommended = !this.isRecommended;
-    console.log(this.isRecommended);
   }
 }

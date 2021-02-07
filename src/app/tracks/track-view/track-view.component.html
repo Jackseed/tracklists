@@ -19,6 +19,13 @@
       </div>
       <div fxFlex></div>
       <button
+        mat-icon-button
+        (click)="getRecommendations()"
+        matTooltip="Recommendations"
+      >
+        <mat-icon>recommend</mat-icon>
+      </button>
+      <button
         *ngIf="isLiked$ | async"
         mat-icon-button
         (click)="unlike()"

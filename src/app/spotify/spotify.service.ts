@@ -30,6 +30,7 @@ import {
   TrackService,
   TrackStore,
   TrackQuery,
+  SpotifyTrack,
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
@@ -193,6 +194,7 @@ export class SpotifyService {
 
   private async saveLikedTracks() {
     this.trackService.updateLoadingItem(`Saving your liked tracks...`);
+    // TODO: refactor code with a getFullTracks function
     // get liked tracks by batches
     const tracks: Track[] = await this.getLikedTracksByBatches();
     const trackIds: string[] = tracks.map((track) => track.id);
@@ -585,6 +587,69 @@ export class SpotifyService {
     queryParam = queryParam.substring(0, queryParam.length - 1);
 
     return this.getPromisedObjects(url, queryParam);
+  }
+
+  public async getPromisedRecommendations(
+    artistIds: string[],
+    genreIds: string[],
+    trackIds: string[]
+  ): Promise<Track[]> {
+    const url = 'https://api.spotify.com/v1/recommendations';
+    const limit = 100;
+    let queryParam: string = `?limit=${limit}`;
+
+    if (artistIds.length > 0) {
+      queryParam = queryParam + '&seed_artists=';
+      for (const artistId of artistIds) {
+        queryParam = queryParam + artistId + ',';
+      }
+      queryParam = queryParam.substring(0, queryParam.length - 1);
+    }
+
+    if (genreIds.length > 0) {
+      queryParam = queryParam + '&seed_genres=';
+      for (const genreId of genreIds) {
+        queryParam = queryParam + genreId + ',';
+      }
+      queryParam = queryParam.substring(0, queryParam.length - 1);
+    }
+
+    if (trackIds.length > 0) {
+      queryParam = queryParam + '&seed_tracks=';
+      for (const trackId of trackIds) {
+        queryParam = queryParam + trackId + ',';
+      }
+      queryParam = queryParam.substring(0, queryParam.length - 1);
+    }
+
+    const recommended = await (await this.getPromisedObjects(url, queryParam))
+      .pipe(
+        map(async (recommendedTracks: { tracks: SpotifyTrack[] }) => {
+          const tracks = recommendedTracks.tracks;
+          const trackIds = tracks.map((track) => track.id);
+          const audioFeatures = await this.getAudioFeatures(trackIds);
+          // Get genres
+          const artistIds: string[] = tracks.map(
+            (track) => track.artists[0].id
+          );
+          const genres = await this.getGenresByBatches(artistIds);
+          const fullTracks: Track[] = tracks.map((track, i) => ({
+            ...track,
+            ...audioFeatures[i],
+            genres: genres[i],
+          }));
+
+          // write tracks by batches
+          const trackCollection = this.db.collection('tracks');
+          this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
+          
+          return fullTracks;
+        }),
+        first()
+      )
+      .toPromise();
+
+    return recommended;
   }
 
   public async getPromisedObjects(url, queryParam) {
