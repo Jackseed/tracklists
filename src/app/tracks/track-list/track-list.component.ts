@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  Input,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -17,6 +18,7 @@ import { Track, TrackQuery, TrackService, TrackStore } from '../+state';
   providers: [TrackStore, TrackQuery],
 })
 export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
+  @Input() baseTrackIds$: Observable<string[]>;
   @ViewChild('anchor') anchor: ElementRef<HTMLElement>;
   private observer: IntersectionObserver;
   public tracks$: Observable<Track[]>;
@@ -27,7 +29,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(private service: TrackService) {}
 
   ngOnInit(): void {
-    this.tracks$ = this.service.getMore(this.page);
+    this.tracks$ = this.service.getMore(this.baseTrackIds$, this.page);
 
     this.observer = new IntersectionObserver(([entry]) => {
       entry.isIntersecting && this.onScroll();
@@ -46,7 +48,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public onScroll() {
     this.page++;
-    this.tracks$ = this.service.getMore(this.page);
+    this.tracks$ = this.service.getMore(this.baseTrackIds$, this.page);
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
     );

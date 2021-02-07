@@ -89,6 +89,9 @@
                 <mat-icon>play_circle_outline</mat-icon>
                 Play tracklist
               </button>
+              <button mat-raised-button (click)="switchRecommended()">
+                Switch tracklist
+              </button>
               <div fxFlex></div>
               <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
             </div>
@@ -100,7 +103,16 @@
             fxFlex
             *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
           >
-            <app-track-list></app-track-list>
+            <div *ngIf="!isRecommended">
+              <app-track-list
+                [baseTrackIds$]="activeTrackIds$"
+              ></app-track-list>
+            </div>
+            <div *ngIf="isRecommended">
+              <app-track-list
+                [baseTrackIds$]="recommendedTrackIds$"
+              ></app-track-list>
+            </div>
           </div>
         </div>
       </div>

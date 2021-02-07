@@ -26,6 +26,15 @@ export class HomepageComponent implements OnInit {
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
   public loadingItem$: Observable<string>;
+  public activeTrackIds$: Observable<
+    string[]
+  > = this.trackQuery.selectActiveId() as Observable<string[]>;
+  public recommendedTrackIds$: Observable<
+    string[]
+  > = this.trackQuery
+    .selectAll()
+    .pipe(map((tracks) => tracks.map((track) => track.id).slice(0, 100)));
+  public isRecommended: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -138,5 +147,10 @@ export class HomepageComponent implements OnInit {
 
   public signOut() {
     this.authService.signOut();
+  }
+
+  public switchRecommended() {
+    this.isRecommended = !this.isRecommended;
+    console.log(this.isRecommended);
   }
 }

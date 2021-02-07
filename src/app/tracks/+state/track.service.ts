@@ -52,12 +52,15 @@ export class TrackService {
     return tracks$;
   }
 
-  public getMore(page: number): Observable<Track[]> {
+  public getMore(
+    baseTrackIds$: Observable<string[]>,
+    page: number
+  ): Observable<Track[]> {
     const activeIds$ = this.query.selectActiveId();
     const perPage = 15;
     const offset = page * perPage;
 
-    return activeIds$
+    return baseTrackIds$
       .pipe(
         switchMap((ids) =>
           this.trackFilters.selectAllByFilters({
