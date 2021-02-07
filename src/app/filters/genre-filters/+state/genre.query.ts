@@ -12,7 +12,7 @@ export class GenreQuery extends QueryEntity<GenreState> {
   public get topGenres(): Genre[] {
     return this.getAll({
       sortBy: (a, b) => b.trackIds.length - a.trackIds.length,
-      limitTo: 4,
+      limitTo: 2,
     });
   }
 }

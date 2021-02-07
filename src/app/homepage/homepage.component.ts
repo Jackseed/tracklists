@@ -144,15 +144,20 @@ export class HomepageComponent implements OnInit {
 
   public async addRecommended() {
     const genreIds = this.genreQuery.topGenres.map((genre) => genre.id);
-    const track = this.trackQuery.getActive()[0];
+    const activeTrackIds = this.trackQuery
+      .getActive()
+      .map((track) => track.id)
+      .slice(0, 3);
+    const filters = this.trackService.getFilters();
 
     const recommendedTracks = await this.spotifyService.getPromisedRecommendations(
       [],
       genreIds,
-      [track.id]
+      activeTrackIds,
+      filters
     );
     this.trackService.add(recommendedTracks);
-
+    console.log(recommendedTracks);
     const trackIds = recommendedTracks.map((track) => track.id);
 
     this.trackService.addActive(trackIds);

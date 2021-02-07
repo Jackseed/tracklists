@@ -91,6 +91,10 @@ export class TrackService {
     );
   }
 
+  getFilters(): AkitaFilter<TrackState>[] {
+    return this.trackFilters.getFilters();
+  }
+
   setFilter(filter: AkitaFilter<TrackState>) {
     this.trackFilters.setFilter(filter);
   }

@@ -31,9 +31,11 @@ import {
   TrackStore,
   TrackQuery,
   SpotifyTrack,
+  TrackState,
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
+import { AkitaFilter } from 'akita-filters-plugin';
 
 declare global {
   interface Window {
@@ -592,7 +594,8 @@ export class SpotifyService {
   public async getPromisedRecommendations(
     artistIds: string[],
     genreIds: string[],
-    trackIds: string[]
+    trackIds: string[],
+    filters: AkitaFilter<TrackState>[]
   ): Promise<Track[]> {
     const url = 'https://api.spotify.com/v1/recommendations';
     const limit = 100;
@@ -622,28 +625,44 @@ export class SpotifyService {
       queryParam = queryParam.substring(0, queryParam.length - 1);
     }
 
+    if (filters.length > 0) {
+      for (const filter of filters) {
+        const min = `&min_${filter.id}=${filter.value[0]}`;
+        const max = `&max_${filter.id}=${filter.value[1]}`;
+        let target: string;
+        filter.id === 'release_year'
+          ? (target = '')
+          : (target = `&target_${filter.id}=${
+              (filter.value[0] + filter.value[1]) / 2
+            }`);
+        queryParam = queryParam + min + max + target;
+      }
+    }
+
     const recommended = await (await this.getPromisedObjects(url, queryParam))
       .pipe(
         map(async (recommendedTracks: { tracks: SpotifyTrack[] }) => {
           const tracks = recommendedTracks.tracks;
-          const trackIds = tracks.map((track) => track.id);
-          const audioFeatures = await this.getAudioFeatures(trackIds);
-          // Get genres
-          const artistIds: string[] = tracks.map(
-            (track) => track.artists[0].id
-          );
-          const genres = await this.getGenresByBatches(artistIds);
-          const fullTracks: Track[] = tracks.map((track, i) => ({
-            ...track,
-            ...audioFeatures[i],
-            genres: genres[i],
-          }));
+          if (tracks) {
+            const trackIds = tracks.map((track) => track.id);
+            const audioFeatures = await this.getAudioFeatures(trackIds);
+            // Get genres
+            const artistIds: string[] = tracks.map(
+              (track) => track.artists[0].id
+            );
+            const genres = await this.getGenresByBatches(artistIds);
+            const fullTracks: Track[] = tracks.map((track, i) => ({
+              ...track,
+              ...audioFeatures[i],
+              genres: genres[i],
+            }));
 
-          // write tracks by batches
-          const trackCollection = this.db.collection('tracks');
-          this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
-          
-          return fullTracks;
+            // write tracks by batches
+            const trackCollection = this.db.collection('tracks');
+            this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
+
+            return fullTracks;
+          }
         }),
         first()
       )
