@@ -4,7 +4,6 @@ import {
   EntityState,
   EntityStore,
   MultiActiveState,
-  guid,
   StoreConfig,
 } from '@datorama/akita';
 

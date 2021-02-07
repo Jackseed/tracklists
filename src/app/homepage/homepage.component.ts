@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { AuthService, SpotifyUser } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
+import { GenreQuery } from '../filters/genre-filters/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -26,13 +27,13 @@ export class HomepageComponent implements OnInit {
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
   public loadingItem$: Observable<string>;
-  public isRecommended: boolean = false;
 
   constructor(
     private authService: AuthService,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
+    private genreQuery: GenreQuery,
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -141,12 +142,14 @@ export class HomepageComponent implements OnInit {
     this.authService.signOut();
   }
 
-  public async switchRecommended() {
-    this.isRecommended = !this.isRecommended;
+  public async addRecommended() {
+    const genreIds = this.genreQuery.topGenres.map((genre) => genre.id);
+    const track = this.trackQuery.getActive()[0];
+
     const recommendedTracks = await this.spotifyService.getPromisedRecommendations(
       [],
-      [],
-      ['6GGs44GQEAu9Ost8y0DYFI']
+      genreIds,
+      [track.id]
     );
     this.trackService.add(recommendedTracks);
 
