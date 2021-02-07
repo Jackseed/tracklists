@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
+import { GenreQuery } from '../filters/genre-filters/+state';
 
 @Component({
   selector: 'app-homepage',
@@ -32,6 +33,7 @@ export class HomepageComponent implements OnInit {
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
+    private genreQuery: GenreQuery,
     private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
@@ -138,5 +140,21 @@ export class HomepageComponent implements OnInit {
 
   public signOut() {
     this.authService.signOut();
+  }
+
+  public async addRecommended() {
+    const genreIds = this.genreQuery.topGenres.map((genre) => genre.id);
+    const track = this.trackQuery.getActive()[0];
+
+    const recommendedTracks = await this.spotifyService.getPromisedRecommendations(
+      [],
+      genreIds,
+      [track.id]
+    );
+    this.trackService.add(recommendedTracks);
+
+    const trackIds = recommendedTracks.map((track) => track.id);
+
+    this.trackService.addActive(trackIds);
   }
 }

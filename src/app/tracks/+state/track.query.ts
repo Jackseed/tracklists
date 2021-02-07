@@ -101,4 +101,5 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
     return extremes;
   }
+
 }

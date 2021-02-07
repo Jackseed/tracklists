@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Track, TrackQuery, TrackService } from '../+state';
+import { Track, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-list',
@@ -23,7 +23,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   public page: number = 0;
   public hasMore$: Observable<boolean>;
 
-  constructor(private query: TrackQuery, private service: TrackService) {}
+  constructor(private service: TrackService) {}
 
   ngOnInit(): void {
     this.tracks$ = this.service.getMore(this.page);

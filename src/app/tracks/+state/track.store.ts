@@ -3,8 +3,8 @@ import { Track } from './track.model';
 import {
   EntityState,
   EntityStore,
-  StoreConfig,
   MultiActiveState,
+  StoreConfig,
 } from '@datorama/akita';
 
 export interface TrackState
