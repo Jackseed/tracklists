@@ -52,15 +52,12 @@ export class TrackService {
     return tracks$;
   }
 
-  public getMore(
-    baseTrackIds$: Observable<string[]>,
-    page: number
-  ): Observable<Track[]> {
+  public getMore(page: number): Observable<Track[]> {
     const activeIds$ = this.query.selectActiveId();
     const perPage = 15;
     const offset = page * perPage;
 
-    return baseTrackIds$
+    return activeIds$
       .pipe(
         switchMap((ids) =>
           this.trackFilters.selectAllByFilters({
@@ -108,6 +105,10 @@ export class TrackService {
 
   selectFilters(): Observable<AkitaFilter<TrackState>[]> {
     return this.trackFilters.selectFilters();
+  }
+
+  public add(tracks: Track[]) {
+    this.store.add(tracks);
   }
 
   public addActive(trackIds: string[]) {

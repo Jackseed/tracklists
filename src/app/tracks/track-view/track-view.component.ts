@@ -88,13 +88,4 @@ export class TrackViewComponent implements OnInit {
       )
       .subscribe();
   }
-
-  public async getRecommendations() {
-    const recommendations = await this.spotifyService.getPromisedRecommendations(
-      [],
-      [],
-      [this.track.id]
-    );
-    console.log(recommendations);
-  }
 }

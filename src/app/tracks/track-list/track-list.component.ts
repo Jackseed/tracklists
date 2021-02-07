@@ -2,23 +2,20 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  Input,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Track, TrackQuery, TrackService, TrackStore } from '../+state';
+import { Track, TrackService } from '../+state';
 
 @Component({
   selector: 'app-track-list',
   templateUrl: './track-list.component.html',
   styleUrls: ['./track-list.component.css'],
-  providers: [TrackStore, TrackQuery],
 })
 export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
-  @Input() baseTrackIds$: Observable<string[]>;
   @ViewChild('anchor') anchor: ElementRef<HTMLElement>;
   private observer: IntersectionObserver;
   public tracks$: Observable<Track[]>;
@@ -29,7 +26,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(private service: TrackService) {}
 
   ngOnInit(): void {
-    this.tracks$ = this.service.getMore(this.baseTrackIds$, this.page);
+    this.tracks$ = this.service.getMore(this.page);
 
     this.observer = new IntersectionObserver(([entry]) => {
       entry.isIntersecting && this.onScroll();
@@ -48,7 +45,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public onScroll() {
     this.page++;
-    this.tracks$ = this.service.getMore(this.baseTrackIds$, this.page);
+    this.tracks$ = this.service.getMore(this.page);
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
       map(([tracks, total]) => (tracks.length === total ? false : true))
     );

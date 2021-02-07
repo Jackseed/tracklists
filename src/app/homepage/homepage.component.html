@@ -103,16 +103,7 @@
             fxFlex
             *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
           >
-            <div *ngIf="!isRecommended">
-              <app-track-list
-                [baseTrackIds$]="activeTrackIds$"
-              ></app-track-list>
-            </div>
-            <div *ngIf="isRecommended">
-              <app-track-list
-                [baseTrackIds$]="recommendedTrackIds$"
-              ></app-track-list>
-            </div>
+            <app-track-list></app-track-list>
           </div>
         </div>
       </div>

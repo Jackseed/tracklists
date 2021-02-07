@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { AuthService, SpotifyUser } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
@@ -26,14 +26,6 @@ export class HomepageComponent implements OnInit {
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
   public loadingItem$: Observable<string>;
-  public activeTrackIds$: Observable<
-    string[]
-  > = this.trackQuery.selectActiveId() as Observable<string[]>;
-  public recommendedTrackIds$: Observable<
-    string[]
-  > = this.trackQuery
-    .selectAll()
-    .pipe(map((tracks) => tracks.map((track) => track.id).slice(0, 100)));
   public isRecommended: boolean = false;
 
   constructor(
@@ -149,7 +141,17 @@ export class HomepageComponent implements OnInit {
     this.authService.signOut();
   }
 
-  public switchRecommended() {
+  public async switchRecommended() {
     this.isRecommended = !this.isRecommended;
+    const recommendedTracks = await this.spotifyService.getPromisedRecommendations(
+      [],
+      [],
+      ['6GGs44GQEAu9Ost8y0DYFI']
+    );
+    this.trackService.add(recommendedTracks);
+
+    const trackIds = recommendedTracks.map((track) => track.id);
+
+    this.trackService.addActive(trackIds);
   }
 }
