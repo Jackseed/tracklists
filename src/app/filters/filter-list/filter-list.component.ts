@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { TrackQuery } from 'src/app/tracks/+state';
+import { TrackQuery, TrackService } from 'src/app/tracks/+state';
 
 @Component({
   selector: 'app-filter-list',
@@ -104,7 +104,14 @@ export class FilterListComponent implements OnInit {
       step: 0.01,
     },
   ];
-  constructor(private trackQuery: TrackQuery) {}
+  constructor(
+    private trackQuery: TrackQuery,
+    private trackService: TrackService
+  ) {}
+
+  public clearFilters() {
+    this.trackService.clearFilters();
+  }
 
   ngOnInit(): void {}
 }

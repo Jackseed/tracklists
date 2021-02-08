@@ -111,6 +111,10 @@ export class TrackService {
     return this.trackFilters.selectFilters();
   }
 
+  clearFilters() {
+    this.trackFilters.clearFilters();
+  }
+
   public add(tracks: Track[]) {
     this.store.add(tracks);
   }

@@ -627,15 +627,17 @@ export class SpotifyService {
 
     if (filters.length > 0) {
       for (const filter of filters) {
-        const min = `&min_${filter.id}=${filter.value[0]}`;
-        const max = `&max_${filter.id}=${filter.value[1]}`;
-        let target: string;
-        filter.id === 'release_year'
-          ? (target = '')
-          : (target = `&target_${filter.id}=${
-              (filter.value[0] + filter.value[1]) / 2
-            }`);
-        queryParam = queryParam + min + max + target;
+        if (filter.id != 'genres') {
+          const min = `&min_${filter.id}=${filter.value[0]}`;
+          const max = `&max_${filter.id}=${filter.value[1]}`;
+          let target: string;
+          filter.id === 'release_year'
+            ? (target = '')
+            : (target = `&target_${filter.id}=${
+                (filter.value[0] + filter.value[1]) / 2
+              }`);
+          queryParam = queryParam + min + max + target;
+        }
       }
     }
 

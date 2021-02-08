@@ -156,10 +156,12 @@ export class HomepageComponent implements OnInit {
       activeTrackIds,
       filters
     );
-    this.trackService.add(recommendedTracks);
-    console.log(recommendedTracks);
-    const trackIds = recommendedTracks.map((track) => track.id);
+    if (recommendedTracks) {
+      this.trackService.add(recommendedTracks);
+      console.log(recommendedTracks);
+      const trackIds = recommendedTracks.map((track) => track.id);
 
-    this.trackService.addActive(trackIds);
+      this.trackService.addActive(trackIds);
+    }
   }
 }
