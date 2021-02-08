@@ -1,35 +1,58 @@
+const puppeteer = require('puppeteer');
 const functions = require('firebase-functions');
-const playwright = require('playwright');
 
 exports.scrapeImages = functions
   .runWith({
     timeoutSeconds: 500,
   })
-  .https.onRequest(async (res: any) => {
-    // Randomly select a browser
-    // You can also specify a single browser that you prefer
-    for (const browserType of ['chromium', 'firefox', 'webkit']) {
-      console.log(browserType); // To know the chosen one 😁
-      const browser = await playwright[browserType].launch();
-      const context = await browser.newContext();
-      const page = await context.newPage();
-      await page.goto('https://www.nova.fr/c-etait-quoi-ce-titre/');
-      // Login form
-      // set a delay to wait for page to completely load all contents
-      await page.waitForTimeout(9000);
-      // You can also take screenshots of pages
-      await page.screenshot({
-        path: `ig-sign-in.png`,
-      });
+  .https.onRequest(async () => {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+
+    // easier to stay in GMT+0
+    // await page.emulateTimezone('Europe/Brussels');
+
+    await page.goto('https://www.nova.fr/c-etait-quoi-ce-titre/');
+
+    await page.click('[id="didomi-notice-agree-button"]');
+
+    await page.setViewport({
+      width: 1920,
+      height: 1080,
+      deviceScaleFactor: 0.75,
+    });
+
+    await page.screenshot({ path: '2.png' });
+
+    const hours = new Date(Date.now()).getHours();
+
+    let data: string[] = [];
+
+    let k = 0;
+    while (k < hours) {
+      // await page.select('#telCountryInput', 'my-value');
+
       // Execute code in the DOM
-      const data = await page.evaluate(() => {
-        const images = document.querySelectorAll('img');
-        const urls = Array.from(images).map((v) => v.src);
+      const newData = await page.evaluate(async () => {
+        // TODO: add click on load more first
+        const links = document.querySelectorAll('a');
+
+        const urls = Array.from(links)
+          .map((link) => link.href)
+          .filter((href) => href.includes('spotify'));
+
         return urls;
       });
-      await browser.close();
-      console.log(data);
-      // Return the data in form of json
-      return;
+
+      data = data.concat(newData);
+
+      k++;
+      console.log(hours - k);
     }
+
+    await browser.close();
+
+    console.log(data);
+
+    return data;
   });
