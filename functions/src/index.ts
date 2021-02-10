@@ -22,21 +22,25 @@ exports.scrapeImages = functions
       deviceScaleFactor: 0.75,
     });
 
-    await page.screenshot({ path: '2.png' });
+    await page.screenshot({ path: '1.png' });
 
     const hours = new Date(Date.now()).getHours();
 
     let data: string[] = [];
-
+    console.log('coucou');
     let k = 0;
     while (k < hours) {
-      // await page.select('#telCountryInput', 'my-value');
+      await page.select(
+        'body > div.wrap > div.content > main > div.filter_bar.js-sticky.d-lg-block.d-none > div > div > div > div > div:nth-child(4) > label > select',
+        `0${hours - 1}`
+      );
+
+      await page.screenshot({ path: '2.png' });
 
       // Execute code in the DOM
       const newData = await page.evaluate(async () => {
         // TODO: add click on load more first
         const links = document.querySelectorAll('a');
-
         const urls = Array.from(links)
           .map((link) => link.href)
           .filter((href) => href.includes('spotify'));
