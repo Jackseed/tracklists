@@ -30,12 +30,21 @@ exports.scrapeImages = functions
     console.log('coucou');
     let k = 0;
     while (k < hours) {
+      // change the hour on form
       await page.select(
         'body > div.wrap > div.content > main > div.filter_bar.js-sticky.d-lg-block.d-none > div > div > div > div > div:nth-child(4) > label > select',
-        `0${hours - 1}`
+        hours > 10 ? `${hours - 1}` : `0${hours - 1}`
       );
-
       await page.screenshot({ path: '2.png' });
+
+      await page.evaluate(() => {
+        const element: HTMLElement | null = document.querySelector(
+          '#js-mobile-program-filter > a'
+        );
+        element?.click();
+      });
+
+      await page.screenshot({ path: '3.png' });
 
       // Execute code in the DOM
       const newData = await page.evaluate(async () => {
