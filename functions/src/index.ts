@@ -1,5 +1,7 @@
 const puppeteer = require('puppeteer');
 const functions = require('firebase-functions');
+const https = require('https');
+const bent = require('bent');
 
 exports.scrapeNova = functions
   .runWith({
@@ -26,10 +28,10 @@ exports.scrapeNova = functions
     });
 
     /// SPOTIFY
+    // create and go to authentication url
     const scope = ['playlist-modify-public', 'playlist-modify-private'].join(
       '%20'
     );
-    // authentication url
     const authorizeURL =
       'https://accounts.spotify.com/authorize' +
       '?' +
@@ -41,20 +43,47 @@ exports.scrapeNova = functions
       functions.config().spotify.redirecturi +
       '&scope=' +
       scope;
-
-    console.log(authorizeURL);
-
     await page.goto(authorizeURL);
 
+    // connect to spotify
     await page.type('[name=username]', functions.config().spotify.email);
-
     await page.type('[name=password]', functions.config().spotify.password);
-
-    await page.screenshot({ path: '1.png' });
-
     await page.click('#login-button');
-    await page.waitForTimeout(5000);
-    await page.screenshot({ path: '4.png' });
+    await page.waitForTimeout(3000);
+
+    // get auth token
+    const url = page.url();
+    const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
+
+    // create post request
+    const playlistId = '5nITYoYcEb2APUjpsXicZD';
+    const uris = data.map((trackUrl: string) => {
+      const trackId = trackUrl.substring(trackUrl.indexOf('k') + 2);
+      return `spotify:track:${trackId}`;
+    });
+    console.log('uris: ', uris);
+    const req = {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      hostname: 'https://api.spotify.com',
+      path: `/v1/playlists/${playlistId}/tracks`,
+      body: {
+        uris: uris,
+      },
+    };
+    const request = https.request(req, (res: any) => {
+      console.log('res: ', res);
+    });
+
+    const request2 = bent(req);
+
+    console.log('req2 : ', request2);
+
+    console.log('request : ', request);
 
     await browser.close();
 
