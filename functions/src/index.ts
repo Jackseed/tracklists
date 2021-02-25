@@ -54,22 +54,65 @@ exports.scrapeNova = functions
     // get auth token
     const url = page.url();
     const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+    await browser.close();
 
     // Nova playlist id
     const playlistId = '5nITYoYcEb2APUjpsXicZD';
-    // format uris
-    const uris = data.map((trackUrl: string) => {
+    // save trackIds
+    const trackIds: string[] = [];
+    data.map((trackUrl: string) => {
       const trackId = trackUrl.substring(trackUrl.indexOf('k') + 2);
-      return `spotify:track:${trackId}`;
+      trackIds.push(trackId);
     });
+
+    // get nova playlist total track number
+    let novaPlaylistTotal = 0;
+    await axios({
+      headers,
+      url: `https://api.spotify.com/v1/playlists/${playlistId}`,
+    }).then((response: any) => {
+      novaPlaylistTotal = response.data.tracks.total;
+    });
+
+    // get nova playlist last track ids:
+    // variables
+    const limit = 20;
+    const offset = novaPlaylistTotal - limit;
+    const lastTracks: any[] = [];
+
+    // request
+    await axios({
+      headers,
+      url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${limit}&offset=${offset}`,
+    }).then(
+      (response: any) => {
+        lastTracks.push(response.data.items);
+      },
+      (error: any) => {
+        console.log('error: ', error);
+      }
+    );
+
+    // formatting
+    const lastTrackIds = lastTracks.map((track) => {
+      return track.map((t: any) => t.track.id);
+    })[0];
+
+    // filter nova trackIds
+    const filteredIds = trackIds.filter((id) => !lastTrackIds.includes(id));
+
+    // format uris
+    const uris = filteredIds.map((id) => `spotify:track:${id}`);
+
     // add tracks to playlist
     await axios({
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      headers,
       url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
       data: {
         uris: uris,
@@ -83,7 +126,5 @@ exports.scrapeNova = functions
       }
     );
 
-    await browser.close();
-
-    return data;
+    return filteredIds;
   });
