@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const functions = require('firebase-functions');
 const https = require('https');
-const bent = require('bent');
+const axios = require('axios').default;
 
 exports.scrapeNova = functions
   .runWith({
@@ -55,39 +55,35 @@ exports.scrapeNova = functions
     const url = page.url();
     const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
 
-    // create post request
+    // Nova playlist id
     const playlistId = '5nITYoYcEb2APUjpsXicZD';
+    // format uris
     const uris = data.map((trackUrl: string) => {
       const trackId = trackUrl.substring(trackUrl.indexOf('k') + 2);
       return `spotify:track:${trackId}`;
     });
-    console.log('uris: ', uris);
-    const req = {
+    // add tracks to playlist
+    await axios({
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      hostname: 'https://api.spotify.com',
-      path: `/v1/playlists/${playlistId}/tracks`,
-      body: {
+      url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      data: {
         uris: uris,
       },
-    };
-    const request = https.request(req, (res: any) => {
-      console.log('res: ', res);
-    });
-
-    const request2 = bent(req);
-
-    console.log('req2 : ', request2);
-
-    console.log('request : ', request);
+    }).then(
+      (response: any) => {
+        console.log('response status: ', response.status);
+      },
+      (error: any) => {
+        console.log('error: ', error);
+      }
+    );
 
     await browser.close();
-
-    console.log(data);
 
     return data;
   });
