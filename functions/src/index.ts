@@ -41,39 +41,45 @@ exports.scrapeNova = functions
       return urls;
     });
 
+    await browser.close();
+
     /// SPOTIFY
-    // create and go to authentication url
-    const scope = ['playlist-modify-public', 'playlist-modify-private'].join(
-      '%20'
-    );
-    const authorizeURL =
-      'https://accounts.spotify.com/authorize' +
-      '?' +
-      'client_id=' +
-      functions.config().spotify.clientid +
-      '&response_type=' +
-      functions.config().spotify.responsetype +
-      '&redirect_uri=' +
-      functions.config().spotify.redirecturi +
-      '&scope=' +
-      scope;
-    await page.goto(authorizeURL);
+    // refresh access token
+    const secret = Buffer.from(
+      `${functions.config().spotify.clientid}:${
+        functions.config().spotify.clientsecret
+      }`
+    ).toString('base64');
 
-    // connect to spotify
-    await page.type('[name=username]', functions.config().spotify.email);
-    await page.type('[name=password]', functions.config().spotify.password);
-    await page.click('#login-button');
-    await page.waitForTimeout(3000);
+    const params = new URLSearchParams();
+    params.append('grant_type', 'refresh_token');
+    params.append('refresh_token', functions.config().spotify.refreshtoken);
 
-    // get auth token
-    const url = page.url();
-    const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
+    const config = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${secret}`,
+      },
+    };
+
+    let token;
+
+    await axios
+      .post('https://accounts.spotify.com/api/token', params, config)
+      .then(
+        (response: any) => {
+          token = response.data.access_token;
+        },
+        (error: any) => {
+          console.log('error: ', error);
+        }
+      );
+
     const headers = {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
       'Content-Type': 'application/json',
     };
-    await browser.close();
 
     // Nova playlist id
     const playlistId = '5n4YjXr8CReTshU81kTIJd';
@@ -97,7 +103,7 @@ exports.scrapeNova = functions
     // variables
     const limit = 20;
     const offset =
-      novaPlaylistTotal - limit > 0 ? novaPlaylistTotal - limit > 0 : 0;
+      novaPlaylistTotal - limit > 0 ? novaPlaylistTotal - limit : 0;
     const lastTracks: any[] = [];
 
     // request
@@ -125,21 +131,23 @@ exports.scrapeNova = functions
     const uris = filteredIds.map((id) => `spotify:track:${id}`).reverse();
 
     // add tracks to playlist
-    await axios({
-      method: 'POST',
-      headers,
-      url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      data: {
-        uris: uris,
-      },
-    }).then(
-      (response: any) => {
-        console.log('response status: ', response.status);
-      },
-      (error: any) => {
-        console.log('error: ', error);
-      }
-    );
+    if (filteredIds.length > 0) {
+      await axios({
+        method: 'POST',
+        headers,
+        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        data: {
+          uris: uris,
+        },
+      }).then(
+        (response: any) => {
+          console.log('response status: ', response.status);
+        },
+        (error: any) => {
+          console.log('error: ', error);
+        }
+      );
+    }
 
     return filteredIds;
   });
