@@ -1,7 +1,21 @@
 const puppeteer = require('puppeteer');
 const functions = require('firebase-functions');
-const https = require('https');
 const axios = require('axios').default;
+
+export const everyFiveMinuteJob = functions.pubsub
+  .schedule('every 5 minutes')
+  .onRun(async () => {
+    await axios({
+      url: 'https://us-central1-listy-bcc65.cloudfunctions.net/scrapeNova',
+    }).then(
+      (response: any) => {
+        console.log(response.status);
+      },
+      (error: any) => {
+        console.log('error: ', error);
+      }
+    );
+  });
 
 exports.scrapeNova = functions
   .runWith({
@@ -62,7 +76,7 @@ exports.scrapeNova = functions
     await browser.close();
 
     // Nova playlist id
-    const playlistId = '5nITYoYcEb2APUjpsXicZD';
+    const playlistId = '5n4YjXr8CReTshU81kTIJd';
     // save trackIds
     const trackIds: string[] = [];
     data.map((trackUrl: string) => {
@@ -82,7 +96,8 @@ exports.scrapeNova = functions
     // get nova playlist last track ids:
     // variables
     const limit = 20;
-    const offset = novaPlaylistTotal - limit;
+    const offset =
+      novaPlaylistTotal - limit > 0 ? novaPlaylistTotal - limit > 0 : 0;
     const lastTracks: any[] = [];
 
     // request
@@ -107,7 +122,7 @@ exports.scrapeNova = functions
     const filteredIds = trackIds.filter((id) => !lastTrackIds.includes(id));
 
     // format uris
-    const uris = filteredIds.map((id) => `spotify:track:${id}`);
+    const uris = filteredIds.map((id) => `spotify:track:${id}`).reverse();
 
     // add tracks to playlist
     await axios({
