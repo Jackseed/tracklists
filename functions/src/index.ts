@@ -6,6 +6,37 @@ const axios = require('axios').default;
 const nouvoNovaPlaylistId = '3MRJIbMsOLRn4Hd5w1J5By';
 const nouvoNovaFrequence = '79676';
 
+const nova = [
+  {
+    name: 'Radio Nova',
+    playlistId: '5nITYoYcEb2APUjpsXicZD',
+    frequence: '910',
+  },
+  {
+    name: 'Nouvo Nova',
+    playlistId: '2VYVl952NXzcHm5XzANoBD',
+    frequence: '79676',
+  },
+  {
+    name: 'Nova la Nuit',
+    playlistId: '2vRlYWuxhtfLt7U4Wrqjti',
+    frequence: '916',
+  },
+  {
+    name: 'Nova Classics',
+    playlistId: '55pdI0LoiQtzZcTfrjHLk2',
+    frequence: '913',
+  },
+  {
+    name: 'Nova Danse',
+    playlistId: '2go0Bv3qWnauC70f3UAOUu',
+    frequence: '560',
+  },
+];
+console.log(nova[0].name);
+
+const limitTracksToCheck = 10;
+
 /// PUB SUB JOB
 export const everyFiveMinuteJob = functions.pubsub
   .schedule('every 5 minutes')
@@ -166,6 +197,8 @@ exports.scrapeNova = functions
       );
     }
 
+    console.log(trackIds, lastTrackIds, filteredIds);
+
     return filteredIds;
   });
 
@@ -180,7 +213,7 @@ exports.scrapeNouvoNova = functions
 
     const headers = await getSpotifyAuthHeaders();
 
-    const playlistLastTrackIds = await getLastPlaylistTrackIds(
+    const playlistLastTrackIds = await getPlaylistLastTrackIds(
       headers,
       nouvoNovaPlaylistId,
       20
@@ -197,6 +230,123 @@ exports.scrapeNouvoNova = functions
     await saveTracksToPlaylist(headers, nouvoNovaPlaylistId, uris);
 
     return filteredIds;
+  });
+
+exports.test = functions
+  .runWith({
+    timeoutSeconds: 500,
+  })
+  .https.onRequest(async (req: any, res: any) => {
+    const radios = [
+      {
+        name: 'Radio Nova',
+        playlistId: '5nITYoYcEb2APUjpsXicZD',
+        frequence: '910',
+      },
+      {
+        name: 'Nouvo Nova',
+        playlistId: '2VYVl952NXzcHm5XzANoBD',
+        frequence: '79676',
+      },
+      {
+        name: 'Nova la Nuit',
+        playlistId: '2vRlYWuxhtfLt7U4Wrqjti',
+        frequence: '916',
+      },
+      {
+        name: 'Nova Classics',
+        playlistId: '55pdI0LoiQtzZcTfrjHLk2',
+        frequence: '913',
+      },
+      {
+        name: 'Nova Danse',
+        playlistId: '2go0Bv3qWnauC70f3UAOUu',
+        frequence: '560',
+      },
+    ];
+
+    const requestsArray = radios.map((radio) => {
+      const request = axios({
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        url:
+          'https://us-central1-listy-bcc65.cloudfunctions.net/saveNovaOnSpotify',
+        data: {
+          playlistId: radio.playlistId,
+          frequence: radio.frequence,
+        },
+        method: 'POST',
+      });
+
+      return request;
+    }); /*
+    for (const radio of radios) {
+      console.log('saving ', radio.name);
+      await axios({
+        url:
+          'https://us-central1-listy-bcc65.cloudfunctions.net/saveNovaOnSpotify',
+        data: {
+          playlistId: radio.playlistId,
+          frequence: radio.frequence,
+        },
+      }).then(
+        (response: any) => {
+          console.log(response.status);
+        },
+        (error: any) => {
+          console.log('error: ', error);
+        }
+      );
+    } */
+    await Promise.all(
+      requestsArray.map(async (request) => {
+        return await request.then(
+          (response: any) => {
+            console.log(response.status);
+          },
+          (error: any) => {
+            console.log('error: ', error);
+          }
+        );
+      })
+    )
+      .then(() => {
+        res.status(200).send('All good!');
+      })
+      .catch((err) => res.status(200).send('Something broke!', err));
+  });
+
+exports.saveNovaOnSpotify = functions
+  .runWith({
+    timeoutSeconds: 500,
+  })
+  .https.onRequest(async (req: any, res: any) => {
+    const trackIds = await scrapeNovaTrackIds(req.body.frequence);
+
+    const headers = await getSpotifyAuthHeaders();
+
+    const playlistLastTrackIds = await getPlaylistLastTrackIds(
+      headers,
+      req.body.playlistId,
+      limitTracksToCheck
+    );
+
+    // filter nova trackIds with duplicates
+    const filteredIds = trackIds.filter(
+      (id) => !playlistLastTrackIds.includes(id)
+    );
+
+    // format uris
+    const uris = filteredIds.map((id) => `spotify:track:${id}`).reverse();
+
+    const response = await saveTracksToPlaylist(
+      headers,
+      req.body.playlistId,
+      uris
+    );
+
+    res.end(response);
   });
 
 /////////////////////// SCRAPE NOVA ///////////////////////
@@ -222,7 +372,7 @@ async function scrapeNovaTrackIds(radioValue: string): Promise<string[]> {
   });
 
   // wait for page to load
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(2000);
 
   // get spotify links
   const data = await page.evaluate(async () => {
@@ -288,8 +438,8 @@ async function getSpotifyAuthHeaders(): Promise<Object> {
   return headers;
 }
 
-/////////////////////// GET LAST PLAYLIST TRACK IDS ///////////////////////
-async function getLastPlaylistTrackIds(
+/////////////////////// GET PLAYLIST LAST TRACK IDS ///////////////////////
+async function getPlaylistLastTrackIds(
   headers: Object,
   playlistId: string,
   limit: number
@@ -334,7 +484,8 @@ async function saveTracksToPlaylist(
   headers: Object,
   playlistId: string,
   uris: string[]
-) {
+): Promise<string> {
+  let res = '';
   // add tracks to playlist
   if (uris.length > 0) {
     await axios({
@@ -347,10 +498,13 @@ async function saveTracksToPlaylist(
     }).then(
       (response: any) => {
         console.log('response status: ', response.status);
+        res = `response status: ${response.status}`;
       },
       (error: any) => {
         console.log('error: ', error);
+        res = `error: ${error}`;
       }
     );
   }
+  return res;
 }
