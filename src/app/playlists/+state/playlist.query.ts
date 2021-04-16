@@ -2,12 +2,16 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { Observable, of } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
+import { LocalforageService } from 'src/app/utils/localforage.service';
 import { Playlist } from './playlist.model';
 import { PlaylistState, PlaylistStore } from './playlist.store';
 
 @Injectable({ providedIn: 'root' })
 export class PlaylistQuery extends QueryEntity<PlaylistState> {
-  constructor(protected store: PlaylistStore) {
+  constructor(
+    protected store: PlaylistStore,
+    private localforage: LocalforageService
+  ) {
     super(store);
     this.saveToStorage();
   }
@@ -17,7 +21,7 @@ export class PlaylistQuery extends QueryEntity<PlaylistState> {
     this.select()
       .pipe(debounceTime(2000))
       .subscribe((state) => {
-        localStorage.setItem('playlistStore', JSON.stringify(state));
+        this.localforage.setItem('playlistStore', JSON.stringify(state));
       });
   }
 

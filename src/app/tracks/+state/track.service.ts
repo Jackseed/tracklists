@@ -5,18 +5,23 @@ import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 import { filter, first, map, switchMap, tap } from 'rxjs/operators';
 import { Track } from './track.model';
+import { LocalforageService } from 'src/app/utils/localforage.service';
 
 @Injectable({ providedIn: 'root' })
 export class TrackService {
   private trackFilters: AkitaFiltersPlugin<TrackState>;
 
-  constructor(private store: TrackStore, private query: TrackQuery) {
+  constructor(
+    private store: TrackStore,
+    private query: TrackQuery,
+    private localforage: LocalforageService
+  ) {
     this.trackFilters = new AkitaFiltersPlugin<TrackState>(this.query);
   }
 
-  public setFirestoreTracks() {
+  public async setFirestoreTracks() {
     // if data can be loaded from localStorage, don't call firestore
-    const data = localStorage.getItem('trackStore');
+    const data: any = await this.localforage.getItem('trackStore');
     // if storage data, loads it
     if (data && !data.includes(':{}')) {
       this.store.loadFromStorage();

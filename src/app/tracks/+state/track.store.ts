@@ -6,6 +6,7 @@ import {
   MultiActiveState,
   StoreConfig,
 } from '@datorama/akita';
+import { LocalforageService } from 'src/app/utils/localforage.service';
 
 export interface TrackState
   extends EntityState<Track, string>,
@@ -23,13 +24,13 @@ const initialState = {
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'tracks' })
 export class TrackStore extends EntityStore<TrackState, Track> {
-  constructor() {
+  constructor(private localforage: LocalforageService) {
     super(initialState);
     this.loadFromStorage();
   }
   // call storage instead of firebase
-  loadFromStorage() {
-    const data = localStorage.getItem('trackStore');
+  async loadFromStorage() {
+    const data: any = await this.localforage.getItem('trackStore');
     if (data) {
       // don't set store if empty
       if (!data.includes(':{}')) {

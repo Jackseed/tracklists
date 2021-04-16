@@ -11,6 +11,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firestore } from 'firebase/app';
 import { Observable } from 'rxjs';
 import { resetStores } from '@datorama/akita';
+import { LocalforageService } from 'src/app/utils/localforage.service';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -42,7 +43,8 @@ export class AuthService extends CollectionService<AuthState> {
     private query: AuthQuery,
     private afAuth: AngularFireAuth,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private localforage: LocalforageService
   ) {
     super(store);
   }
@@ -148,8 +150,8 @@ export class AuthService extends CollectionService<AuthState> {
       this.router.navigate(['/welcome']).then((_) => {
         this.router.navigate(['/welcome']);
         resetStores();
-        localStorage.removeItem('trackStore');
-        localStorage.removeItem('playlistStore');
+        this.localforage.removeItem('trackStore');
+        this.localforage.removeItem('playlistStore');
       })
     );
   }

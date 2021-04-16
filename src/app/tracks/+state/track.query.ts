@@ -8,6 +8,7 @@ import { AuthQuery } from 'src/app/auth/+state';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { PlaylistQuery } from 'src/app/playlists/+state';
 import { AkitaFiltersPlugin } from 'akita-filters-plugin';
+import { LocalforageService } from 'src/app/utils/localforage.service';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState, Track> {
@@ -17,7 +18,8 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     protected store: TrackStore,
     private authQuery: AuthQuery,
     private afs: AngularFirestore,
-    private playlistQuery: PlaylistQuery
+    private playlistQuery: PlaylistQuery,
+    private localforage: LocalforageService
   ) {
     super(store);
     this.saveToStorage();
@@ -28,7 +30,7 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     this.select()
       .pipe(debounceTime(2000))
       .subscribe((state) => {
-        localStorage.setItem('trackStore', JSON.stringify(state));
+        this.localforage.setItem('trackStore', JSON.stringify(state));
       });
   }
 
@@ -101,5 +103,4 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
     return extremes;
   }
-
 }
