@@ -5,6 +5,7 @@ import {
   MultiActiveState,
   StoreConfig,
 } from '@datorama/akita';
+import { LocalforageService } from 'src/app/utils/localforage.service';
 import { Playlist } from './playlist.model';
 
 export interface PlaylistState
@@ -16,13 +17,13 @@ const initialState = {
 @Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'playlists' })
 export class PlaylistStore extends EntityStore<PlaylistState, Playlist> {
-  constructor() {
+  constructor(private localforage: LocalforageService) {
     super(initialState);
     this.loadFromStorage();
   }
   // call storage instead of firebase
-  loadFromStorage() {
-    const data = localStorage.getItem('playlistStore');
+  async loadFromStorage() {
+    const data: any = await this.localforage.getItem('playlistStore');
     if (data) {
       this._setState((_) => JSON.parse(data));
     }

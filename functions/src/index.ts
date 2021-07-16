@@ -5,27 +5,27 @@ const axios = require('axios').default;
 const nova = [
   {
     name: 'Radio Nova',
-    playlistId: '6GhFJfQ9pTY578m3l3CfOd',
+    playlistId: '2kd7wreZ51xM9KrkF3xPox',
     frequence: '910',
   },
   {
     name: 'Nouvo Nova',
-    playlistId: '22x26Yktyw49iHcC5l0GOR',
+    playlistId: '4fxqATQXbmXjHUPlHLk54g',
     frequence: '79676',
   },
   {
     name: 'Nova la Nuit',
-    playlistId: '5IWE2zzGBxQmf1g3aI2sFa',
+    playlistId: '1uXG44v8EbFgaR724jXqLC',
     frequence: '916',
   },
   {
     name: 'Nova Classics',
-    playlistId: '013LrKxrQkVpoJTts6gin3',
+    playlistId: '5k08QyqqhyZuybx2MicjIZ',
     frequence: '913',
   },
   {
     name: 'Nova Danse',
-    playlistId: '24WXdbI5caT1TZKlipmxzE',
+    playlistId: '1YiJ3XNPAfVAA3FGBejpRd',
     frequence: '560',
   },
 ];

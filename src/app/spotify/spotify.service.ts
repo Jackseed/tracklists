@@ -75,7 +75,7 @@ export class SpotifyService {
       },
     });
 
-    let connected = await player.connect();
+    await player.connect();
 
     // Ready
     player.addListener('ready', ({ device_id }) => {
