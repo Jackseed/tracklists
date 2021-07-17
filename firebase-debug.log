@@ -5,7 +5,7 @@
 [debug] [2021-07-17T13:34:50.221Z] Node Version:  v12.0.0
 [debug] [2021-07-17T13:34:50.225Z] Time:          Sat Jul 17 2021 15:34:50 GMT+0200 (GMT+02:00)
 [debug] [2021-07-17T13:34:50.225Z] ----------------------------------------------------------------------
-[debug] 
+[debug]
 [debug] [2021-07-17T13:34:50.227Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
 [debug] [2021-07-17T13:34:50.253Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
 [debug] [2021-07-17T13:34:50.253Z] > authorizing via signed-in user (vinkho.c@gmail.com)
@@ -16,7 +16,7 @@
 [debug] [2021-07-17T13:34:50.281Z] defaultcredentials: writing to file /Users/vincent/.config/firebase/vinkho_c_gmail.com_application_default_credentials.json
 [debug] [2021-07-17T13:34:50.284Z] Setting GAC to /Users/vincent/.config/firebase/vinkho_c_gmail.com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /Users/vincent/.config/firebase/vinkho_c_gmail.com_application_default_credentials.json"}}
 [debug] [2021-07-17T13:34:50.285Z] > refreshing access token with scopes: []
-[debug] [2021-07-17T13:34:50.285Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+[debug] [2021-07-17T13:34:50.285Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token
  <request body omitted>
 [debug] [2021-07-17T13:34:50.384Z] <<< HTTP RESPONSE 200 {"date":"Sat, 17 Jul 2021 13:34:50 GMT","pragma":"no-cache","cache-control":"no-cache, no-store, max-age=0, must-revalidate","expires":"Mon, 01 Jan 1990 00:00:00 GMT","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
 [debug] [2021-07-17T13:34:50.445Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/listy-prod/adminSdkConfig [none]
@@ -52,7 +52,7 @@
 [debug] [2021-07-17T13:34:51.578Z] [runtime-status] [44796] firebase-admin has been stubbed. {"adminResolution":{"declared":true,"installed":true,"version":"9.4.2","resolution":"/Users/vincent/Documents/listy/functions/node_modules/firebase-admin/lib/index.js"}} {"metadata":{"emulator":{"name":"functions"},"message":"[runtime-status] [44796] firebase-admin has been stubbed. {\"adminResolution\":{\"declared\":true,\"installed\":true,\"version\":\"9.4.2\",\"resolution\":\"/Users/vincent/Documents/listy/functions/node_modules/firebase-admin/lib/index.js\"}}"}}
 [info] i  functions[saveNovaEveryFiveMinutes]: function ignored because the pubsub emulator does not exist or is not running. {"metadata":{"emulator":{"name":"functions"},"message":"function ignored because the pubsub emulator does not exist or is not running."}}
 [info] ✔  functions[saveNovaOnSpotify]: http function initialized (http://localhost:5001/listy-prod/us-central1/saveNovaOnSpotify). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://localhost:5001/listy-prod/us-central1/saveNovaOnSpotify)."}}
-[info] 
+[info]
 ┌─────────────────────────────────────────────────────────────┐
 │ ✔  All emulators ready! It is now safe to connect your app. │
 │ i  View Emulator UI at http://localhost:4000                │
@@ -67,7 +67,7 @@
   Other reserved ports: 4500
 
 Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
- 
+
 [debug] [2021-07-17T13:34:51.749Z] [worker-~diagnostic~-ddf045a4-553c-4b8d-bdb7-6fc806e9d4f6]: IDLE {"metadata":{"emulator":{"name":"functions"},"message":"[worker-~diagnostic~-ddf045a4-553c-4b8d-bdb7-6fc806e9d4f6]: IDLE"}}
 [debug] [2021-07-17T13:39:43.016Z] File /Users/vincent/Documents/listy/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /Users/vincent/Documents/listy/functions/src/index.ts changed, reloading triggers"}}
 [debug] [2021-07-17T13:39:44.021Z] [worker-pool] Shutting down IDLE worker (~diagnostic~) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] Shutting down IDLE worker (~diagnostic~)"}}
