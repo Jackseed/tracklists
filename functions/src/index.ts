@@ -260,7 +260,6 @@ async function saveTracksToPlaylist(
   return res;
 }
 
-
 ////////////////// REQUEST SPOTIFY REFRESH OR ACCESS TOKENS //////////////////
 exports.getSpotifyToken = functions
   .runWith({
@@ -274,6 +273,7 @@ exports.getSpotifyToken = functions
     ).toString('base64');
 
     const params = new URLSearchParams();
+    // same function for either getting an access & refresh tokens (through code, tokenType access) or an access token through refresh token
     if (req.body.tokenType === 'access') {
       params.append('grant_type', 'authorization_code');
       params.append('code', req.body.code);
@@ -316,4 +316,31 @@ exports.getSpotifyToken = functions
     console.log(headers);
 
     return headers;
+  });
+
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+exports.saveToken = functions
+  .runWith({
+    timeoutSeconds: 60,
+  })
+  .https.onRequest(async (req: any, res: any) => {
+    const accessToken = req.body.accessToken;
+    let token: { access: string; addedTime: Object; refresh?: string } = {
+      access: accessToken,
+      addedTime: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    // add refresh token only when requesting an access token for the first time
+    if (req.body.tokenType === 'access')
+      token = { ...token, refresh: req.body.refreshToken };
+
+    await admin.firestore().collection('users').doc(req.body.userId).set(
+      {
+        token,
+      },
+      { merge: true }
+    );
+
+    res.json({ result: `Access token successfully added: ${accessToken}.` });
   });
