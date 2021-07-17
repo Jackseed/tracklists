@@ -19,7 +19,7 @@ export class AuthService extends CollectionService<AuthState> {
   authorizeURL = 'https://accounts.spotify.com/authorize';
   clientId: string = environment.spotify.clientId;
   baseUrl: string = environment.spotify.apiUrl;
-  responseType: string = 'token';
+  responseType: string = 'code';
   redirectURI = environment.spotify.redirectURI;
   // TODO: change for necessary scope only
   scope = [
@@ -100,9 +100,10 @@ export class AuthService extends CollectionService<AuthState> {
 
   public saveToken() {
     const url = this.router.url;
-    const token = url.substring(url.indexOf('=') + 1, url.indexOf('&'));
+    const code = url.substring(url.indexOf('=') + 1);
     const userId = this.query.getActiveId();
-    this.db.collection('users').doc(userId).update({ token });
+    console.log(code);
+    this.db.collection('users').doc(userId).update({ code });
   }
 
   private async setUser(id: string, email: string): Promise<User> {

@@ -45,7 +45,7 @@ export class HomepageComponent implements OnInit {
   async ngOnInit() {
     // Spotify auth token loading
     const url = this.router.url;
-    if (!url.includes('access_token')) {
+    if (!url.includes('code')) {
       this.authService.authSpotify();
     }
     this.authService.saveToken();
@@ -150,12 +150,13 @@ export class HomepageComponent implements OnInit {
       .slice(0, 3);
     const filters = this.trackService.getFilters();
 
-    const recommendedTracks = await this.spotifyService.getPromisedRecommendations(
-      [],
-      genreIds,
-      activeTrackIds,
-      filters
-    );
+    const recommendedTracks =
+      await this.spotifyService.getPromisedRecommendations(
+        [],
+        genreIds,
+        activeTrackIds,
+        filters
+      );
     if (recommendedTracks) {
       this.trackService.add(recommendedTracks);
       console.log(recommendedTracks);
