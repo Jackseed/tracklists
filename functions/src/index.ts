@@ -41,8 +41,7 @@ export const saveNovaEveryFiveMinutes = functions.pubsub
         headers: {
           'Content-Type': 'application/json',
         },
-        url:
-          'https://us-central1-listy-bcc65.cloudfunctions.net/saveNovaOnSpotify',
+        url: 'https://us-central1-listy-bcc65.cloudfunctions.net/saveNovaOnSpotify',
         data: {
           playlistId: radio.playlistId,
           frequence: radio.frequence,
@@ -260,3 +259,60 @@ async function saveTracksToPlaylist(
   }
   return res;
 }
+
+////////////////// REQUEST SPOTIFY REFRESH OR ACCESS TOKENS //////////////////
+exports.getSpotifyToken = functions
+  .runWith({
+    timeoutSeconds: 500,
+  })
+  .https.onRequest(async (req: any, res: any) => {
+    const secret = Buffer.from(
+      `${functions.config().spotify.clientid}:${
+        functions.config().spotify.clientsecret
+      }`
+    ).toString('base64');
+
+    const params = new URLSearchParams();
+    if (req.body.tokenType === 'access') {
+      params.append('grant_type', 'authorization_code');
+      params.append('code', req.body.code);
+      params.append('redirect_uri', 'http://localhost:4200/home');
+    } else {
+      params.append('grant_type', 'refresh_token');
+      params.append('refresh_token', req.body.refreshToken);
+    }
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${secret}`,
+      },
+    };
+
+    let token = '';
+    let refresh_token = '';
+
+    await axios
+      .post('https://accounts.spotify.com/api/token', params, config)
+      .then(
+        (response: any) => {
+          token = response.data.access_token;
+          if (req.body.tokenType === 'access')
+            refresh_token = response.data.refresh_token;
+        },
+        (error: any) => {
+          console.log('error: ', error);
+        }
+      );
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+    console.log('access token: ', token);
+    console.log('refresh token: ', refresh_token);
+    console.log(headers);
+
+    return headers;
+  });
