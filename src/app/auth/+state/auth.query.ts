@@ -45,6 +45,7 @@ export class AuthQuery extends QueryEntity<AuthState> {
           const response = getTokenFunction({
             tokenType: 'refresh',
             userId: user.id,
+            refreshToken: user.tokens.refresh,
           }).subscribe(console.log);
         }
         console.log('token: ', user.tokens.access);
