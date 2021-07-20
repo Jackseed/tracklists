@@ -65,6 +65,8 @@ export const saveNovaEveryFiveMinutes = functions.pubsub
         console.log('All good!');
       })
       .catch((err) => console.log('something went wrong.. ', err));
+
+    res.json({ result: `Tracks successfully saved.` });
   });
 
 ////////////////// SAVE NOVA SONGS ON SPOTIFY //////////////////
@@ -98,6 +100,7 @@ exports.saveNovaOnSpotify = functions
     );
 
     res.end(response);
+    res.json({ result: `Tracks successfully saved.` });
   });
 
 /////////////////////// SCRAPE NOVA ///////////////////////
@@ -265,7 +268,7 @@ exports.getSpotifyToken = functions
   .runWith({
     timeoutSeconds: 500,
   })
-  .https.onRequest(async (req: any, res: any) => {
+  .https.onCall(async (data: any, context: any) => {
     const secret = Buffer.from(
       `${functions.config().spotify.clientid}:${
         functions.config().spotify.clientsecret
@@ -274,13 +277,13 @@ exports.getSpotifyToken = functions
 
     const params = new URLSearchParams();
     // same function for either getting an access & refresh tokens (through code, tokenType access) or an access token through refresh token
-    if (req.body.tokenType === 'access') {
+    if (data.tokenType === 'access') {
       params.append('grant_type', 'authorization_code');
-      params.append('code', req.body.code);
+      params.append('code', data.code);
       params.append('redirect_uri', 'http://localhost:4200/home');
     } else {
       params.append('grant_type', 'refresh_token');
-      params.append('refresh_token', req.body.refreshToken);
+      params.append('refresh_token', data.refreshToken);
     }
 
     const config = {
@@ -298,24 +301,16 @@ exports.getSpotifyToken = functions
       .then(
         (response: any) => {
           token = response.data.access_token;
-          if (req.body.tokenType === 'access')
+          if (data.tokenType === 'access') {
             refresh_token = response.data.refresh_token;
+            console.log(refresh_token);
+          }
         },
         (error: any) => {
           console.log('error: ', error);
         }
       );
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
-    console.log('access token: ', token);
-    console.log('refresh token: ', refresh_token);
-    console.log(headers);
-
-    return headers;
+    return { token, refresh_token };
   });
 
 const admin = require('firebase-admin');
@@ -327,17 +322,17 @@ exports.saveToken = functions
   })
   .https.onRequest(async (req: any, res: any) => {
     const accessToken = req.body.accessToken;
-    let token: { access: string; addedTime: Object; refresh?: string } = {
+    let tokens: { access: string; addedTime: Object; refresh?: string } = {
       access: accessToken,
       addedTime: admin.firestore.FieldValue.serverTimestamp(),
     };
     // add refresh token only when requesting an access token for the first time
     if (req.body.tokenType === 'access')
-      token = { ...token, refresh: req.body.refreshToken };
+      tokens = { ...tokens, refresh: req.body.refreshToken };
 
     await admin.firestore().collection('users').doc(req.body.userId).set(
       {
-        token,
+        tokens,
       },
       { merge: true }
     );

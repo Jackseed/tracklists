@@ -98,11 +98,11 @@ export class AuthService extends CollectionService<AuthState> {
     });
   }
 
-  public saveToken() {
+  public saveSpotifyCode() {
     const url = this.router.url;
     const code = url.substring(url.indexOf('=') + 1);
-    const userId = this.query.getActiveId();
     console.log(code);
+    const userId = this.query.getActiveId();
     this.db.collection('users').doc(userId).update({ code });
   }
 

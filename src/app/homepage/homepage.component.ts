@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService, SpotifyUser } from '../auth/+state';
+import { AuthQuery, AuthService, SpotifyUser } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
@@ -13,6 +13,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
+import { AngularFireFunctions } from '@angular/fire/functions';
 
 @Component({
   selector: 'app-homepage',
@@ -29,6 +30,7 @@ export class HomepageComponent implements OnInit {
   public loadingItem$: Observable<string>;
 
   constructor(
+    private authQuery: AuthQuery,
     private authService: AuthService,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
@@ -39,16 +41,31 @@ export class HomepageComponent implements OnInit {
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private fns: AngularFireFunctions
   ) {}
 
   async ngOnInit() {
-    // Spotify auth token loading
+    const user = this.authQuery.getActive();
     const url = this.router.url;
+    // check if there is already a code registered, otherwise save it
     if (!url.includes('code')) {
+      console.log('here');
       this.authService.authSpotify();
     }
-    this.authService.saveToken();
+    this.authService.saveSpotifyCode();
+    // if first connexion, get an access token from spotify
+    if (!user.tokens) {
+      const user = this.authQuery.getActive();
+      const url = this.router.url;
+      const code = url.substring(url.indexOf('=') + 1);
+      console.log(code);
+      const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
+      const response = getTokenFunction({
+        code: code,
+        tokenType: 'access',
+      }).subscribe(console.log);
+    }
     this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
     this.spotifyService.initializePlayer();
 

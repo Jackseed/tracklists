@@ -4,6 +4,12 @@ export interface User {
   id: string;
   email?: string;
   token?: string;
+  code?: string;
+  tokens?: {
+    access?: string;
+    addedTime?: Object;
+    refresh?: string;
+  };
   name?: string;
   spotifyId?: string;
   deviceId?: string;

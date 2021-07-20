@@ -25,6 +25,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AngularFireFunctionsModule } from '@angular/fire/functions';
 
 @NgModule({
   declarations: [
@@ -55,7 +56,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatDividerModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    // environment.production ? [] : AkitaNgDevtools.forRoot(),
+    AngularFireFunctionsModule,
+    environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],
