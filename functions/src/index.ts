@@ -310,6 +310,22 @@ exports.getSpotifyToken = functions
           console.log('error: ', error);
         }
       );
+
+    // save tokens on db
+    await axios({
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      url: 'https://us-central1-listy-bcc65.cloudfunctions.net/saveToken',
+      data: {
+        token,
+        refreshToken: refresh_token,
+        tokenType: data.tokenType,
+        userId: data.userId,
+      },
+      method: 'POST',
+    }).catch((err: any) => console.log('error: ', err));
+
     return { token, refresh_token };
   });
 
@@ -321,7 +337,7 @@ exports.saveToken = functions
     timeoutSeconds: 60,
   })
   .https.onRequest(async (req: any, res: any) => {
-    const accessToken = req.body.accessToken;
+    const accessToken = req.body.token;
     let tokens: { access: string; addedTime: Object; refresh?: string } = {
       access: accessToken,
       addedTime: admin.firestore.FieldValue.serverTimestamp(),

@@ -64,6 +64,7 @@ export class HomepageComponent implements OnInit {
       const response = getTokenFunction({
         code: code,
         tokenType: 'access',
+        userId: user.id,
       }).subscribe(console.log);
     }
     this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
