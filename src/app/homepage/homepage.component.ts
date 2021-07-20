@@ -65,10 +65,13 @@ export class HomepageComponent implements OnInit {
         code: code,
         tokenType: 'access',
         userId: user.id,
-      }).subscribe(console.log);
+      })
+        .pipe(first())
+        .subscribe();
     }
-    this.authQuery.token$.subscribe(console.log);
+
     this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
+
     this.spotifyService.initializePlayer();
 
     // Tracks loading

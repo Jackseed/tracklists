@@ -3,7 +3,7 @@ import { AngularFireFunctions } from '@angular/fire/functions';
 import { Router } from '@angular/router';
 import { QueryEntity } from '@datorama/akita';
 import { Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { filter, first, map } from 'rxjs/operators';
 import { AuthStore, AuthState } from './auth.store';
 import firebase from 'firebase/app';
 
@@ -46,9 +46,10 @@ export class AuthQuery extends QueryEntity<AuthState> {
             tokenType: 'refresh',
             userId: user.id,
             refreshToken: user.tokens.refresh,
-          }).subscribe(console.log);
+          })
+            .pipe(first())
+            .subscribe();
         }
-        console.log('token: ', user.tokens.access);
         return user.tokens.access;
       })
     );

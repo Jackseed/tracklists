@@ -3,7 +3,7 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { first, tap } from 'rxjs/operators';
+import { first, map, mergeMap, tap } from 'rxjs/operators';
 import { createUser, SpotifyUser, User } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
@@ -60,24 +60,29 @@ export class AuthService extends CollectionService<AuthState> {
 
   public selectSpotifyActiveUser(): Observable<SpotifyUser> {
     const user = this.query.getActive();
-    const token = this.query.token;
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-    const spotifyUser = this.http.get<SpotifyUser>(this.baseUrl, {
-      headers,
-    });
-    spotifyUser
-      .pipe(
-        // save spotifyId
-        tap((spotifyUser: SpotifyUser) => {
-          if (user) {
-            this.db
-              .collection(this.currentPath)
-              .doc(user.id)
-              .update({ spotifyId: spotifyUser.id });
-          }
-        }, first())
-      )
-      .subscribe();
+    const token$ = this.query.token$;
+    const spotifyUser = token$.pipe(
+      map((token) => {
+        const headers: HttpHeaders = new HttpHeaders().set(
+          'Authorization',
+          'Bearer ' + token
+        );
+        return headers;
+      }),
+      mergeMap((headers) =>
+        this.http.get<SpotifyUser>(this.baseUrl, {
+          headers,
+        })
+      ),
+      tap((spotifyUser: SpotifyUser) => {
+        if (user) {
+          this.db
+            .collection(this.currentPath)
+            .doc(user.id)
+            .update({ spotifyId: spotifyUser.id });
+        }
+      }, first())
+    );
     return spotifyUser;
   }
 
