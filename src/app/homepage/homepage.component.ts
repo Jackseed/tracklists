@@ -67,6 +67,7 @@ export class HomepageComponent implements OnInit {
         userId: user.id,
       }).subscribe(console.log);
     }
+    this.authQuery.token$.subscribe(console.log);
     this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
     this.spotifyService.initializePlayer();
 

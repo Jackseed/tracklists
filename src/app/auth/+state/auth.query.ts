@@ -1,11 +1,19 @@
 import { Injectable } from '@angular/core';
+import { AngularFireFunctions } from '@angular/fire/functions';
 import { Router } from '@angular/router';
 import { QueryEntity } from '@datorama/akita';
+import { Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { AuthStore, AuthState } from './auth.store';
+import firebase from 'firebase/app';
 
 @Injectable({ providedIn: 'root' })
 export class AuthQuery extends QueryEntity<AuthState> {
-  constructor(protected store: AuthStore, private router: Router) {
+  constructor(
+    protected store: AuthStore,
+    private router: Router,
+    private fns: AngularFireFunctions
+  ) {
     super(store);
   }
 
@@ -20,5 +28,28 @@ export class AuthQuery extends QueryEntity<AuthState> {
     }
 
     return token;
+  }
+
+  public get token$(): Observable<string> {
+    return this.selectActive().pipe(
+      filter((user) => !!user),
+      map((user) => {
+        // refresh token if access token is older than an hour
+        if (
+          (firebase.firestore.Timestamp.now().toMillis() -
+            user.tokens.addedTime.toMillis()) /
+            1000 >
+          3600
+        ) {
+          const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
+          const response = getTokenFunction({
+            tokenType: 'refresh',
+            userId: user.id,
+          }).subscribe(console.log);
+        }
+        console.log('token: ', user.tokens.access);
+        return user.tokens.access;
+      })
+    );
   }
 }
