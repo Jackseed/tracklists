@@ -3,15 +3,12 @@ import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { first, map, mergeMap, tap } from 'rxjs/operators';
-import { createUser, SpotifyUser, User } from './auth.model';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firestore } from 'firebase/app';
-import { Observable } from 'rxjs';
 import { resetStores } from '@datorama/akita';
 import { LocalforageService } from 'src/app/utils/localforage.service';
+import { createUser, User } from './auth.model';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -43,7 +40,7 @@ export class AuthService extends CollectionService<AuthState> {
     private query: AuthQuery,
     private afAuth: AngularFireAuth,
     private router: Router,
-    private http: HttpClient,
+
     private localforage: LocalforageService
   ) {
     super(store);
@@ -56,34 +53,6 @@ export class AuthService extends CollectionService<AuthState> {
     this.authorizeURL += '&scope=' + this.scope;
 
     window.location.href = this.authorizeURL;
-  }
-
-  public selectSpotifyActiveUser(): Observable<SpotifyUser> {
-    const user = this.query.getActive();
-    const token$ = this.query.token$;
-    const spotifyUser = token$.pipe(
-      map((token) => {
-        const headers: HttpHeaders = new HttpHeaders().set(
-          'Authorization',
-          'Bearer ' + token
-        );
-        return headers;
-      }),
-      mergeMap((headers) =>
-        this.http.get<SpotifyUser>(this.baseUrl, {
-          headers,
-        })
-      ),
-      tap((spotifyUser: SpotifyUser) => {
-        if (user) {
-          this.db
-            .collection(this.currentPath)
-            .doc(user.id)
-            .update({ spotifyId: spotifyUser.id });
-        }
-      }, first())
-    );
-    return spotifyUser;
   }
 
   public addLikedTrack(trackId: string) {
@@ -106,7 +75,6 @@ export class AuthService extends CollectionService<AuthState> {
   public saveSpotifyCode() {
     const url = this.router.url;
     const code = url.substring(url.indexOf('=') + 1);
-    console.log(code);
     const userId = this.query.getActiveId();
     this.db.collection('users').doc(userId).update({ code });
   }

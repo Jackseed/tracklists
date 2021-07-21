@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthQuery, AuthService, SpotifyUser } from '../auth/+state';
+import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
@@ -21,7 +21,7 @@ import { AngularFireFunctions } from '@angular/fire/functions';
   styleUrls: ['./homepage.component.css'],
 })
 export class HomepageComponent implements OnInit {
-  public spotifyUser$: Observable<SpotifyUser>;
+  public spotifyUserId$: Observable<string>;
   public trackNumber$: Observable<number>;
   public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
@@ -70,7 +70,8 @@ export class HomepageComponent implements OnInit {
         .subscribe();
     }
 
-    this.spotifyUser$ = this.authService.selectSpotifyActiveUser();
+    this.spotifyUserId$ = this.authQuery.selectSpotifyUserId();
+    this.spotifyUserId$.subscribe(console.log);
 
     this.spotifyService.initializePlayer();
 

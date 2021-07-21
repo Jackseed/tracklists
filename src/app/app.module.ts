@@ -57,7 +57,7 @@ import { AngularFireFunctionsModule } from '@angular/fire/functions';
     MatProgressSpinnerModule,
     MatTooltipModule,
     AngularFireFunctionsModule,
-    environment.production ? [] : AkitaNgDevtools.forRoot(),
+    // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],
