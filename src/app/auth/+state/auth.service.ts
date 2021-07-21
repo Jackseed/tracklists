@@ -90,33 +90,18 @@ export class AuthService extends CollectionService<AuthState> {
       .createUserWithEmailAndPassword(email, password)
       .then((user) => {
         return this.setUser(user.user.uid, user.user.email);
-      })
-      .catch((err) => console.log(err));
+      });
   }
 
-  public async emailLogin(email: string, password: string): Promise<string> {
-    let errorMessage: string;
-
-    try {
-      await this.afAuth.signInWithEmailAndPassword(email, password);
-      await this.router.navigate(['/home']);
-    } catch (err) {
-      errorMessage = err;
-    }
-
-    return errorMessage;
+  public async emailLogin(
+    email: string,
+    password: string
+  ): Promise<firebase.auth.UserCredential> {
+    return this.afAuth.signInWithEmailAndPassword(email, password);
   }
 
-  public async resetPassword(email: string): Promise<string> {
-    let errorMessage: string;
-
-    try {
-      await this.afAuth.sendPasswordResetEmail(email);
-    } catch (err) {
-      errorMessage = err;
-    }
-
-    return errorMessage;
+  public async resetPassword(email: string): Promise<void> {
+    return this.afAuth.sendPasswordResetEmail(email);
   }
 
   public signOut() {
