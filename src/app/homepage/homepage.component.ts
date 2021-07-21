@@ -50,7 +50,6 @@ export class HomepageComponent implements OnInit {
     const url = this.router.url;
     // check if there is already a code registered, otherwise save it
     if (!url.includes('code')) {
-      console.log('here');
       this.authService.authSpotify();
     }
     this.authService.saveSpotifyCode();
@@ -59,7 +58,7 @@ export class HomepageComponent implements OnInit {
       const user = this.authQuery.getActive();
       const url = this.router.url;
       const code = url.substring(url.indexOf('=') + 1);
-      console.log(code);
+
       const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
       const response = getTokenFunction({
         code: code,
