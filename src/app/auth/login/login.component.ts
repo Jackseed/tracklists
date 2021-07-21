@@ -35,31 +35,39 @@ export class LoginComponent implements OnInit {
   }
 
   async onSubmit() {
-    let errorMessage: string;
     this.loading = true;
     const email = this.email.value;
     const password = this.password.value;
     let snackBarMessage: string;
+    let errorMessage: string;
 
     if (this.isSignup) {
-      this.service
+      await this.service
         .emailSignup(email, password)
         .then((_) => {
           this.analytics.logEvent('email_saved');
-          snackBarMessage = 'Account saved';
+          snackBarMessage = 'Account saved.';
           this.router.navigateByUrl('/home');
         })
-        .catch((error) => console.log(error));
+        .catch((error) => (errorMessage = error.message));
     } else if (this.isLogin) {
-      errorMessage = await this.service.emailLogin(email, password);
-      this.analytics.logEvent('email_login');
-      snackBarMessage = 'Successfully connected';
-      this.router.navigate(['/home']);
+      await this.service
+        .emailLogin(email, password)
+        .then((_) => {
+          this.analytics.logEvent('email_login');
+          snackBarMessage = 'Successfully connected.';
+          this.router.navigate(['/home']);
+        })
+        .catch((error) => (errorMessage = error.message));
     } else if (this.isPasswordReset) {
-      errorMessage = await this.service.resetPassword(email);
-      this.analytics.logEvent('password_reset');
-      snackBarMessage = 'Email sent';
-      this.router.navigate(['/home']);
+      await this.service
+        .resetPassword(email)
+        .then((_) => {
+          this.analytics.logEvent('password_reset');
+          snackBarMessage = 'Email sent.';
+          this.router.navigate(['/home']);
+        })
+        .catch((error) => (errorMessage = error.message));
     }
     if (errorMessage) {
       this.snackBar.open(errorMessage);

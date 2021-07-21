@@ -1,5 +1,5 @@
 <div
-  *ngIf="spotifyUser$ | async as user; else notConnected"
+  *ngIf="spotifyUserId$ | async; else notConnected"
   fxFlexFill
   fxLayout="column"
   fxLayoutAlign="start center"
@@ -166,7 +166,7 @@
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
     <div fxFlex="nogrow" class="text-centered">
       <h2>Loading</h2>
-      <p>Wait a minute, soon full of music.</p>
+      <p>Wait a minute, it will be soon full of music & love.</p>
     </div>
     <div
       fxFlex="nogrow"

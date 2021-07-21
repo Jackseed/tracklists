@@ -65,54 +65,59 @@ export class SpotifyService {
   public async initializePlayer() {
     // @ts-ignore: Unreachable code error
     const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
-    const token = this.authQuery.token;
+    const token$ = this.authQuery.token$;
 
     // instantiate the player
-    const player = new Player({
-      name: 'Tracklists',
-      getOAuthToken: (callback) => {
-        callback(token);
-      },
-    });
+    token$
+      .pipe(
+        tap(async (token) => {
+          const player = new Player({
+            name: 'Tracklists',
+            getOAuthToken: (callback) => {
+              callback(token);
+            },
+          });
+          await player.connect();
+          // Ready
+          player.addListener('ready', ({ device_id }) => {
+            this.authService.saveDeviceId(device_id);
+          });
 
-    await player.connect();
+          // when player state change, set active the track
+          player.on('player_state_changed', async (state) => {
+            if (!state) return;
 
-    // Ready
-    player.addListener('ready', ({ device_id }) => {
-      this.authService.saveDeviceId(device_id);
-    });
+            // gets it from db as there has been some errors
+            let dbTrack = this.trackQuery.getEntity(
+              state.track_window.current_track.id
+            );
+            // prevents error due to Track Relinking
+            if (!dbTrack)
+              dbTrack = this.trackQuery.getEntity(
+                state.track_window.current_track.linked_from.id
+              );
 
-    // when player state change, set active the track
-    player.on('player_state_changed', async (state) => {
-      if (!state) return;
+            const track = {
+              ...dbTrack,
+              position: state.position,
+              paused: state.paused,
+            };
 
-      // gets it from db as there has been some errors
-      let dbTrack = this.trackQuery.getEntity(
-        state.track_window.current_track.id
-      );
-      // prevents error due to Track Relinking
-      if (!dbTrack)
-        dbTrack = this.trackQuery.getEntity(
-          state.track_window.current_track.linked_from.id
-        );
+            const pause = this.playerQuery.getPaused(track.id);
 
-      const track = {
-        ...dbTrack,
-        position: state.position,
-        paused: state.paused,
-      };
-
-      const pause = this.playerQuery.getPaused(track.id);
-
-      this.playerService.add(track);
-      this.playerService.setActive(track.id);
-      this.playerService.updatePosition(track.id, state.position);
-      this.playerService.updateShuffle(state.shuffle);
-      // update playing track with state paused
-      state.paused === pause
-        ? false
-        : this.playerService.updatePaused(track.id, state.paused);
-    });
+            this.playerService.add(track);
+            this.playerService.setActive(track.id);
+            this.playerService.updatePosition(track.id, state.position);
+            this.playerService.updateShuffle(state.shuffle);
+            // update playing track with state paused
+            state.paused === pause
+              ? false
+              : this.playerService.updatePaused(track.id, state.paused);
+          });
+        }),
+        first()
+      )
+      .subscribe();
   }
 
   // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
@@ -453,11 +458,20 @@ export class SpotifyService {
   }
 
   private async getHeaders() {
-    const user = await this.authQuery.getActive();
-    const headers = new HttpHeaders().set(
-      'Authorization',
-      'Bearer ' + user.token
-    );
+    const token$ = this.authQuery.token$;
+    let headers;
+    token$
+      .pipe(
+        tap(
+          (token) =>
+            (headers = new HttpHeaders().set(
+              'Authorization',
+              'Bearer ' + token
+            ))
+        ),
+        first()
+      )
+      .subscribe();
     return headers;
   }
 
@@ -465,7 +479,9 @@ export class SpotifyService {
     url: string,
     queryParam: string
   ): Promise<Track[]> {
-    return await (await this.getPromisedObjects(url, queryParam))
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
       .pipe(
         map((tracks: { items: SpotifySavedTrack[] }) =>
           tracks.items.map((item) =>
@@ -496,7 +512,9 @@ export class SpotifyService {
     url: string,
     queryParam: string
   ): Promise<Track[]> {
-    return await (await this.getPromisedObjects(url, queryParam))
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
       .pipe(
         map((playlistTracks: { items: SpotifyPlaylistTrack[] }) =>
           playlistTracks.items.map((item) =>
@@ -516,7 +534,9 @@ export class SpotifyService {
     url: string,
     queryParam: string
   ): Promise<Playlist[]> {
-    return await (await this.getPromisedObjects(url, queryParam))
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
       .pipe(
         map((paging: { items: Playlist[] }) => paging.items),
         first()
@@ -545,7 +565,9 @@ export class SpotifyService {
     }
     // remove last comma
     queryParam = queryParam.substring(0, queryParam.length - 1);
-    return await (await this.getPromisedObjects(url, queryParam))
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
       .pipe(
         map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>
           audioFeat.audio_features.map((feature) => {
@@ -569,7 +591,9 @@ export class SpotifyService {
     }
     queryParam = queryParam.substring(0, queryParam.length - 1);
 
-    return await (await this.getPromisedObjects(url, queryParam))
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
       .pipe(
         map((artists: { artists: Artist[] }) => {
           return artists.artists;
@@ -641,7 +665,9 @@ export class SpotifyService {
       }
     }
 
-    const recommended = await (await this.getPromisedObjects(url, queryParam))
+    const recommended = await (
+      await this.getPromisedObjects(url, queryParam)
+    )
       .pipe(
         map(async (recommendedTracks: { tracks: SpotifyTrack[] }) => {
           const tracks = recommendedTracks.tracks;
@@ -742,7 +768,6 @@ export class SpotifyService {
     const urisLimit = 700;
     if (trackUris?.length > urisLimit)
       trackUris = trackUris.slice(0, urisLimit - 1);
-
     const user = this.authQuery.getActive();
     const baseUrl = 'https://api.spotify.com/v1/me/player/play';
     const queryParam =

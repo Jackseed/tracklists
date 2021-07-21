@@ -1,9 +1,17 @@
 import { Image } from '../../tracks/+state';
+import firebase from 'firebase/app';
+import Timestamp = firebase.firestore.Timestamp;
 
 export interface User {
   id: string;
   email?: string;
   token?: string;
+  code?: string;
+  tokens?: {
+    access?: string;
+    addedTime?: Timestamp;
+    refresh?: string;
+  };
   name?: string;
   spotifyId?: string;
   deviceId?: string;
