@@ -458,11 +458,20 @@ export class SpotifyService {
   }
 
   private async getHeaders() {
-    const user = await this.authQuery.getActive();
-    const headers = new HttpHeaders().set(
-      'Authorization',
-      'Bearer ' + user.token
-    );
+    const token$ = this.authQuery.token$;
+    let headers;
+    token$
+      .pipe(
+        tap(
+          (token) =>
+            (headers = new HttpHeaders().set(
+              'Authorization',
+              'Bearer ' + token
+            ))
+        ),
+        first()
+      )
+      .subscribe();
     return headers;
   }
 
@@ -759,7 +768,6 @@ export class SpotifyService {
     const urisLimit = 700;
     if (trackUris?.length > urisLimit)
       trackUris = trackUris.slice(0, urisLimit - 1);
-
     const user = this.authQuery.getActive();
     const baseUrl = 'https://api.spotify.com/v1/me/player/play';
     const queryParam =

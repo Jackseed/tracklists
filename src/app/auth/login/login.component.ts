@@ -70,10 +70,8 @@ export class LoginComponent implements OnInit {
         .catch((error) => (errorMessage = error.message));
     }
     if (errorMessage) {
-      console.log('here ', errorMessage);
       this.snackBar.open(errorMessage);
     } else {
-      console.log('there ', snackBarMessage);
       this.snackBar.open(snackBarMessage);
     }
 
