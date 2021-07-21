@@ -41,7 +41,7 @@ export const saveNovaEveryFiveMinutes = functions.pubsub
         headers: {
           'Content-Type': 'application/json',
         },
-        url: 'https://us-central1-listy-bcc65.cloudfunctions.net/saveNovaOnSpotify',
+        url: 'https://us-central1-listy-prod.cloudfunctions.net/saveNovaOnSpotify',
         data: {
           playlistId: radio.playlistId,
           frequence: radio.frequence,
@@ -65,8 +65,6 @@ export const saveNovaEveryFiveMinutes = functions.pubsub
         console.log('All good!');
       })
       .catch((err) => console.log('something went wrong.. ', err));
-
-    res.json({ result: `Tracks successfully saved.` });
   });
 
 ////////////////// SAVE NOVA SONGS ON SPOTIFY //////////////////
@@ -100,7 +98,6 @@ exports.saveNovaOnSpotify = functions
     );
 
     res.end(response);
-    res.json({ result: `Tracks successfully saved.` });
   });
 
 /////////////////////// SCRAPE NOVA ///////////////////////
@@ -280,7 +277,7 @@ exports.getSpotifyToken = functions
     if (data.tokenType === 'access') {
       params.append('grant_type', 'authorization_code');
       params.append('code', data.code);
-      params.append('redirect_uri', 'http://localhost:4200/home');
+      params.append('redirect_uri', 'https://tracklists.io/home');
     } else {
       params.append('grant_type', 'refresh_token');
       params.append('refresh_token', data.refreshToken);
@@ -316,7 +313,7 @@ exports.getSpotifyToken = functions
       headers: {
         'Content-Type': 'application/json',
       },
-      url: 'https://us-central1-listy-bcc65.cloudfunctions.net/saveToken',
+      url: 'https://us-central1-listy-prod.cloudfunctions.net/saveToken',
       data: {
         token,
         refreshToken: refresh_token,
