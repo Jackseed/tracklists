@@ -138,8 +138,9 @@ export class SpotifyService {
 
     // get active user's playlists by batches
     const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
+    // update the front loader with more details for the user
     this.trackService.updateLoadingItem(`Saving your playlists...`);
-    // extract the tracks
+    // extract the tracks from the playlists
     const tracks = await this.getPlaylistsTracksByBatches(playlists);
     // Get audio features
     const trackIds: string[] = tracks.map((track) => track.id);
@@ -349,6 +350,7 @@ export class SpotifyService {
     const playlistTracksLimit = 100;
     let totalPlaylistTracks: Track[] = [];
     // get the tracks from all playlists
+    // TODO: PARALLELIZE THIS CALLS
     for (let m = 0; m < playlists.length; m++) {
       let playlistTracks: Track[] = [];
       // get all the playlist tracks by batches
