@@ -461,7 +461,7 @@ export class SpotifyService {
 
   private async getHeaders() {
     const token$ = this.authQuery.token$;
-    let headers;
+    let headers: HttpHeaders;
     token$
       .pipe(
         tap(
