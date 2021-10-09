@@ -478,10 +478,32 @@ export class SpotifyService {
     objects,
     type: string
   ) {
-    let firebaseWriteLimit: number;
+    // let firebaseWriteLimit: number;
+    const userId = this.authQuery.getActiveId();
     const startTime = performance.now();
+    await Promise.all(
+      objects.map((object) => {
+        type === 'tracks'
+          ? collection
+              .doc(object.id)
+              .set(
+                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
+                { merge: true }
+              )
+          : collection.doc(object.id).set(object, { merge: true });
+      })
+    ).then((_) => {
+      const endTime = performance.now();
+
+      console.log(
+        `Call to firestoreWriteBatches ${type} took ${
+          endTime - startTime
+        } milliseconds`
+      );
+    });
+
     // tracks write twice, including userId
-    type === 'tracks' ? (firebaseWriteLimit = 250) : (firebaseWriteLimit = 500);
+    /*   type === 'tracks' ? (firebaseWriteLimit = 250) : (firebaseWriteLimit = 500);
     const userId = this.authQuery.getActiveId();
     for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
       const bactchObject = objects.slice(
@@ -519,7 +541,7 @@ export class SpotifyService {
           );
         })
         .catch((error) => console.log(error));
-    }
+    } */
   }
 
   private async getHeaders() {
@@ -666,18 +688,6 @@ export class SpotifyService {
         first()
       )
       .toPromise();
-  }
-
-  public async getPromisedAlbums(trackIds: string[]) {
-    const headers = await this.getHeaders();
-    const url = 'https://api.spotify.com/v1/albums';
-    let queryParam: string = '?ids=';
-    for (const trackId of trackIds) {
-      queryParam = queryParam + trackId + ',';
-    }
-    queryParam = queryParam.substring(0, queryParam.length - 1);
-
-    return this.getPromisedObjects(url, queryParam);
   }
 
   public async getPromisedRecommendations(
