@@ -134,22 +134,48 @@ export class SpotifyService {
   }
 
   public async savePlaylists() {
+    const startTime = performance.now();
+    console.log(startTime);
     this.trackStore.setLoading(true);
 
     // get active user's playlists by batches
+    const startTimeGetPlaylist = performance.now();
+
     const playlists: Playlist[] = await this.getActiveUserPlaylistsByBatches();
+    const endTimeGetPlaylist = performance.now();
+    console.log(
+      `Call to GetPlaylist took ${
+        endTimeGetPlaylist - startTimeGetPlaylist
+      } milliseconds`
+    );
     // update the front loader with more details for the user
     this.trackService.updateLoadingItem(`Saving your playlists...`);
     // extract the tracks from the playlists
+    const startTimeGetTracks = performance.now();
+
     const tracks = await this.getPlaylistsTracksByBatches(playlists);
+    const endTimeGetTracks = performance.now();
+    console.log(
+      `Call to GetTracks took ${
+        endTimeGetTracks - startTimeGetTracks
+      } milliseconds`
+    );
     // Get audio features
     const trackIds: string[] = tracks.map((track) => track.id);
-    const audioFeatures = await this.getAudioFeaturesByBatches(trackIds);
-    // Get genres
+    const startTimeGetAudioFeatures = performance.now();
 
+    const audioFeatures = await this.getAudioFeaturesByBatches(trackIds);
+    const endTimeGetAudioFeatures = performance.now();
+    console.log(
+      `Call to GetAudioFeatures took ${
+        endTimeGetAudioFeatures - startTimeGetAudioFeatures
+      } milliseconds`
+    );
+
+    // Get genres
     // adds empty genres when artist undefined
     const emptyArtistPosition: number[] = [];
-
+    const startTimeGetArtistIds = performance.now();
     const artistIds: string[] = tracks.map((track, i) => {
       if (track.artists[0].id) {
         return track.artists[0].id;
@@ -158,7 +184,23 @@ export class SpotifyService {
         return '';
       }
     });
+    const endTimeGetArtistIds = performance.now();
+    console.log(
+      `Call to GetArtistIds took ${
+        endTimeGetArtistIds - startTimeGetArtistIds
+      } milliseconds`
+    );
+    const startTimeGetGenres = performance.now();
+
     const genres = await this.getGenresByBatches(artistIds);
+    const endTimeGetGenres = performance.now();
+    console.log(
+      `Call to GetGenres took ${
+        endTimeGetGenres - startTimeGetGenres
+      } milliseconds`
+    );
+
+    const startTimeBuildFullTracks = performance.now();
 
     for (const position of emptyArtistPosition) {
       genres.splice(position, 0, []);
@@ -169,7 +211,12 @@ export class SpotifyService {
       ...audioFeatures[i],
       genres: genres[i],
     }));
-
+    const endTimeBuildFullTracks = performance.now();
+    console.log(
+      `Call to BuildFullTracks took ${
+        endTimeBuildFullTracks - startTimeBuildFullTracks
+      } milliseconds`
+    );
     // write playlists by batches
     const playlistCollection = this.db.collection('playlists');
     await this.firestoreWriteBatches(
@@ -197,7 +244,13 @@ export class SpotifyService {
     );
 
     // save the liked tracks as a playlist
-    this.saveLikedTracks();
+    this.saveLikedTracks().then((_) => {
+      const endTime = performance.now();
+
+      console.log(
+        `Call to savePlaylist took ${endTime - startTime} milliseconds`
+      );
+    });
   }
 
   private async saveLikedTracks() {
@@ -425,7 +478,8 @@ export class SpotifyService {
     objects,
     type: string
   ) {
-    let firebaseWriteLimit;
+    let firebaseWriteLimit: number;
+    const startTime = performance.now();
     // tracks write twice, including userId
     type === 'tracks' ? (firebaseWriteLimit = 250) : (firebaseWriteLimit = 500);
     const userId = this.authQuery.getActiveId();
@@ -454,7 +508,16 @@ export class SpotifyService {
 
       batch
         .commit()
-        .then((_) => console.log(`batch of ${type} ${i} saved`))
+        .then((_) => {
+          console.log(`batch of ${type} ${i} saved`);
+          const endTime = performance.now();
+
+          console.log(
+            `Call to firestoreWriteBatches ${type} took ${
+              endTime - startTime
+            } milliseconds`
+          );
+        })
         .catch((error) => console.log(error));
     }
   }
