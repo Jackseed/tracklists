@@ -9,7 +9,6 @@ import {
   createTrack,
   SpotifySavedTrack,
 } from './data';
-import { firestore } from 'firebase/app';
 const admin = require('firebase-admin');
 const axios = require('axios').default;
 
@@ -173,8 +172,8 @@ async function saveUserLikedTracks(user: User) {
   const userRef = admin.firestore().collection('users').doc(user.id);
   userRef
     .update({
-      playlistIds: firestore.FieldValue.arrayUnion(playlist.id),
-      trackIds: firestore.FieldValue.arrayUnion(...trackIds),
+      playlistIds: admin.firestore().FieldValue.arrayUnion(playlist.id),
+      trackIds: admin.firestore().FieldValue.arrayUnion(...trackIds),
     })
     .then((_: any) => console.log('liked tracks playlist added on user'))
     .catch((error: any) => console.log(error));
@@ -206,7 +205,7 @@ function extractGenresFromTrackToPlaylist(playlist: Playlist, tracks: Track[]) {
         ref,
         {
           id: genre,
-          trackIds: firestore.FieldValue.arrayUnion(track.id),
+          trackIds: admin.firestore().FieldValue.arrayUnion(track.id),
         },
         { merge: true }
       );
@@ -342,7 +341,7 @@ async function getGenresByBatches(
 
 async function firestoreWriteBatches(
   user: User,
-  collection: firebase.firestore.CollectionReference,
+  collection: any,
   objects: any[],
   type: string
 ) {
@@ -351,12 +350,13 @@ async function firestoreWriteBatches(
   await Promise.all(
     objects.map((object: any) => {
       type === 'tracks'
-        ? collection
-            .doc(object.id)
-            .set(
-              { ...object, userIds: firestore.FieldValue.arrayUnion(user.id) },
-              { merge: true }
-            )
+        ? collection.doc(object.id).set(
+            {
+              ...object,
+              userIds: admin.firestore().FieldValue.arrayUnion(user.id),
+            },
+            { merge: true }
+          )
         : collection.doc(object.id).set(object, { merge: true });
     })
   ).then((_) => {

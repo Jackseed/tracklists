@@ -15,7 +15,7 @@ export async function getSpotifyToken(data: any) {
   if (data.tokenType === 'access') {
     params.append('grant_type', 'authorization_code');
     params.append('code', data.code);
-    params.append('redirect_uri', 'https://tracklists.io/home');
+    params.append('redirect_uri', functions.config().spotify.redirecturi);
   } else {
     params.append('grant_type', 'refresh_token');
     params.append('refresh_token', data.refreshToken);
@@ -50,7 +50,7 @@ export async function getSpotifyToken(data: any) {
     headers: {
       'Content-Type': 'application/json',
     },
-    url: 'https://us-central1-listy-prod.cloudfunctions.net/saveToken',
+    url: functions.config().spotify.savetokenfunction,
     data: {
       token,
       refreshToken: refresh_token,
@@ -63,26 +63,26 @@ export async function getSpotifyToken(data: any) {
   return { token, refresh_token };
 }
 
-export async function saveToken(req: any, res: any){
-    const accessToken = req.body.token;
-    if (accessToken) {
-      let tokens: { access: string; addedTime: Object; refresh?: string } = {
-        access: accessToken,
-        addedTime: admin.firestore.FieldValue.serverTimestamp(),
-      };
-      // add refresh token only when requesting an access token for the first time
-      if (req.body.tokenType === 'access')
-        tokens = { ...tokens, refresh: req.body.refreshToken };
+export async function saveToken(req: any, res: any) {
+  const accessToken = req.body.token;
+  if (accessToken) {
+    let tokens: { access: string; addedTime: Object; refresh?: string } = {
+      access: accessToken,
+      addedTime: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    // add refresh token only when requesting an access token for the first time
+    if (req.body.tokenType === 'access')
+      tokens = { ...tokens, refresh: req.body.refreshToken };
 
-      await admin.firestore().collection('users').doc(req.body.userId).set(
-        {
-          tokens,
-        },
-        { merge: true }
-      );
+    await admin.firestore().collection('users').doc(req.body.userId).set(
+      {
+        tokens,
+      },
+      { merge: true }
+    );
 
-      res.json({ result: `Access token successfully added: ${accessToken}.` });
-    } else {
-      res.json({ result: `Empty token.` });
-    }
-  };
+    res.json({ result: `Access token successfully added: ${accessToken}.` });
+  } else {
+    res.json({ result: `Empty token.` });
+  }
+}

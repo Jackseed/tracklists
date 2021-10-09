@@ -9,7 +9,7 @@ module.exports = {
     "plugin:import/warnings",
     "plugin:import/typescript",
   ],
-  ignorePatterns: [".eslintrc.js", "/src/**"],
+  ignorePatterns: [".eslintrc.js", "/src/"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: "tsconfig.json",

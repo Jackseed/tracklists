@@ -66,7 +66,7 @@ export class HomepageComponent implements OnInit {
         userId: user.id,
       })
         .pipe(first())
-        .subscribe();
+        .subscribe((_) => console.log(_));
     }
 
     this.spotifyUserId$ = this.authQuery.selectSpotifyUserId();
