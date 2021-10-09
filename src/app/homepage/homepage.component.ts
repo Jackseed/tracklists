@@ -154,7 +154,9 @@ export class HomepageComponent implements OnInit {
   }
 
   public refreshData() {
-    this.spotifyService.savePlaylists();
+    this.fns.httpsCallable('getSpotifyToken');
+    /*
+    this.spotifyService.savePlaylists(); */
     this.trackService.updateSpinner(true);
     this.trackService.loadFromFirebase();
   }
