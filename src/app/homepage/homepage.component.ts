@@ -66,7 +66,7 @@ export class HomepageComponent implements OnInit {
         userId: user.id,
       })
         .pipe(first())
-        .subscribe((_) => console.log(_));
+        .subscribe();
     }
 
     this.spotifyUserId$ = this.authQuery.selectSpotifyUserId();
@@ -100,8 +100,15 @@ export class HomepageComponent implements OnInit {
   }
 
   public loadPlaylist() {
-    this.spotifyService.savePlaylists();
-    this.trackService.updateSpinner(true);
+    const user = this.authQuery.getActive();
+    console.log('here', user);
+
+    const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
+    const response = saveFunction({
+      user,
+    })
+      .pipe(first())
+      .subscribe();
   }
 
   public playAll() {
@@ -154,7 +161,13 @@ export class HomepageComponent implements OnInit {
   }
 
   public refreshData() {
-    this.fns.httpsCallable('getSpotifyToken');
+    const user = this.authQuery.getActive();
+    const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
+    const response = saveFunction({
+      user,
+    })
+      .pipe(first())
+      .subscribe();
     /*
     this.spotifyService.savePlaylists(); */
     this.trackService.updateSpinner(true);

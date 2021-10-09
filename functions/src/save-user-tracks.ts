@@ -13,7 +13,8 @@ const admin = require('firebase-admin');
 const axios = require('axios').default;
 
 // TODO: replace user with userId
-export async function saveUserPlaylists(user: User) {
+export async function saveUserPlaylists(data: any) {
+  const user = data.user;
   const startTime = performance.now();
   console.log(startTime);
   // get active user's playlists by batches
