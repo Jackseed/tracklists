@@ -52,27 +52,18 @@ export interface Playlist {
 
 export interface Track {
   id: string;
-  added_at?: string;
-  added_by?: SpotifyUser;
-  uri?: string;
+  added_at: string;
+  added_by?: SpotifyUser | null;
+  name: string;
   album?: Album;
   artists?: Artist[];
+  duration_ms: number;
+  popularity: number | null;
+  uri: string;
+}
+
+export interface FullTrack extends Track, AudioFeatures {
   genres?: string[];
-  duration_ms?: number;
-  name?: string;
-  popularity?: number;
-  key?: number;
-  mode?: number;
-  time_signature?: number;
-  acousticness?: number;
-  danceability?: number;
-  energy?: number;
-  instrumentalness?: number;
-  liveness?: number;
-  loudness?: number;
-  speechiness?: number;
-  valence?: number;
-  tempo?: number;
   userIds?: string[];
 }
 
@@ -81,9 +72,9 @@ export interface Album {
   name?: string;
   images?: Image[];
   genres?: string[];
-  release_year?: number;
+  release_year?: number | null;
   release_date?: string;
-  release_date_precision?: 'year' | 'month' | 'day';
+  release_date_precision?: 'year' | 'month' | 'day' | '';
 }
 
 export interface SpotifyAlbum {
@@ -102,7 +93,7 @@ export interface SpotifyAlbum {
   href: string;
   label: string;
   popularity: number;
-  track: Track[];
+  track: FullTrack[];
   type: string;
   uri: string;
 }
@@ -125,7 +116,7 @@ export interface Image {
   width: number;
 }
 
-export interface SpotifyTrack extends Track {
+export interface SpotifyTrack extends FullTrack {
   // spotify parameters
   available_markets: string[];
   disc_number: number;
@@ -175,19 +166,23 @@ export interface SpotifyPlaylistTrack {
   track: SpotifyTrack;
 }
 
-export interface SpotifyAudioFeatures {
-  key?: number;
-  mode?: number;
-  time_signature?: number;
-  acousticness?: number;
-  danceability?: number;
-  energy?: number;
-  instrumentalness?: number;
-  liveness?: number;
-  loudness?: number;
-  speechiness?: number;
-  valence?: number;
-  tempo?: number;
+export interface AudioFeatures {
+  id: string;
+  key: number;
+  mode: number;
+  time_signature: number;
+  acousticness: number;
+  danceability: number;
+  energy: number;
+  instrumentalness: number;
+  liveness: number;
+  loudness: number;
+  speechiness: number;
+  valence: number;
+  tempo: number;
+}
+
+export interface SpotifyAudioFeatures extends AudioFeatures {
   // Spotify
   analysis_url: string;
   duration_ms: number;
@@ -202,68 +197,70 @@ export interface MinMax {
   max: number;
 }
 
-export function createTrack(params: Partial<Track>) {
+export function createTrack(params: Partial<FullTrack>): Track {
   return {
-    id: params.id,
+    id: params.id!,
     added_at: params.added_at ? params.added_at : '',
     added_by: params.added_by ? params.added_by : null,
-    name: params.name,
+    name: params.name!,
     artists: params.artists
       ? params.artists.map((artist) => createArtist(artist))
       : [],
     album: params.album ? createAlbum(params.album) : {},
-    duration_ms: params.duration_ms,
+    duration_ms: params.duration_ms!,
     popularity: params.popularity ? params.popularity : null,
-    uri: params.uri,
+    uri: params.uri!,
   };
 }
 
-export function createAudioFeatures(params: Partial<Track>) {
+export function createAudioFeatures(
+  params: Partial<AudioFeatures>
+): AudioFeatures {
   return {
-    id: params.id,
-    key: params.key,
-    mode: params.mode,
-    time_signature: params.time_signature,
-    acousticness: params.acousticness,
-    danceability: params.danceability,
-    energy: params.energy,
-    instrumentalness: params.instrumentalness,
-    liveness: params.liveness,
-    loudness: params.loudness,
-    speechiness: params.speechiness,
-    valence: params.valence,
-    tempo: params.tempo,
+    id: params.id!,
+    key: params.key!,
+    mode: params.mode!,
+    time_signature: params.time_signature!,
+    acousticness: params.acousticness!,
+    danceability: params.danceability!,
+    energy: params.energy!,
+    instrumentalness: params.instrumentalness!,
+    liveness: params.liveness!,
+    loudness: params.loudness!,
+    speechiness: params.speechiness!,
+    valence: params.valence!,
+    tempo: params.tempo!,
   };
 }
 
-export function createFullTrack(params: Partial<Track>) {
+export function createFullTrack(params: Partial<FullTrack>): FullTrack {
   return {
-    id: params.id,
-    added_at: params.added_at,
-    uri: params.uri,
-    name: params.name,
+    id: params.id!,
+    added_at: params.added_at!,
+    uri: params.uri!,
+    name: params.name!,
     artists: params.artists
       ? params.artists.map((artist) => createArtist(artist))
-      : [],
-    album: params.album ? createAlbum(params.album) : {},
-    duration_ms: params.duration_ms,
-    popularity: params.popularity,
-    key: params.key,
-    mode: params.mode,
-    time_signature: params.time_signature,
-    acousticness: params.acousticness,
-    danceability: params.danceability,
-    energy: params.energy,
-    instrumentalness: params.instrumentalness,
-    liveness: params.liveness,
-    loudness: params.loudness,
-    speechiness: params.speechiness,
-    valence: params.valence,
-    tempo: params.tempo,
+      : []!,
+    album: params.album ? createAlbum(params.album) : {}!,
+    duration_ms: params.duration_ms!,
+    popularity: params.popularity!,
+    key: params.key!,
+    mode: params.mode!,
+    time_signature: params.time_signature!,
+    acousticness: params.acousticness!,
+    danceability: params.danceability!,
+    energy: params.energy!,
+    instrumentalness: params.instrumentalness!,
+    liveness: params.liveness!,
+    loudness: params.loudness!,
+    speechiness: params.speechiness!,
+    valence: params.valence!,
+    tempo: params.tempo!,
   };
 }
 
-export function createAlbum(params: Partial<Album>) {
+export function createAlbum(params: Partial<Album>): Album {
   return {
     id: params.id ? params.id : '',
     name: params.name,
@@ -280,20 +277,20 @@ export function createAlbum(params: Partial<Album>) {
   };
 }
 
-export function createArtist(params: Partial<Artist>) {
+export function createArtist(params: Partial<Artist>): Artist {
   return {
     id: params.id ? params.id : '',
-    name: params.name,
+    name: params.name!,
     images: params.images
       ? params.images.map((image) => createImage(image))
       : [],
   };
 }
 
-export function createImage(params: Partial<Image>) {
+export function createImage(params: Partial<Image>): Image {
   return {
-    url: params.url,
-    height: params.height,
-    width: params.width,
+    url: params.url!,
+    height: params.height!,
+    width: params.width!,
   };
 }
