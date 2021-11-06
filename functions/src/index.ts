@@ -1,5 +1,5 @@
 import functions = require('firebase-functions');
-import { saveUserPlaylists } from './save-user-tracks';
+import { saveUserTracks } from './save-user-tracks';
 import { getSpotifyToken, saveToken } from './spotify-auth';
 const admin = require('firebase-admin');
 admin.initializeApp();
@@ -14,6 +14,6 @@ exports.saveToken = functions
 
   exports.saveUserPlaylists = functions
   .runWith({ timeoutSeconds: 500 })
-  .https.onCall(saveUserPlaylists);
+  .https.onCall(saveUserTracks);
 
 

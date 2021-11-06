@@ -15,96 +15,33 @@ const admin = require('firebase-admin');
 const axios = require('axios').default;
 
 // TODO: replace user with userId
-export async function saveUserPlaylists(data: any) {
-  const user = data.user;
+export async function saveUserTracks(data: any) {
   const startTime = performance.now();
-  console.log(startTime);
+  const user = data.user;
+
   // get active user's playlists by batches
   const startTimeGetPlaylist = performance.now();
-
-  const playlists: Playlist[] = await getActiveUserPlaylistsByBatches(user);
+  const playlists: Playlist[] = await getSpotifyObjectsByBatches(
+    user,
+    'playlists'
+  );
   const endTimeGetPlaylist = performance.now();
   console.log(
     `Call to GetPlaylist took ${
       endTimeGetPlaylist - startTimeGetPlaylist
     } milliseconds`
   );
+  console.log('playlist amount: ', playlists.length);
+  const fullTracks = await getUserPlaylistFullTracks(user, playlists);
+  const trackIds: string[] = fullTracks.map((track) => track.id!);
 
-  // extract the tracks from the playlists
-  const startTimeGetTracks = performance.now();
-
-  const tracks = await getPlaylistsTracksByBatches(user, playlists);
-  const endTimeGetTracks = performance.now();
-  console.log(
-    `Call to GetTracks took ${
-      endTimeGetTracks - startTimeGetTracks
-    } milliseconds`
-  );
-  // Get audio features
-  const trackIds: string[] = tracks.map((track) => track.id!);
-  const startTimeGetAudioFeatures = performance.now();
-
-  const audioFeatures = await getAudioFeaturesByBatches(user, trackIds);
-  const endTimeGetAudioFeatures = performance.now();
-  console.log(
-    `Call to GetAudioFeatures took ${
-      endTimeGetAudioFeatures - startTimeGetAudioFeatures
-    } milliseconds`
-  );
-
-  // Get genres
-  // adds empty genres when artist undefined
-  const emptyArtistPosition: number[] = [];
-  const startTimeGetArtistIds = performance.now();
-  const artistIds: string[] = tracks.map((track, i) => {
-    if (track.artists![0].id) {
-      return track.artists![0].id;
-    } else {
-      emptyArtistPosition.push(i);
-      return '';
-    }
-  });
-  const endTimeGetArtistIds = performance.now();
-  console.log(
-    `Call to GetArtistIds took ${
-      endTimeGetArtistIds - startTimeGetArtistIds
-    } milliseconds`
-  );
-  const startTimeGetGenres = performance.now();
-
-  const genres = await getGenresByBatches(user, artistIds);
-  const endTimeGetGenres = performance.now();
-  console.log(
-    `Call to GetGenres took ${
-      endTimeGetGenres - startTimeGetGenres
-    } milliseconds`
-  );
-
-  const startTimeBuildFullTracks = performance.now();
-
-  for (const position of emptyArtistPosition) {
-    genres.splice(position, 0, []);
-  }
-  // concat all items into one track
-  const fullTracks: Partial<FullTrack>[] = tracks.map((track, i) => ({
-    ...track,
-    ...audioFeatures[i],
-    genres: genres[i],
-  }));
-  const endTimeBuildFullTracks = performance.now();
-  console.log(
-    `Call to BuildFullTracks took ${
-      endTimeBuildFullTracks - startTimeBuildFullTracks
-    } milliseconds`
-  );
-  console.log('playlist tracks: ', fullTracks.length);
   // write playlists by batches
   const playlistCollection = admin.firestore().collection('playlists');
-  await firestoreWriteBatches(user, playlistCollection, playlists, 'playlists');
+  await firestoreWrite(user, playlistCollection, playlists, 'playlists');
 
   // write tracks by batches
   const trackCollection = admin.firestore().collection('tracks');
-  await firestoreWriteBatches(user, trackCollection, fullTracks, 'tracks');
+  await firestoreWrite(user, trackCollection, fullTracks, 'tracks');
 
   // write playlist ids & track ids in user doc
   const userRef = admin.firestore().collection('users').doc(user.id);
@@ -112,7 +49,7 @@ export async function saveUserPlaylists(data: any) {
   userRef
     .update({ playlistIds, trackIds })
     .then((_: any) => console.log('playlistIds saved on user'))
-    .catch((error: any) => console.log(error));
+    .catch((error: any) => console.log(error.response.data));
 
   // write genres on playlists
   playlists.forEach((playlist) =>
@@ -129,19 +66,39 @@ export async function saveUserPlaylists(data: any) {
   });
 }
 
-async function saveUserLikedTracks(user: User) {
-  // TODO: refactor code with a getFullTracks function
-  // get liked tracks by batches
-  const tracks: Track[] = await getLikedTracksByBatches(user);
+async function getUserPlaylistFullTracks(
+  user: User,
+  playlists: Playlist[]
+): Promise<Partial<FullTrack>[]> {
+  // extract the tracks from the playlists
+  const startTimeGetTracks = performance.now();
+
+  const tracks = await getPlaylistsTracksByBatches(user, playlists);
+  console.log('track amount: ', tracks.length);
+  const endTimeGetTracks = performance.now();
+  console.log(
+    `Call to GetTracks took ${
+      endTimeGetTracks - startTimeGetTracks
+    } milliseconds`
+  );
+  // Get audio features
   const trackIds: string[] = tracks.map((track) => track.id!);
-  // Get audio features by batches
-  const audioFeatures: AudioFeatures[] = await getAudioFeaturesByBatches(
+
+  const startTimeGetAudioFeatures = performance.now();
+
+  const audioFeatures = await getSpotifyObjectsByBatches(
     user,
+    'audioFeatures',
     trackIds
   );
-  // Get genres
-  const artistIds: string[] = tracks.map((track) => track.artists![0].id);
-  const genres = await getGenresByBatches(user, artistIds);
+  const endTimeGetAudioFeatures = performance.now();
+  console.log(
+    `Call to GetAudioFeatures took ${
+      endTimeGetAudioFeatures - startTimeGetAudioFeatures
+    } milliseconds`
+  );
+  console.log('tracks amount', tracks.length);
+  const genres = await getGenreTracks(user, tracks);
 
   // concat all items into one track
   const fullTracks: Partial<FullTrack>[] = tracks.map((track, i) => ({
@@ -150,11 +107,74 @@ async function saveUserLikedTracks(user: User) {
     genres: genres[i],
   }));
 
-  // console.log('liked tracks: ', fullTracks);
+  console.log('playlist tracks: ', fullTracks.length);
+
+  return fullTracks;
+}
+
+async function getGenreTracks(
+  user: User,
+  tracks: Track[]
+): Promise<string[][]> {
+  // adds empty genres when artist is undefined
+  const emptyArtistPosition: number[] = [];
+  const artistIds: string[] = tracks.map((track, i) => {
+    if (track.artists![0].id) {
+      return track.artists![0].id;
+    } else {
+      emptyArtistPosition.push(i);
+      return '';
+    }
+  });
+  console.log('artists amount: ', artistIds.length);
+  const startTimeGetGenres = performance.now();
+  const genres = await getGenresByBatches(user, artistIds);
+  console.log('genre amount: ', genres.length);
+  const endTimeGetGenres = performance.now();
+  console.log(
+    `Call to GetGenres took ${
+      endTimeGetGenres - startTimeGetGenres
+    } milliseconds`
+  );
+
+  // add empty genres when no artist
+  for (const position of emptyArtistPosition) {
+    genres.splice(position, 0, []);
+  }
+
+  return genres;
+}
+
+async function saveUserLikedTracks(user: User) {
+  // TODO: refactor code with a getFullTracks function
+  // get liked tracks by batches
+  const tracks: Track[] = (await getSpotifyObjectsByBatches(
+    user,
+    'likedTracks'
+  )) as Track[];
+
+  const trackIds: string[] = tracks.map((track) => track.id!);
+  // Get audio features by batches
+  const audioFeatures = (await getSpotifyObjectsByBatches(
+    user,
+    'audioFeatures',
+    trackIds
+  )) as AudioFeatures[];
+  // Get genres
+  const genres = await getGenreTracks(user, tracks);
+
+  // concat all items into one track
+  const fullTracks: Partial<FullTrack>[] = tracks.map((track, i) => ({
+    ...track,
+    ...audioFeatures[i],
+    genres: genres[i],
+  }));
+
+  console.log('liked tracks: ', fullTracks.length);
 
   // write tracks by batches
   const trackCollection = admin.firestore().collection('tracks');
-  await firestoreWriteBatches(user, trackCollection, fullTracks, 'tracks');
+  await firestoreWrite(user, trackCollection, fullTracks, 'tracks');
 
   // create liked tracks as a playlist
   const playlist: Playlist = {
@@ -170,7 +190,7 @@ async function saveUserLikedTracks(user: User) {
     .doc(playlist.id)
     .set(playlist, { merge: true })
     .then((_: any) => console.log('liked tracks saved as a playlist'))
-    .catch((error: any) => console.log(error));
+    .catch((error: any) => console.log(error.response.data));
 
   // add the liked tracks playlist & the trackIds in the user doc
   const userRef = admin.firestore().collection('users').doc(user.id);
@@ -180,7 +200,7 @@ async function saveUserLikedTracks(user: User) {
       trackIds: admin.firestore.FieldValue.arrayUnion(...trackIds),
     })
     .then((_: any) => console.log('liked tracks playlist added on user'))
-    .catch((error: any) => console.log(error));
+    .catch((error: any) => console.log(error.response.data));
 
   // write genres on playlist
   extractGenresFromTrackToPlaylist(playlist, fullTracks);
@@ -231,67 +251,106 @@ function extractGenresFromTrackToPlaylist(
     await batch
       .commit()
       .then((_: any) => console.log(`batch ${i} of genres saved`))
-      .catch((error: any) => console.log(error, batch));
+      .catch((error: any) => console.log(error.response.data, batch));
   });
 }
 
-async function getLikedTracksByBatches(user: User): Promise<Track[]> {
-  const likedTracksLimit = 50;
-  const total: number = await getTotalLikedTracks(user);
-  let tracks: Track[] = [];
-  for (let j = 0; j <= Math.floor(total / likedTracksLimit) + 1; j++) {
-    const offset = j * likedTracksLimit;
-    const url = 'https://api.spotify.com/v1/me/tracks';
-    const queryParam = `?limit=${likedTracksLimit}&offset=${offset}`;
-    const formatedTracks = await getLikedTracks(user, url, queryParam);
+/// TODO: replace trackIds with a getTotalTrack function
+async function getSpotifyObjectsByBatches(
+  user: User,
+  objectType: 'likedTracks' | 'playlists' | 'audioFeatures' | 'artists',
+  ids?: string[]
+): Promise<any> {
+  // Playlist[] | AudioFeatures[] | Track[]
+  let limit: number = 1;
+  let total: number = 1;
+  let url: string = '';
+  let queryParam: string = '';
+  let promisedResult: Promise<any[]>[] = [];
+  let result: any[] = [];
 
-    tracks = tracks.concat(formatedTracks);
+  if (objectType === 'likedTracks') {
+    limit = 50;
+    total = await getTotalLikedTracks(user);
+    url = 'https://api.spotify.com/v1/me/tracks';
+  } else if (objectType === 'playlists') {
+    limit = 50;
+    total = await getTotalPlaylists(user);
+    url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+  } else if (objectType === 'audioFeatures') {
+    limit = 100;
+    if (ids) total = ids.length;
+    url = 'https://api.spotify.com/v1/audio-features/';
+  } else if (objectType === 'artists') {
+    limit = 50;
+    if (ids) total = ids.length;
+    url = 'https://api.spotify.com/v1/artists';
   }
-  return tracks;
+
+  for (let i = 0; i <= Math.floor(total / limit); i++) {
+    const offset = i * limit;
+    ids
+      ? (queryParam = extractIdsAsQueryParam(limit, i, ids))
+      : (queryParam = `?limit=${limit}&offset=${offset}`);
+
+    const objectBatch = getPromisedObjects(user, url, queryParam);
+
+    promisedResult = promisedResult.concat(objectBatch);
+  }
+  const arrayResult = await Promise.all(promisedResult);
+  arrayResult.forEach(
+    (arr) => (result = result.concat(formatObjects(arr, objectType)))
+  );
+  console.log('results for', objectType, 'are: ', result.length);
+  return result;
 }
 
-async function getActiveUserPlaylistsByBatches(
-  user: User
-): Promise<Playlist[]> {
-  const playlistLimit = 50;
-  const total = await getTotalPlaylists(user);
-
-  let playlists: Playlist[] = [];
-  for (let j = 0; j <= Math.floor(total / playlistLimit) + 1; j++) {
-    const offset = j * playlistLimit;
-    const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
-    const queryParam = `?limit=${playlistLimit}&offset=${offset}`;
-
-    const lists = await getPlaylists(user, url, queryParam);
-
-    playlists = playlists.concat(lists);
+function extractIdsAsQueryParam(
+  limit: number,
+  index: number,
+  ids: string[]
+): string {
+  const bactchIds = ids.slice(limit * index, limit * (index + 1));
+  let queryParam: string = '?ids=';
+  // add all the trackIds
+  for (const [i, id] of bactchIds.entries()) {
+    // remove empty ids
+    if (id !== '') queryParam += id;
+    // add a coma except for the last one
+    if (i < bactchIds.length - 1) queryParam += ',';
   }
-  return playlists;
+  return queryParam;
+}
+
+function flatten(arr: any) {
+  return arr.reduce((flat: any, next: any) => flat.concat(next), []);
 }
 
 async function getPlaylistsTracksByBatches(
   user: User,
   playlists: Playlist[]
-): Promise<Partial<FullTrack>[]> {
+): Promise<Track[]> {
   const playlistTracksLimit = 100;
-  let totalPlaylistTracks: Partial<FullTrack>[] = [];
+  let totalPlaylistTracks: Track[] = [];
   // get the tracks from all playlists
-  // TODO: PARALLELIZE THIS CALLS
   for (let m = 0; m < playlists.length; m++) {
-    let playlistTracks: Partial<FullTrack>[] = [];
+    let promisedPlaylistTracks: Promise<Track[]>[] = [];
     // get all the playlist tracks by batches
     for (
       let l = 0;
-      l <= Math.floor(playlists[m].tracks!.total / playlistTracksLimit) + 1;
+      // l < 1;
+      l <= Math.floor(playlists[m].tracks!.total / playlistTracksLimit);
       l++
     ) {
       const offset = l * playlistTracksLimit;
       const url = playlists[m].tracks!.href;
       const queryParam = `?limit=${playlistTracksLimit}&offset=${offset}`;
-      const formatedTracks = await getPlaylistTracks(user, url, queryParam);
-
-      playlistTracks = playlistTracks.concat(formatedTracks);
+      const formatedTracks = getPlaylistTracks(user, url, queryParam);
+      promisedPlaylistTracks = promisedPlaylistTracks.concat(formatedTracks);
     }
+    const workingPlaylistTracks = await Promise.all(promisedPlaylistTracks);
+
+    const playlistTracks: Track[] = flatten(workingPlaylistTracks);
     let trackIds = playlistTracks.map((track) => track.id!);
     playlists[m].trackIds = trackIds;
     totalPlaylistTracks = totalPlaylistTracks.concat(playlistTracks);
@@ -299,54 +358,24 @@ async function getPlaylistsTracksByBatches(
   return totalPlaylistTracks;
 }
 
-async function getAudioFeaturesByBatches(
-  user: User,
-  trackIds: string[]
-): Promise<AudioFeatures[]> {
-  let audioFeatures: AudioFeatures[] = [];
-  const audioFeaturesLimit = 100;
-
-  for (let i = 0; i <= Math.floor(trackIds.length / audioFeaturesLimit); i++) {
-    const bactchTrackIds = trackIds.slice(
-      audioFeaturesLimit * i,
-      audioFeaturesLimit * (i + 1)
-    );
-
-    const formatedFeatures = await getAudioFeatures(user, bactchTrackIds);
-    audioFeatures = audioFeatures.concat(formatedFeatures);
-  }
-
-  return audioFeatures;
-}
-
 // Get all the artists by batches to extract genres
 async function getGenresByBatches(
   user: User,
   artistIds: string[]
 ): Promise<string[][]> {
-  const artistLimit = 50;
-  let totalGenres: string[][] = [];
-  for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
-    const bactchArtistIds = artistIds.slice(
-      artistLimit * i,
-      artistLimit * (i + 1)
-    );
-    const artists = await getArtists(user, bactchArtistIds);
-    let genres: string[][];
-    if (artists) {
-      genres = artists.map((artist) => (artist ? artist.genres! : []));
+  const artists: Artist[] = await getSpotifyObjectsByBatches(
+    user,
+    'artists',
+    artistIds
+  );
+  const genres: string[][] = artists.map((artist) =>
+    artist ? artist.genres! : []
+  );
 
-      // handle errors by returning empty genres
-    } else {
-      genres = Array.from(Array(bactchArtistIds.length), () => []);
-    }
-
-    totalGenres = totalGenres.concat(genres);
-  }
-  return totalGenres;
+  return genres;
 }
 
-async function firestoreWriteBatches(
+async function firestoreWrite(
   user: User,
   collection: any,
   objects: any[],
@@ -375,47 +404,6 @@ async function firestoreWriteBatches(
       } milliseconds`
     );
   });
-
-  // tracks write twice, including userId
-  /*   type === 'tracks' ? (firebaseWriteLimit = 250) : (firebaseWriteLimit = 500);
-    const userId =  authQuery.getActiveId();
-    for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
-      const bactchObject = objects.slice(
-        firebaseWriteLimit * i,
-        firebaseWriteLimit * (i + 1)
-      );
-      const batch =   admin.firestore().batch();
-
-      for (const object of bactchObject) {
-        if (object.id) {
-          const ref = collection.doc(object.id);
-          // if it's tracks, add also userId
-          type === 'tracks'
-            ? batch.set(
-                ref,
-                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
-                { merge: true }
-              )
-            : batch.set(ref, object, { merge: true });
-        } else {
-          console.log('cant save object', object);
-        }
-      }
-
-      batch
-        .commit()
-        .then((_) => {
-          console.log(`batch of ${type} ${i} saved`);
-          const endTime = performance.now();
-
-          console.log(
-            `Call to firestoreWriteBatches ${type} took ${
-              endTime - startTime
-            } milliseconds`
-          );
-        })
-        .catch((error) => console.log(error));
-    } */
 }
 
 async function getHeaders(user: User) {
@@ -426,24 +414,6 @@ async function getHeaders(user: User) {
     'Content-Type': 'application/json',
   };
   return headers;
-}
-
-async function getLikedTracks(
-  user: User,
-  url: string,
-  queryParam: string
-): Promise<Track[]> {
-  const t = await getPromisedObjects(user, url, queryParam);
-  const tracks: Track[] = [];
-  t.data.items.forEach((item: SpotifySavedTrack) => {
-    tracks.push(
-      createTrack({
-        ...item.track,
-        added_at: item.added_at,
-      })
-    );
-  });
-  return tracks;
 }
 
 async function getTotalLikedTracks(user: User): Promise<number> {
@@ -473,13 +443,35 @@ async function getPlaylistTracks(
   return tracks;
 }
 
-async function getPlaylists(
-  user: User,
-  url: string,
-  queryParam: string
-): Promise<Playlist[]> {
-  const playlists = await getPromisedObjects(user, url, queryParam);
-  return playlists.data.items;
+function formatObjects(
+  object: any,
+  objectType: 'likedTracks' | 'playlists' | 'audioFeatures' | 'artists'
+): any[] {
+  let formatedObjects: any[] = [];
+
+  if (objectType === 'playlists') formatedObjects = object.data.items;
+
+  if (objectType === 'audioFeatures')
+    formatedObjects = object.data.audio_features.map(
+      (feature: SpotifyAudioFeatures) => {
+        if (feature === null) return;
+        return createAudioFeatures(feature);
+      }
+    );
+
+  if (objectType === 'likedTracks')
+    object.data.items.forEach((item: SpotifySavedTrack) => {
+      formatedObjects.push(
+        createTrack({
+          ...item.track,
+          added_at: item.added_at,
+        })
+      );
+    });
+
+  if (objectType === 'artists') formatedObjects = object.data.artists;
+
+  return formatedObjects;
 }
 
 async function getTotalPlaylists(user: User): Promise<number> {
@@ -491,51 +483,30 @@ async function getTotalPlaylists(user: User): Promise<number> {
   return playlists.data.total;
 }
 
-async function getAudioFeatures(
-  user: User,
-  trackIds: string[]
-): Promise<AudioFeatures[]> {
-  const url = 'https://api.spotify.com/v1/audio-features/';
-  let queryParam: string = '?ids=';
-  // add all the trackIds
-  for (const trackId of trackIds) {
-    queryParam = queryParam + trackId + ',';
-  }
-  // remove last comma
-  queryParam = queryParam.substring(0, queryParam.length - 1);
-
-  const features = await getPromisedObjects(user, url, queryParam);
-  const audioFeatures = features.data.audio_features.map(
-    (feature: SpotifyAudioFeatures) => {
-      if (feature === null) return;
-      return createAudioFeatures(feature);
-    }
-  );
-
-  return audioFeatures;
-}
-
-async function getArtists(user: User, artistIds: string[]): Promise<Artist[]> {
-  const url = 'https://api.spotify.com/v1/artists';
-  let queryParam: string = '?ids=';
-  for (const artistId of artistIds) {
-    // handle empty artist
-    if (artistId !== '') queryParam = queryParam + artistId + ',';
-  }
-  queryParam = queryParam.substring(0, queryParam.length - 1);
-
-  const a = await getPromisedObjects(user, url, queryParam);
-  const artists = a.data.artists;
-  return artists;
-}
-
 async function getPromisedObjects(
   user: User,
   url: string,
-  queryParam: string
+  queryParam: string,
+  attempt?: number
 ): Promise<any> {
   const headers = await getHeaders(user);
-  return await axios.get(url + queryParam, {
-    headers,
-  });
+  return await axios
+    .get(url + queryParam, {
+      headers,
+    })
+    .catch(async (error: any) => {
+      if (error.response.status === 429) {
+        if (!!!attempt || attempt! < 3) {
+          attempt ? attempt++ : (attempt = 1);
+          const retryAfter = (error.response.headers['retry-after'] + 1) * 1000;
+          console.log('retry after: ', retryAfter, 'attempt: ', attempt);
+
+          const delay = (ms: number) =>
+            new Promise((res) => setTimeout(res, ms));
+
+          await delay(retryAfter);
+          return getPromisedObjects(user, url, queryParam, attempt);
+        }
+      }
+    });
 }
