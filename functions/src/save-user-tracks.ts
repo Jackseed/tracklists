@@ -9,7 +9,6 @@ import {
   createTrack,
   SpotifySavedTrack,
   Track,
-  AudioFeatures,
 } from './data';
 const admin = require('firebase-admin');
 const axios = require('axios').default;
@@ -21,7 +20,7 @@ export async function saveUserTracks(data: any) {
 
   // get active user's playlists by batches
   const startTimeGetPlaylist = performance.now();
-  const playlists: Playlist[] = await getSpotifyObjectsByBatches(
+  let playlists: Playlist[] = await getSpotifyObjectsByBatches(
     user,
     'playlists'
   );
@@ -32,7 +31,11 @@ export async function saveUserTracks(data: any) {
     } milliseconds`
   );
   console.log('playlist amount: ', playlists.length);
-  const fullTracks = await getUserPlaylistFullTracks(user, playlists);
+  const trackCall = await getUserPlaylistFullTracks(user, playlists);
+  const fullTracks = trackCall.tracks;
+  // add liked tracks as a playlist
+  playlists = playlists.concat(trackCall.likedTrackPlaylist);
+
   const trackIds: string[] = fullTracks.map((track) => track.id!);
 
   // write playlists by batches
@@ -56,31 +59,53 @@ export async function saveUserTracks(data: any) {
     extractGenresFromTrackToPlaylist(playlist, fullTracks)
   );
 
-  // save the liked tracks as a playlist
-  saveUserLikedTracks(user).then((_) => {
-    const endTime = performance.now();
+  const endTime = performance.now();
 
-    console.log(
-      `Call to savePlaylist took ${endTime - startTime} milliseconds`
-    );
-  });
+  console.log(`Call to savePlaylist took ${endTime - startTime} milliseconds`);
 }
 
 async function getUserPlaylistFullTracks(
   user: User,
   playlists: Playlist[]
-): Promise<Partial<FullTrack>[]> {
+): Promise<{
+  tracks: Partial<FullTrack>[];
+  likedTrackPlaylist: Playlist;
+}> {
+  // get liked tracks by batches
+  const startTimeGetLikedTracks = performance.now();
+  const likedTracks: Track[] = (await getSpotifyObjectsByBatches(
+    user,
+    'likedTracks'
+  )) as Track[];
+  console.log('liked track amount: ', likedTracks.length);
+  const endTimeGetLikedTracks = performance.now();
+  console.log(
+    `Call to GetLikedTracks took ${
+      endTimeGetLikedTracks - startTimeGetLikedTracks
+    } milliseconds`
+  );
+  const likedTrackIds: string[] = likedTracks.map((track) => track.id!);
+  // create liked tracks as a playlist
+  const likedTrackPlaylist: Playlist = {
+    id: `${user.id}LikedTracks`,
+    name: `Liked tracks`,
+    trackIds: likedTrackIds,
+    type: 'likedTracks',
+  };
+
   // extract the tracks from the playlists
   const startTimeGetTracks = performance.now();
-
-  const tracks = await getPlaylistsTracksByBatches(user, playlists);
-  console.log('track amount: ', tracks.length);
+  const playlistTracks = await getPlaylistsTracksByBatches(user, playlists);
+  console.log('playlist track amount: ', playlistTracks.length);
   const endTimeGetTracks = performance.now();
   console.log(
     `Call to GetTracks took ${
       endTimeGetTracks - startTimeGetTracks
     } milliseconds`
   );
+  // add playlist tracks to liked tracks
+  const tracks = likedTracks.concat(playlistTracks);
+
   // Get audio features
   const trackIds: string[] = tracks.map((track) => track.id!);
 
@@ -109,7 +134,10 @@ async function getUserPlaylistFullTracks(
 
   console.log('playlist tracks: ', fullTracks.length);
 
-  return fullTracks;
+  return {
+    tracks: fullTracks,
+    likedTrackPlaylist,
+  };
 }
 
 async function getGenreTracks(
@@ -143,67 +171,6 @@ async function getGenreTracks(
   }
 
   return genres;
-}
-
-async function saveUserLikedTracks(user: User) {
-  // TODO: refactor code with a getFullTracks function
-  // get liked tracks by batches
-  const tracks: Track[] = (await getSpotifyObjectsByBatches(
-    user,
-    'likedTracks'
-  )) as Track[];
-
-  const trackIds: string[] = tracks.map((track) => track.id!);
-  // Get audio features by batches
-  const audioFeatures = (await getSpotifyObjectsByBatches(
-    user,
-    'audioFeatures',
-    trackIds
-  )) as AudioFeatures[];
-  // Get genres
-  const genres = await getGenreTracks(user, tracks);
-
-  // concat all items into one track
-  const fullTracks: Partial<FullTrack>[] = tracks.map((track, i) => ({
-    ...track,
-    ...audioFeatures[i],
-    genres: genres[i],
-  }));
-
-  console.log('liked tracks: ', fullTracks.length);
-
-  // write tracks by batches
-  const trackCollection = admin.firestore().collection('tracks');
-  await firestoreWrite(user, trackCollection, fullTracks, 'tracks');
-
-  // create liked tracks as a playlist
-  const playlist: Playlist = {
-    id: `${user.id}LikedTracks`,
-    name: `Liked tracks`,
-    trackIds,
-    type: 'likedTracks',
-  };
-
-  // write the playlist
-  const playlistCollection = admin.firestore().collection('playlists');
-  await playlistCollection
-    .doc(playlist.id)
-    .set(playlist, { merge: true })
-    .then((_: any) => console.log('liked tracks saved as a playlist'))
-    .catch((error: any) => console.log(error.response.data));
-
-  // add the liked tracks playlist & the trackIds in the user doc
-  const userRef = admin.firestore().collection('users').doc(user.id);
-  userRef
-    .update({
-      playlistIds: admin.firestore.FieldValue.arrayUnion(playlist.id),
-      trackIds: admin.firestore.FieldValue.arrayUnion(...trackIds),
-    })
-    .then((_: any) => console.log('liked tracks playlist added on user'))
-    .catch((error: any) => console.log(error.response.data));
-
-  // write genres on playlist
-  extractGenresFromTrackToPlaylist(playlist, fullTracks);
 }
 
 function extractGenresFromTrackToPlaylist(
@@ -255,7 +222,6 @@ function extractGenresFromTrackToPlaylist(
   });
 }
 
-/// TODO: replace trackIds with a getTotalTrack function
 async function getSpotifyObjectsByBatches(
   user: User,
   objectType: 'likedTracks' | 'playlists' | 'audioFeatures' | 'artists',
