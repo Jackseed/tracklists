@@ -3,9 +3,9 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
-import { TrackQuery, TrackService } from '../tracks/+state';
+import { Track, TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
-import { Playlist } from 'src/app/playlists/+state';
+import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -14,6 +14,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-homepage',
@@ -32,6 +33,7 @@ export class HomepageComponent implements OnInit {
   constructor(
     private authQuery: AuthQuery,
     private authService: AuthService,
+    private playlistQuery: PlaylistQuery,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
@@ -42,7 +44,8 @@ export class HomepageComponent implements OnInit {
     private _snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private fns: AngularFireFunctions
+    private fns: AngularFireFunctions,
+    private afs: AngularFirestore
   ) {}
 
   async ngOnInit() {
@@ -93,6 +96,9 @@ export class HomepageComponent implements OnInit {
     this.playingTrack$ = this.playerQuery.selectActive();
     // update spinner to false to disable loading page if page is reloaded
     this.trackService.updateSpinner(false);
+
+    this.afs.collection('playlists').valueChanges().subscribe(console.log);
+    this.afs.collection('tracks').valueChanges().subscribe(console.log);
   }
 
   public loginSpotify() {
@@ -108,7 +114,7 @@ export class HomepageComponent implements OnInit {
       user,
     })
       .pipe(first())
-      .subscribe();
+      .subscribe(console.log);
   }
 
   public playAll() {
@@ -167,7 +173,11 @@ export class HomepageComponent implements OnInit {
       user,
     })
       .pipe(first())
-      .subscribe();
+      .subscribe((tracks) => {
+        const trackIds = tracks.map((track) => track.id);
+        const uniqIds = [...new Set(trackIds)];
+        console.log(uniqIds);
+      });
     /*
     this.spotifyService.savePlaylists(); */
     this.trackService.updateSpinner(true);

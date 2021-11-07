@@ -35,20 +35,43 @@ export async function saveUserTracks(data: any) {
   const fullTracks = trackCall.tracks;
   // add liked tracks as a playlist
   playlists = playlists.concat(trackCall.likedTrackPlaylist);
-  /*
-  const trackIds: string[] = fullTracks.map((track) => track.id!);
 
   // write playlists by batches
-  const playlistCollection = admin.firestore().collection('playlists');
-  await firestoreWrite(user, playlistCollection, playlists, 'playlists');
+  /*   const playlistCollection = admin.firestore().collection('playlists');
+  await firestoreWrite(user, playlistCollection, playlists, 'playlists'); */
 
-  // write tracks by batches
-  const trackCollection = admin.firestore().collection('tracks');
-  await firestoreWrite(user, trackCollection, fullTracks, 'tracks');
+  // Writes playlists to Firestore.
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    url: 'http://localhost:5001/listy-bcc65/us-central1/firestoreWrite',
+    data: {
+      user,
+      collection: 'playlists',
+      objects: playlists,
+    },
+    method: 'POST',
+  }).catch((error: any) => console.log(error.response.data));
 
+  // Writes tracks to Firestore.
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    url: 'http://localhost:5001/listy-bcc65/us-central1/firestoreWrite',
+    data: {
+      user,
+      collection: 'tracks',
+      objects: fullTracks,
+    },
+    method: 'POST',
+  }).catch((error: any) => console.log(error.response.data));
+  /*
   // write playlist ids & track ids in user doc
   const userRef = admin.firestore().collection('users').doc(user.id);
   const playlistIds = playlists.map((playlist) => playlist.id);
+  const trackIds: string[] = fullTracks.map((track) => track.id!);
   await userRef
     .update({ playlistIds, trackIds })
     .then((_: any) => console.log('playlistIds saved on user'))
@@ -155,8 +178,8 @@ async function getGenreTracks(
   user: User,
   tracks: Track[]
 ): Promise<string[][]> {
-  // adds empty genres when artist is undefined
   const emptyArtistPosition: number[] = [];
+  // add empty string when no artist
   const artistIds: string[] = tracks.map((track, i) => {
     if (track.artists![0].id) {
       return track.artists![0].id;
@@ -305,27 +328,9 @@ async function getSpotifyObjectsByBatches(
     );
   }
 
-
-  console.log('results for', objectType, 'are: ', result.length);
+  // console.log('results for', objectType, 'are: ', result.length);
   return result;
 }
-
-// cut promises into batches of 10 call per second to respect Spotify API rate limit
-/* async function promiseAllInBatches(items: any[]): Promise<any[][]> {
-  const batchSize = 20;
-  let position = 0;
-  let results: any[] = [];
-  while (position < items.length) {
-    const startTime = performance.now();
-    const itemsForBatch = items.slice(position, position + batchSize);
-    results = [...results, ...(await Promise.all(itemsForBatch))];
-    position += batchSize;
-    await delay(1000);
-    const endTime = performance.now();
-    console.log(`Call to blabla took ${endTime - startTime} milliseconds`);
-  }
-  return results;
-} */
 
 function extractIdsAsQueryParam(
   limit: number,
@@ -343,10 +348,6 @@ function extractIdsAsQueryParam(
   }
   return queryParam;
 }
-
-/* function flatten(arr: any) {
-  return arr.reduce((flat: any, next: any) => flat.concat(next), []);
-} */
 
 async function getPlaylistsTracks(
   user: User,
@@ -367,40 +368,6 @@ async function getPlaylistsTracks(
   }
   return totalPlaylistTracks;
 }
-/*
-async function firestoreWrite(
-  user: User,
-  collection: any,
-  objects: any[],
-  type: string
-) {
-  // let firebaseWriteLimit: number;
-  console.log(objects.length);
-  const startTime = performance.now();
-  await Promise.all(
-    objects.map((object: any) => {
-      type === 'tracks'
-        ? collection.doc(object.id).set(
-            {
-              ...object,
-              userIds: admin.firestore.FieldValue.arrayUnion(user.id),
-            },
-            { merge: true }
-          )
-        : collection.doc(object.id).set(object, { merge: true });
-    })
-  )
-    .catch((error: any) => console.log(error.response))
-    .then((_) => {
-      const endTime = performance.now();
-
-      console.log(
-        `Call to firestoreWriteBatches ${type} took ${
-          endTime - startTime
-        } milliseconds`
-      );
-    });
-} */
 
 async function getHeaders(user: User) {
   // Builds http header.
@@ -496,7 +463,12 @@ async function getPromisedObjects(
         if (!!!attempt || attempt! < 3) {
           attempt ? attempt++ : (attempt = 1);
           const retryAfter = (error.response.headers['retry-after'] + 1) * 1000;
-          console.log('retry after: ', retryAfter, 'attempt: ', attempt);
+          console.log(
+            'API call blocked because of rate limit. Call will be retried in',
+            retryAfter / 1000,
+            's, attempt n°',
+            attempt
+          );
 
           await delay(retryAfter);
           return getPromisedObjects(user, url, queryParam, attempt);
