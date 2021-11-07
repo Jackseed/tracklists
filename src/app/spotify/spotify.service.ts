@@ -23,12 +23,7 @@ import {
   Track,
   Artist,
   createAudioFeatures,
-  createTrack,
   SpotifyAudioFeatures,
-  SpotifyPlaylistTrack,
-  SpotifySavedTrack,
-  TrackService,
-  TrackStore,
   TrackQuery,
   SpotifyTrack,
   TrackState,
@@ -56,9 +51,7 @@ export class SpotifyService {
     private authService: AuthService,
     private playerQuery: PlayerQuery,
     private playerService: PlayerService,
-    private trackStore: TrackStore,
     private trackQuery: TrackQuery,
-    private trackService: TrackService,
     private http: HttpClient
   ) {}
 
@@ -133,206 +126,9 @@ export class SpotifyService {
     });
   }
 
-  // Get all the artists by batches to extract genres
-  private async getGenresByBatches(artistIds: string[]): Promise<string[][]> {
-    const artistLimit = 50;
-    let totalGenres: string[][] = [];
-    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
-      const bactchArtistIds = artistIds.slice(
-        artistLimit * i,
-        artistLimit * (i + 1)
-      );
-      const artists = await this.getArtists(bactchArtistIds);
-      let genres: string[][];
-      if (artists) {
-        genres = artists.map((artist) => (artist ? artist.genres : []));
-
-        // handle errors by returning empty genres
-      } else {
-        genres = Array.from(Array(bactchArtistIds.length), () => []);
-      }
-
-      totalGenres = totalGenres.concat(genres);
-    }
-    return totalGenres;
-  }
-
-  private async firestoreWriteBatches(
-    collection: firebase.firestore.CollectionReference,
-    objects,
-    type: string
-  ) {
-    // let firebaseWriteLimit: number;
-    const userId = this.authQuery.getActiveId();
-    const startTime = performance.now();
-    await Promise.all(
-      objects.map((object) => {
-        type === 'tracks'
-          ? collection
-              .doc(object.id)
-              .set(
-                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
-                { merge: true }
-              )
-          : collection.doc(object.id).set(object, { merge: true });
-      })
-    ).then((_) => {
-      const endTime = performance.now();
-
-      console.log(
-        `Call to firestoreWriteBatches ${type} took ${
-          endTime - startTime
-        } milliseconds`
-      );
-    });
-  }
-
-  private async getHeaders() {
-    const token$ = this.authQuery.token$;
-    let headers: HttpHeaders;
-    token$
-      .pipe(
-        tap(
-          (token) =>
-            (headers = new HttpHeaders().set(
-              'Authorization',
-              'Bearer ' + token
-            ))
-        ),
-        first()
-      )
-      .subscribe();
-    return headers;
-  }
-
-  public async getLikedTracks(
-    url: string,
-    queryParam: string
-  ): Promise<Track[]> {
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((tracks: { items: SpotifySavedTrack[] }) =>
-          tracks.items.map((item) =>
-            // TODO: remove added_at from track
-            createTrack({
-              added_at: item.added_at,
-              ...item.track,
-            })
-          )
-        ),
-        first()
-      )
-      .toPromise();
-  }
-
-  public async getTotalLikedTracks(): Promise<number> {
-    const url = 'https://api.spotify.com/v1/me/tracks';
-    const queryParam = '?limit=1';
-
-    const tracks = await (await this.getPromisedObjects(url, queryParam))
-      .pipe(first())
-      .toPromise();
-    // @ts-ignore: Unreachable code error
-    return tracks.total;
-  }
-
-  public async getPlaylistTracks(
-    url: string,
-    queryParam: string
-  ): Promise<Track[]> {
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((playlistTracks: { items: SpotifyPlaylistTrack[] }) =>
-          playlistTracks.items.map((item) =>
-            createTrack({
-              added_at: item.added_at,
-              added_by: item.added_by,
-              ...item.track,
-            })
-          )
-        ),
-        first()
-      )
-      .toPromise();
-  }
-
-  public async getPlaylists(
-    url: string,
-    queryParam: string
-  ): Promise<Playlist[]> {
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((paging: { items: Playlist[] }) => paging.items),
-        first()
-      )
-      .toPromise();
-  }
-
-  public async getTotalPlaylists(): Promise<number> {
-    const user = this.authQuery.getActive();
-    const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
-    const queryParam = '?limit=1';
-
-    const playlists = await (await this.getPromisedObjects(url, queryParam))
-      .pipe(first())
-      .toPromise();
-    // @ts-ignore: Unreachable code error
-    return playlists.total;
-  }
-
-  public async getAudioFeatures(trackIds: string[]): Promise<Track[]> {
-    const url = 'https://api.spotify.com/v1/audio-features/';
-    let queryParam: string = '?ids=';
-    // add all the trackIds
-    for (const trackId of trackIds) {
-      queryParam = queryParam + trackId + ',';
-    }
-    // remove last comma
-    queryParam = queryParam.substring(0, queryParam.length - 1);
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>
-          audioFeat.audio_features.map((feature) => {
-            if (feature === null) {
-              return;
-            }
-            return createAudioFeatures(feature);
-          })
-        ),
-        first()
-      )
-      .toPromise();
-  }
-
-  public async getArtists(artistIds: string[]): Promise<Artist[]> {
-    const url = 'https://api.spotify.com/v1/artists';
-    let queryParam: string = '?ids=';
-    for (const artistId of artistIds) {
-      // handle empty artist
-      if (artistId !== '') queryParam = queryParam + artistId + ',';
-    }
-    queryParam = queryParam.substring(0, queryParam.length - 1);
-
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((artists: { artists: Artist[] }) => {
-          return artists.artists;
-        }),
-        first()
-      )
-      .toPromise();
-  }
-
+  //--------------------------------
+  //        RECOMMENDATIONS       //
+  //--------------------------------
   public async getPromisedRecommendations(
     artistIds: string[],
     genreIds: string[],
@@ -417,32 +213,75 @@ export class SpotifyService {
     return recommended;
   }
 
-  public async getPromisedObjects(url, queryParam) {
-    const headers = await this.getHeaders();
+  // Get all the artists by batches to extract genres
+  private async getGenresByBatches(artistIds: string[]): Promise<string[][]> {
+    const artistLimit = 50;
+    let totalGenres: string[][] = [];
+    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
+      const bactchArtistIds = artistIds.slice(
+        artistLimit * i,
+        artistLimit * (i + 1)
+      );
+      const artists = await this.getArtists(bactchArtistIds);
+      let genres: string[][];
+      if (artists) {
+        genres = artists.map((artist) => (artist ? artist.genres : []));
 
-    return this.http.get(`${url + queryParam}`, { headers }).pipe(
-      retryWhen((error) => {
-        return error.pipe(
-          tap((error) => console.log('error: ', error)),
-          map((error) => {
-            if (error.status === 400) {
-              throw error;
-            } else {
-              return error;
+        // handle errors by returning empty genres
+      } else {
+        genres = Array.from(Array(bactchArtistIds.length), () => []);
+      }
+
+      totalGenres = totalGenres.concat(genres);
+    }
+    return totalGenres;
+  }
+
+  public async getAudioFeatures(trackIds: string[]): Promise<Track[]> {
+    const url = 'https://api.spotify.com/v1/audio-features/';
+    let queryParam: string = '?ids=';
+    // add all the trackIds
+    for (const trackId of trackIds) {
+      queryParam = queryParam + trackId + ',';
+    }
+    // remove last comma
+    queryParam = queryParam.substring(0, queryParam.length - 1);
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
+      .pipe(
+        map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>
+          audioFeat.audio_features.map((feature) => {
+            if (feature === null) {
+              return;
             }
-          }),
-          filter((error) => error.status === 429),
-          delayWhen(() => timer(5000)),
-          tap(() => console.log('retrying...')),
-          take(3)
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 400) {
-          return of([{}]);
-        }
-      })
-    );
+            return createAudioFeatures(feature);
+          })
+        ),
+        first()
+      )
+      .toPromise();
+  }
+
+  public async getArtists(artistIds: string[]): Promise<Artist[]> {
+    const url = 'https://api.spotify.com/v1/artists';
+    let queryParam: string = '?ids=';
+    for (const artistId of artistIds) {
+      // handle empty artist
+      if (artistId !== '') queryParam = queryParam + artistId + ',';
+    }
+    queryParam = queryParam.substring(0, queryParam.length - 1);
+
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
+      .pipe(
+        map((artists: { artists: Artist[] }) => {
+          return artists.artists;
+        }),
+        first()
+      )
+      .toPromise();
   }
 
   //--------------------------------
@@ -524,17 +363,6 @@ export class SpotifyService {
     return this.putRequests(baseUrl, queryParam, null);
   }
 
-  private async putRequests(baseUrl: string, queryParam: string, body) {
-    const headers = await this.getHeaders();
-
-    return this.http
-      .put(`${baseUrl + queryParam}`, body, {
-        headers,
-      })
-      .pipe(first())
-      .toPromise();
-  }
-
   public async removeFromLikedTracks(trackId: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/tracks';
     const queryParam = `?ids=${trackId}`;
@@ -542,21 +370,23 @@ export class SpotifyService {
     return this.deleteRequests(baseUrl, queryParam, null);
   }
 
-  private async deleteRequests(baseUrl: string, queryParam: string, body) {
-    const headers = await this.getHeaders();
-
-    return this.http
-      .delete(`${baseUrl + queryParam}`, {
-        headers,
-        observe: body,
-      })
-      .pipe(first())
-      .toPromise();
-  }
-
   //--------------------------------
   //           PLAYLISTS          //
   //--------------------------------
+
+  public async getPlaylists(
+    url: string,
+    queryParam: string
+  ): Promise<Playlist[]> {
+    return await (
+      await this.getPromisedObjects(url, queryParam)
+    )
+      .pipe(
+        map((paging: { items: Playlist[] }) => paging.items),
+        first()
+      )
+      .toPromise();
+  }
 
   public async createPlaylist(name: string) {
     const user = this.authQuery.getActive();
@@ -594,6 +424,109 @@ export class SpotifyService {
     return this.http
       .post(`${baseUrl + queryParam}`, body, {
         headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
+
+  //--------------------------------
+  //          HTTP CALLS          //
+  //--------------------------------
+
+  private async firestoreWriteBatches(
+    collection: firebase.firestore.CollectionReference,
+    objects,
+    type: string
+  ) {
+    // let firebaseWriteLimit: number;
+    const userId = this.authQuery.getActiveId();
+    const startTime = performance.now();
+    await Promise.all(
+      objects.map((object) => {
+        type === 'tracks'
+          ? collection
+              .doc(object.id)
+              .set(
+                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
+                { merge: true }
+              )
+          : collection.doc(object.id).set(object, { merge: true });
+      })
+    ).then((_) => {
+      const endTime = performance.now();
+
+      console.log(
+        `Call to firestoreWriteBatches ${type} took ${
+          endTime - startTime
+        } milliseconds`
+      );
+    });
+  }
+
+  private async getHeaders() {
+    const token$ = this.authQuery.token$;
+    let headers: HttpHeaders;
+    token$
+      .pipe(
+        tap(
+          (token) =>
+            (headers = new HttpHeaders().set(
+              'Authorization',
+              'Bearer ' + token
+            ))
+        ),
+        first()
+      )
+      .subscribe();
+    return headers;
+  }
+
+  public async getPromisedObjects(url: string, queryParam: string) {
+    const headers = await this.getHeaders();
+
+    return this.http.get(`${url + queryParam}`, { headers }).pipe(
+      retryWhen((error) => {
+        return error.pipe(
+          tap((error) => console.log('error: ', error)),
+          map((error) => {
+            if (error.status === 400) {
+              throw error;
+            } else {
+              return error;
+            }
+          }),
+          filter((error) => error.status === 429),
+          delayWhen(() => timer(5000)),
+          tap(() => console.log('retrying...')),
+          take(3)
+        );
+      }),
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 400) {
+          return of([{}]);
+        }
+      })
+    );
+  }
+
+  private async putRequests(baseUrl: string, queryParam: string, body) {
+    const headers = await this.getHeaders();
+
+    return this.http
+      .put(`${baseUrl + queryParam}`, body, {
+        headers,
+      })
+      .pipe(first())
+      .toPromise();
+  }
+
+  private async deleteRequests(baseUrl: string, queryParam: string, body) {
+    const headers = await this.getHeaders();
+
+    return this.http
+      .delete(`${baseUrl + queryParam}`, {
+        headers,
+        observe: body,
       })
       .pipe(first())
       .toPromise();
