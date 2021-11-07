@@ -75,7 +75,7 @@ export async function saveUserTracks(data: any) {
   const uniqueTrackIds: string[] = uniqueFullTracks.map((track) => track.id!);
 
   await userRef
-    .update({ playlistIds, trackIds: uniqueTrackIds }, true)
+    .update({ playlistIds, trackIds: uniqueTrackIds })
     .then((_: any) =>
       console.log('Firestore: track & playlist ids saved on user.')
     )
@@ -101,6 +101,7 @@ export async function saveUserTracks(data: any) {
       (endTime - startTime) / 1000
     ).toFixed(2)} seconds.`
   );
+  
   return uniqueFullTracks;
 }
 

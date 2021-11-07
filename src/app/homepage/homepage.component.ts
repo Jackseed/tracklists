@@ -5,7 +5,7 @@ import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
-import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
+import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -33,7 +33,6 @@ export class HomepageComponent implements OnInit {
   constructor(
     private authQuery: AuthQuery,
     private authService: AuthService,
-    private playlistQuery: PlaylistQuery,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
@@ -76,8 +75,9 @@ export class HomepageComponent implements OnInit {
 
     this.spotifyService.initializePlayer();
 
-    // Tracks loading
+    // Shows spinner to user.
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
+    // Informs user of what's loading.
     this.loadingItem$ = this.trackQuery.selectLoadingItem();
     this.isTrackStoreEmpty$ = this.trackQuery
       .selectCount()
@@ -94,11 +94,8 @@ export class HomepageComponent implements OnInit {
 
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
-    // update spinner to false to disable loading page if page is reloaded
+    // Updates spinner to false to disable loading page if page is reloaded.
     this.trackService.updateSpinner(false);
-
-    this.afs.collection('playlists').valueChanges().subscribe(console.log);
-    this.afs.collection('tracks').valueChanges().subscribe(console.log);
   }
 
   public loginSpotify() {
@@ -106,15 +103,17 @@ export class HomepageComponent implements OnInit {
   }
 
   public loadPlaylist() {
+    this.trackService.updateSpinner(true);
     const user = this.authQuery.getActive();
-    console.log('here', user);
-
     const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
     const response = saveFunction({
       user,
     })
       .pipe(first())
-      .subscribe(console.log);
+      .subscribe((tracks) => {
+        this.trackService.setStore(tracks);
+        this.trackService.updateSpinner(false);
+      });
   }
 
   public playAll() {
@@ -173,9 +172,8 @@ export class HomepageComponent implements OnInit {
       user,
     })
       .pipe(first())
-      .subscribe(console.log);
-    /*
-    this.spotifyService.savePlaylists(); */
+      .subscribe();
+
     this.trackService.updateSpinner(true);
     this.trackService.loadFromFirebase();
   }

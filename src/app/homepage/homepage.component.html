@@ -6,13 +6,12 @@
 >
   <div
     [fxFlex]="(playingTrack$ | async) ? 85 : 100"
-
+    *ngIf="
+      !(isTrackstoreLoading$ | async) && !(isSpinning$ | async);
+      else loadingTracks
+    "
     fxFlexFill
   >
- <!--  *ngIf="
-  !(isTrackstoreLoading$ | async) && !(isSpinning$ | async);
-  else loadingTracks
-" -->
     <div
       fxFlexFill
       *ngIf="!(isTrackStoreEmpty$ | async); else noTracks"
