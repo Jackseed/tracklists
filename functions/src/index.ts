@@ -1,7 +1,10 @@
 import functions = require('firebase-functions');
 import { saveUserTracks } from './save-user-tracks';
 import { getSpotifyToken, saveToken } from './spotify-auth';
-import { firestoreWrite } from './firestore-write';
+import {
+  extractGenresFromTrackToPlaylist,
+  firestoreWrite,
+} from './firestore-write';
 
 const admin = require('firebase-admin');
 admin.initializeApp();
@@ -19,10 +22,19 @@ exports.saveUserPlaylists = functions
   .https.onCall(saveUserTracks);
 
 //--------------------------------
-//   Saves docs to Firestore  //
+//    Saves docs to Firestore   //
 //--------------------------------
 exports.firestoreWrite = functions
   .runWith({
     timeoutSeconds: 500,
   })
   .https.onRequest(firestoreWrite);
+
+//--------------------------------------------
+// Extracts genres from tracks to playlists //
+//--------------------------------------------
+exports.extractGenresFromTrackToPlaylist = functions
+  .runWith({
+    timeoutSeconds: 500,
+  })
+  .https.onRequest(extractGenresFromTrackToPlaylist);

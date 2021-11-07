@@ -10,7 +10,7 @@ import {
   SpotifySavedTrack,
   Track,
 } from './data';
-// const admin = require('firebase-admin');
+const admin = require('firebase-admin');
 const axios = require('axios').default;
 
 // TODO: replace user with userId
@@ -33,7 +33,7 @@ export async function saveUserTracks(data: any) {
 
   // Gets user's tracks.
   const trackCall = await getUserPlaylistFullTracks(user, playlists);
-  const fullTracks = trackCall.tracks;
+  const uniqueFullTracks = trackCall.tracks;
 
   // Adds liked tracks to the playlists.
   playlists = playlists.concat(trackCall.likedTrackPlaylist);
@@ -50,7 +50,7 @@ export async function saveUserTracks(data: any) {
       objects: playlists,
     },
     method: 'POST',
-  }).catch((error: any) => console.log(error.response.data));
+  });
 
   // Writes tracks to Firestore.
   axios({
@@ -61,33 +61,35 @@ export async function saveUserTracks(data: any) {
     data: {
       user,
       collection: 'tracks',
-      objects: fullTracks,
+      objects: uniqueFullTracks,
     },
     method: 'POST',
-  }).catch((error: any) => console.log(error.response.data));
-  /*
-  // write playlist ids & track ids in user doc
+  });
+
+  // Writes playlist & track ids in user doc.
   const userRef = admin.firestore().collection('users').doc(user.id);
   const playlistIds = playlists.map((playlist) => playlist.id);
-  const trackIds: string[] = fullTracks.map((track) => track.id!);
-  await userRef
-    .update({ playlistIds, trackIds })
-    .then((_: any) => console.log('playlistIds saved on user'))
-    .catch((error: any) => console.log(error.response.data));
- */
-  // write genres on playlists
-  /*   const startTimeExtractGenresTrackToPlaylist = performance.now();
+  const uniqueTrackIds: string[] = uniqueFullTracks.map((track) => track.id!);
 
-  playlists.forEach((playlist) =>
-    extractGenresFromTrackToPlaylist(playlist, fullTracks)
-  );
-  const endTimeExtractGenresTrackToPlaylist = performance.now();
-  console.log(
-    `Call to ExtractGenresTrackToPlaylist took ${
-      endTimeExtractGenresTrackToPlaylist -
-      startTimeExtractGenresTrackToPlaylist
-    } milliseconds`
-  ); */
+  await userRef
+    .update({ playlistIds, trackIds: uniqueTrackIds }, true)
+    .then((_: any) =>
+      console.log('Firestore: track & playlist ids saved on user.')
+    )
+    .catch((error: any) => console.log(error));
+
+  // Writes genres on playlists to enable genre filtering.
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    url: 'http://localhost:5001/listy-bcc65/us-central1/extractGenresFromTrackToPlaylist',
+    data: {
+      playlists,
+      tracks: uniqueFullTracks,
+    },
+    method: 'POST',
+  });
 
   const endTime = performance.now();
 
@@ -96,7 +98,7 @@ export async function saveUserTracks(data: any) {
       (endTime - startTime) / 1000
     ).toFixed(2)} seconds.`
   );
-  return fullTracks;
+  return uniqueFullTracks;
 }
 
 async function getUserPlaylistFullTracks(
@@ -141,6 +143,7 @@ async function getUserPlaylistFullTracks(
       (endTimeGetTracks - startTimeGetTracks) / 1000
     ).toFixed(2)} seconds.`
   );
+
   // Joins liked tracks to playlists tracks.
   const tracks = likedTracks.concat(playlistTracks);
 
@@ -190,7 +193,7 @@ async function getGenreTracks(
   tracks: Track[]
 ): Promise<string[][]> {
   const emptyArtistPosition: number[] = [];
-  // add empty string when no artist
+  // Adds empty string as id when there is no artist.
   const artistIds: string[] = tracks.map((track, i) => {
     if (track.artists![0].id) {
       return track.artists![0].id;
@@ -199,7 +202,7 @@ async function getGenreTracks(
       return '';
     }
   });
-
+  // Gets artists.
   const startTimeGetGenres = performance.now();
   const artists: Artist[] = await getSpotifyObjectsByBatches(
     user,
@@ -207,10 +210,6 @@ async function getGenreTracks(
     undefined,
     artistIds
   );
-  const genres: string[][] = artists.map((artist) =>
-    artist ? artist.genres! : []
-  );
-
   const endTimeGetGenres = performance.now();
   console.log(
     `Artists & genres: get ${artists.length} artists and genres in ${Number(
@@ -218,62 +217,18 @@ async function getGenreTracks(
     ).toFixed(2)} seconds.`
   );
 
-  // add empty genres when no artist
+  // Extracts genres from artists.
+  const genres: string[][] = artists.map((artist) =>
+    artist ? artist.genres! : []
+  );
+
+  // Adds empty genres when there is no artist.
   for (const position of emptyArtistPosition) {
     genres.splice(position, 0, []);
   }
 
   return genres;
 }
-/*
-function extractGenresFromTrackToPlaylist(
-  playlist: Playlist,
-  tracks: Partial<FullTrack>[]
-) {
-  const playlistTracks: Partial<FullTrack>[] = tracks.filter((track) =>
-    playlist.trackIds!.includes(track.id!)
-  );
-  const genreCollection = admin
-    .firestore()
-    .collection('playlists')
-    .doc(playlist.id)
-    .collection('genres');
-  const firebaseWriteLimit = 497;
-  const batchArray: any[] = [];
-  batchArray.push(admin.firestore().batch());
-  let operationCounter = 0;
-  let batchIndex = 0;
-
-  // extract every genres of each track
-  playlistTracks.forEach((track) => {
-    track.genres!.forEach((genre) => {
-      const ref = genreCollection.doc(genre);
-      batchArray[batchIndex].set(
-        ref,
-        {
-          id: genre,
-          trackIds: admin.firestore.FieldValue.arrayUnion(track.id),
-        },
-        { merge: true }
-      );
-      // count each db operation to avoid limit
-      operationCounter += 2;
-
-      if (operationCounter >= firebaseWriteLimit) {
-        batchArray.push(admin.firestore().batch());
-        batchIndex++;
-        operationCounter = 0;
-      }
-    });
-  });
-  // push batch writing
-  batchArray.forEach(async (batch, i, batches) => {
-    await batch
-      .commit()
-      .then((_: any) => console.log(`batch ${i} of genres saved`))
-      .catch((error: any) => console.log(error.response.data, batch));
-  });
-} */
 
 async function getSpotifyObjectsByBatches(
   user: User,
@@ -321,7 +276,7 @@ async function getSpotifyObjectsByBatches(
     ids
       ? (queryParam = extractIdsAsQueryParam(limit, i, ids))
       : (queryParam = `?limit=${limit}&offset=${offset}`);
-    // paralelize calls only for playlistTracks to avoid Spotify api rate limit
+    // Paralelize calls only for playlistTracks to avoid Spotify api rate limit.
     if (objectType === 'playlistTracks') {
       objectBatch = getPromisedObjects(user, url, queryParam);
       promisedResult = promisedResult.concat(objectBatch);
@@ -349,11 +304,11 @@ function extractIdsAsQueryParam(
 ): string {
   const bactchIds = ids.slice(limit * index, limit * (index + 1));
   let queryParam: string = '?ids=';
-  // add all the trackIds
+  // Adds all the trackIds.
   for (const [i, id] of bactchIds.entries()) {
-    // remove empty ids
+    // Removes empty ids.
     if (id !== '') queryParam += id;
-    // add a coma except for the last one
+    // Adds a coma except for the last one.
     if (i < bactchIds.length - 1) queryParam += ',';
   }
   return queryParam;
@@ -468,6 +423,7 @@ async function getPromisedObjects(
     .get(url + queryParam, {
       headers,
     })
+    // Retries the call after a delay if it was blocked by api rate limit.
     .catch(async (error: any) => {
       if (error.response.status === 429) {
         if (!!!attempt || attempt! < 3) {

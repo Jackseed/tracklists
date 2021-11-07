@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
-import { Track, TrackQuery, TrackService } from '../tracks/+state';
+import { TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
 import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
