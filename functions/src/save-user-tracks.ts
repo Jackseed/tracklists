@@ -13,6 +13,9 @@ import {
 const admin = require('firebase-admin');
 const axios = require('axios').default;
 
+//--------------------------------
+//        MAIN FUNCTION         //
+//--------------------------------
 // TODO: replace user with userId
 export async function saveUserTracks(data: any) {
   const startTime = performance.now();
@@ -101,6 +104,9 @@ export async function saveUserTracks(data: any) {
   return uniqueFullTracks;
 }
 
+//--------------------------------
+//       GET FULL TRACKS        //
+//--------------------------------
 async function getUserPlaylistFullTracks(
   user: User,
   playlists: Playlist[]
@@ -188,6 +194,29 @@ async function getUserPlaylistFullTracks(
   };
 }
 
+//--------------------------------
+//     GET FULL TRACKS UTILS    //
+//--------------------------------
+async function getPlaylistsTracksAndAddTrackIdsToPlaylists(
+  user: User,
+  playlists: Playlist[]
+): Promise<Track[]> {
+  let totalPlaylistTracks: Track[] = [];
+  // Extracts tracks from each playlist.
+  for (let m = 0; m < playlists.length; m++) {
+    const playlistTracks: Track[] = await getSpotifyObjectsByBatches(
+      user,
+      'playlistTracks',
+      playlists[m]
+    );
+    let trackIds = playlistTracks.map((track) => track.id!);
+    // Adds trackids to the playlist.
+    playlists[m].trackIds = trackIds;
+    totalPlaylistTracks = totalPlaylistTracks.concat(playlistTracks);
+  }
+  return totalPlaylistTracks;
+}
+
 async function getGenreTracks(
   user: User,
   tracks: Track[]
@@ -229,6 +258,10 @@ async function getGenreTracks(
 
   return genres;
 }
+
+//--------------------------------
+//         GET FACTORY          //
+//--------------------------------
 
 async function getSpotifyObjectsByBatches(
   user: User,
@@ -293,8 +326,27 @@ async function getSpotifyObjectsByBatches(
     );
   }
 
-  // console.log('results for', objectType, 'are: ', result.length);
   return result;
+}
+
+//--------------------------------
+//        GET FACTORY UTILS     //
+//--------------------------------
+async function getTotalLikedTracks(user: User): Promise<number> {
+  const url = 'https://api.spotify.com/v1/me/tracks';
+  const queryParam = '?limit=1';
+
+  const tracks = await getPromisedObjects(user, url, queryParam);
+  return tracks.data.total;
+}
+
+async function getTotalPlaylists(user: User): Promise<number> {
+  const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+  const queryParam = '?limit=1';
+
+  const playlists = await getPromisedObjects(user, url, queryParam);
+
+  return playlists.data.total;
 }
 
 function extractIdsAsQueryParam(
@@ -312,44 +364,6 @@ function extractIdsAsQueryParam(
     if (i < bactchIds.length - 1) queryParam += ',';
   }
   return queryParam;
-}
-
-async function getPlaylistsTracksAndAddTrackIdsToPlaylists(
-  user: User,
-  playlists: Playlist[]
-): Promise<Track[]> {
-  let totalPlaylistTracks: Track[] = [];
-  // Extracts tracks from each playlist.
-  for (let m = 0; m < playlists.length; m++) {
-    const playlistTracks: Track[] = await getSpotifyObjectsByBatches(
-      user,
-      'playlistTracks',
-      playlists[m]
-    );
-    let trackIds = playlistTracks.map((track) => track.id!);
-    // Adds trackids to the playlist.
-    playlists[m].trackIds = trackIds;
-    totalPlaylistTracks = totalPlaylistTracks.concat(playlistTracks);
-  }
-  return totalPlaylistTracks;
-}
-
-async function getHeaders(user: User) {
-  // Builds http header.
-  const headers = {
-    Authorization: `Bearer ${user.tokens?.access}`,
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-  };
-  return headers;
-}
-
-async function getTotalLikedTracks(user: User): Promise<number> {
-  const url = 'https://api.spotify.com/v1/me/tracks';
-  const queryParam = '?limit=1';
-
-  const tracks = await getPromisedObjects(user, url, queryParam);
-  return tracks.data.total;
 }
 
 function formatObjects(
@@ -399,13 +413,18 @@ function formatObjects(
   return formatedObjects;
 }
 
-async function getTotalPlaylists(user: User): Promise<number> {
-  const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
-  const queryParam = '?limit=1';
+//--------------------------------
+//          HTTP CALLS          //
+//--------------------------------
 
-  const playlists = await getPromisedObjects(user, url, queryParam);
-
-  return playlists.data.total;
+async function getHeaders(user: User) {
+  // Builds http header.
+  const headers = {
+    Authorization: `Bearer ${user.tokens?.access}`,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  };
+  return headers;
 }
 
 function delay(ms: number) {

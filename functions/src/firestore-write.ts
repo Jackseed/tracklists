@@ -2,7 +2,7 @@ import admin = require('firebase-admin');
 import { FullTrack, Playlist, User } from './data';
 
 //--------------------------------
-//    Saves docs to Firestore   //
+//    SAVES DOC TO FIRESTORE    //
 //--------------------------------
 export async function firestoreWrite(req: any, res: any) {
   const user: User = req.body.user;
@@ -57,7 +57,7 @@ export async function firestoreWrite(req: any, res: any) {
 }
 
 //--------------------------------------------
-// Extracts genres from tracks to playlists //
+// EXTRACTS GENRES FROM TRACKS TO PLAYLISTS //
 //--------------------------------------------
 // To enable genre filtering, genres are saved on playlists.
 export async function extractGenresFromTrackToPlaylist(req: any, res: any) {

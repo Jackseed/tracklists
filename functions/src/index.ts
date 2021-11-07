@@ -9,20 +9,29 @@ import {
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+//--------------------------------
+//    GETS SPOTIFY AUTH TOKEN   //
+//--------------------------------
 exports.getSpotifyToken = functions
   .runWith({ timeoutSeconds: 500 })
   .https.onCall(getSpotifyToken);
 
+//--------------------------------
+//   SAVES SPOTIFY AUTH TOKEN   //
+//--------------------------------
 exports.saveToken = functions
   .runWith({ timeoutSeconds: 60 })
   .https.onRequest(saveToken);
 
+//--------------------------------
+//     SAVES USER PLAYLISTS     //
+//--------------------------------
 exports.saveUserPlaylists = functions
   .runWith({ timeoutSeconds: 500 })
   .https.onCall(saveUserTracks);
 
 //--------------------------------
-//    Saves docs to Firestore   //
+//    SAVES DOC TO FIRESTORE   //
 //--------------------------------
 exports.firestoreWrite = functions
   .runWith({
@@ -31,7 +40,7 @@ exports.firestoreWrite = functions
   .https.onRequest(firestoreWrite);
 
 //--------------------------------------------
-// Extracts genres from tracks to playlists //
+// EXTRACTS GENRES FROM TRACKS TO PLAYLISTS //
 //--------------------------------------------
 exports.extractGenresFromTrackToPlaylist = functions
   .runWith({
