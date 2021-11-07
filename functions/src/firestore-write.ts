@@ -2,9 +2,8 @@ import admin = require('firebase-admin');
 import { User } from './data';
 
 //--------------------------------
-//   Saves docs to Firestore  //
+//    Saves docs to Firestore   //
 //--------------------------------
-// Saves docs to Firestore.
 export async function firestoreWrite(req: any, res: any) {
   const user: User = req.body.user;
   const collection: any = admin.firestore().collection(req.body.collection);
@@ -14,7 +13,6 @@ export async function firestoreWrite(req: any, res: any) {
   const firebaseWriteLimit = 500;
   let completeBatches: any[] = [];
 
-  console.log('saving to firestore ', objects.length, 'objects.');
   const startTime = performance.now();
 
   for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
@@ -27,7 +25,7 @@ export async function firestoreWrite(req: any, res: any) {
       if (object) {
         const ref = collection.doc(object.id);
         let finalObject: any;
-        // Adds userId if it's a track
+        // Adds userId if it's a track.
         type === 'tracks'
           ? (finalObject = {
               ...object,
@@ -46,9 +44,9 @@ export async function firestoreWrite(req: any, res: any) {
       const endTime = performance.now();
 
       console.log(
-        `Call to firestoreWriteBatches ${type} took ${
-          endTime - startTime
-        } milliseconds`
+        `Firestore: saved ${objects.length} ${type} in ${Number(
+          (endTime - startTime) / 1000
+        ).toFixed(2)} seconds.`
       );
       response = `${objects.length + type} saved correctly to firestore.`;
     });

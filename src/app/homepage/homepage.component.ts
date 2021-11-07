@@ -173,11 +173,7 @@ export class HomepageComponent implements OnInit {
       user,
     })
       .pipe(first())
-      .subscribe((tracks) => {
-        const trackIds = tracks.map((track) => track.id);
-        const uniqIds = [...new Set(trackIds)];
-        console.log(uniqIds);
-      });
+      .subscribe(console.log);
     /*
     this.spotifyService.savePlaylists(); */
     this.trackService.updateSpinner(true);
