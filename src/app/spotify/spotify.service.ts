@@ -323,7 +323,7 @@ export class SpotifyService {
   }
 
   public async play(trackUris?: string[]) {
-    // Not documented by spotify but it looks like there is a limit around 700 tracks
+    // Not documented by Spotify but it looks like there is a limit around 700 tracks.
     const urisLimit = 700;
     if (trackUris?.length > urisLimit)
       trackUris = trackUris.slice(0, urisLimit - 1);
@@ -374,12 +374,11 @@ export class SpotifyService {
   //           PLAYLISTS          //
   //--------------------------------
 
-  public async getPlaylists(
-    url: string,
-    queryParam: string
-  ): Promise<Playlist[]> {
+  public async getActiveUserPlaylists(): Promise<Playlist[]> {
+    const user = this.authQuery.getActive();
+    const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
     return await (
-      await this.getPromisedObjects(url, queryParam)
+      await this.getPromisedObjects(url, '?limit=50')
     )
       .pipe(
         map((paging: { items: Playlist[] }) => paging.items),
@@ -426,6 +425,23 @@ export class SpotifyService {
         headers,
       })
       .pipe(first())
+      .toPromise();
+  }
+
+  //--------------------------------
+  //             USER             //
+  //--------------------------------
+
+  public async getActiveUserTopTracks(): Promise<Track[]> {
+    const url = `https://api.spotify.com/v1/me/top/tracks`;
+    return await (
+      await this.getPromisedObjects(url, '?limit=50&time_range=long_term')
+    )
+      .pipe(
+        tap((_) => console.log(_)),
+        map((paging: { items: Track[] }) => paging.items),
+        first()
+      )
       .toPromise();
   }
 

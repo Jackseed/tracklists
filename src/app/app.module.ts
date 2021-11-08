@@ -24,6 +24,7 @@ import { PlaylistsModule } from './playlists/playlists.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AngularFireFunctionsModule } from '@angular/fire/functions';
 import { SETTINGS } from '@angular/fire/firestore';
@@ -56,6 +57,7 @@ import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
     MatTabsModule,
     MatDividerModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
     MatTooltipModule,
     AngularFireFunctionsModule,
     // environment.production ? [] : AkitaNgDevtools.forRoot(),

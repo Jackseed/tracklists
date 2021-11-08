@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
-import { TrackQuery, TrackService } from '../tracks/+state';
+import { Track, TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
@@ -14,7 +14,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
-import { AngularFirestore } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-homepage',
@@ -29,6 +28,9 @@ export class HomepageComponent implements OnInit {
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
   public loadingItem$: Observable<string>;
+  public userPlaylists: Playlist[];
+  public userPlaylistTracks: number;
+  public userTopTracks: Track[];
 
   constructor(
     private authQuery: AuthQuery,
@@ -43,8 +45,7 @@ export class HomepageComponent implements OnInit {
     private _snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private fns: AngularFireFunctions,
-    private afs: AngularFirestore
+    private fns: AngularFireFunctions
   ) {}
 
   async ngOnInit() {
@@ -96,6 +97,14 @@ export class HomepageComponent implements OnInit {
     this.playingTrack$ = this.playerQuery.selectActive();
     // Updates spinner to false to disable loading page if page is reloaded.
     this.trackService.updateSpinner(false);
+
+    this.userPlaylists = await this.spotifyService.getActiveUserPlaylists();
+    this.userPlaylistTracks = this.userPlaylists
+      .map((playlist) => playlist.tracks.total)
+      .reduce((a, b) => a + b, 0);
+    console.log(this.userPlaylistTracks);
+    this.userTopTracks = await this.spotifyService.getActiveUserTopTracks();
+    this.trackService.updateSpinner(true);
   }
 
   public loginSpotify() {
@@ -166,16 +175,17 @@ export class HomepageComponent implements OnInit {
   }
 
   public refreshData() {
+    this.trackService.updateSpinner(true);
     const user = this.authQuery.getActive();
     const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
     const response = saveFunction({
       user,
     })
       .pipe(first())
-      .subscribe();
-
-    this.trackService.updateSpinner(true);
-    this.trackService.loadFromFirebase();
+      .subscribe((tracks) => {
+        this.trackService.setStore(tracks);
+        this.trackService.updateSpinner(false);
+      });
   }
 
   public signOut() {

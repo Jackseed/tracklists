@@ -165,18 +165,31 @@
 <ng-template #loadingTracks>
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
     <div fxFlex="nogrow" class="text-centered">
-      <h2>Loading</h2>
-      <p>Wait a minute, it will be soon full of music & love.</p>
+      <h2>Loading your tracks</h2>
+      <p>Including</p>
     </div>
-    <div
-      fxFlex="nogrow"
-      class="text-centered margin-5"
-      *ngIf="loadingItem$ | async as item"
-    >
-      <p>{{ item }}</p>
+
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <mat-card fxFlexFill fxFlex fxLayoutAlign="start center" fxLayout="row">
+        <mat-card-header
+          fxFlexOffset="3"
+          fxFlex
+          *ngIf="userTopTracks[0] as track"
+        >
+          <div
+            mat-card-avatar
+            [ngStyle]="{
+              'background-image': 'url(' + track.album.images[0].url + ')',
+              'background-size': 'cover'
+            }"
+          ></div>
+          <mat-card-title>{{ track.name }}</mat-card-title>
+          <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </div>
-    <div fxFlex="nogrow" class="text-centered margin-5">
-      <mat-spinner></mat-spinner>
+    <div id="progress-bar">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     </div>
   </div>
 </ng-template>
