@@ -47,9 +47,13 @@
   height: 60px;
   width: 60px;
 }
-
 .mat-progress-bar {
-  min-width: 284.11px;
+  width: 284.11px;
+}
+
+.mat-card {
+  height: 100px;
+  width: 284.11px;
 }
 
 .mat-card-subtitle {

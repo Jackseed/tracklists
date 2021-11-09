@@ -170,11 +170,13 @@
     </div>
 
     <div fxLayout="row" fxLayoutAlign="center center">
-      <mat-card fxFlexFill fxFlex fxLayoutAlign="start center" fxLayout="row">
+      <mat-card fxLayoutAlign="start center" fxLayout="row">
         <mat-card-header
           fxFlexOffset="3"
           fxFlex
-          *ngIf="userTopTracks[0] as track"
+          *ngIf="this.userTopTrack$ | async as track"
+          [@fadeIn]="fadeInState"
+          [@fadeInOnEnter]
         >
           <div
             mat-card-avatar

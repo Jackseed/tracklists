@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { from, interval, Observable } from 'rxjs';
 import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
-import { first, map, tap } from 'rxjs/operators';
+import { first, map, tap, zip } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -14,11 +14,13 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
+import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
 
 @Component({
   selector: 'app-homepage',
   templateUrl: './homepage.component.html',
   styleUrls: ['./homepage.component.css'],
+  animations: [fadeInOnEnterAnimation(), fadeInAnimation({ duration: 1500 })],
 })
 export class HomepageComponent implements OnInit {
   public spotifyUserId$: Observable<string>;
@@ -31,6 +33,8 @@ export class HomepageComponent implements OnInit {
   public userPlaylists: Playlist[];
   public userPlaylistTracks: number;
   public userTopTracks: Track[];
+  public userTopTrack$: Observable<Track>;
+  public fadeInState: boolean = false;
 
   constructor(
     private authQuery: AuthQuery,
@@ -98,12 +102,20 @@ export class HomepageComponent implements OnInit {
     // Updates spinner to false to disable loading page if page is reloaded.
     this.trackService.updateSpinner(false);
 
-    this.userPlaylists = await this.spotifyService.getActiveUserPlaylists();
-    this.userPlaylistTracks = this.userPlaylists
-      .map((playlist) => playlist.tracks.total)
-      .reduce((a, b) => a + b, 0);
-    console.log(this.userPlaylistTracks);
+    // Gets user top 50 tracks.
     this.userTopTracks = await this.spotifyService.getActiveUserTopTracks();
+    // Changes the active array element every 3.5s.
+    this.userTopTrack$ = from(this.userTopTracks).pipe(
+      zip(interval(3500), (val) => val)
+    );
+    // Switches animation to false and then immediately after to true
+    // to turn in fade in on every changes.
+    this.userTopTrack$.subscribe((_) => {
+      this.fadeInState = false;
+    });
+    this.userTopTrack$.subscribe((_) => {
+      this.fadeInState = true;
+    });
     this.trackService.updateSpinner(true);
   }
 
