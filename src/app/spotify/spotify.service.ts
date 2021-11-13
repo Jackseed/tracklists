@@ -438,7 +438,6 @@ export class SpotifyService {
       await this.getPromisedObjects(url, '?limit=50&time_range=long_term')
     )
       .pipe(
-        tap((_) => console.log(_)),
         map((paging: { items: Track[] }) => paging.items),
         first()
       )

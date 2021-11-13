@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { from, interval, Observable } from 'rxjs';
+import { Observable, Subscription, timer } from 'rxjs';
 import { AuthQuery, AuthService } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
-import { first, map, tap, zip } from 'rxjs/operators';
+import { first, map, take, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -22,19 +22,17 @@ import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
   styleUrls: ['./homepage.component.css'],
   animations: [fadeInOnEnterAnimation(), fadeInAnimation({ duration: 1500 })],
 })
-export class HomepageComponent implements OnInit {
+export class HomepageComponent implements OnInit, OnDestroy {
   public spotifyUserId$: Observable<string>;
   public trackNumber$: Observable<number>;
   public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
-  public loadingItem$: Observable<string>;
-  public userPlaylists: Playlist[];
-  public userPlaylistTracks: number;
   public userTopTracks: Track[];
   public userTopTrack$: Observable<Track>;
   public fadeInState: boolean = false;
+  private animationSub: Subscription;
 
   constructor(
     private authQuery: AuthQuery,
@@ -52,7 +50,7 @@ export class HomepageComponent implements OnInit {
     private fns: AngularFireFunctions
   ) {}
 
-  async ngOnInit() {
+  ngOnInit() {
     const user = this.authQuery.getActive();
     const url = this.router.url;
     // check if there is already a code registered, otherwise save it
@@ -82,8 +80,7 @@ export class HomepageComponent implements OnInit {
 
     // Shows spinner to user.
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
-    // Informs user of what's loading.
-    this.loadingItem$ = this.trackQuery.selectLoadingItem();
+
     this.isTrackStoreEmpty$ = this.trackQuery
       .selectCount()
       .pipe(map((length) => (length === 0 ? true : false)));
@@ -101,22 +98,6 @@ export class HomepageComponent implements OnInit {
     this.playingTrack$ = this.playerQuery.selectActive();
     // Updates spinner to false to disable loading page if page is reloaded.
     this.trackService.updateSpinner(false);
-
-    // Gets user top 50 tracks.
-    this.userTopTracks = await this.spotifyService.getActiveUserTopTracks();
-    // Changes the active array element every 3.5s.
-    this.userTopTrack$ = from(this.userTopTracks).pipe(
-      zip(interval(3500), (val) => val)
-    );
-    // Switches animation to false and then immediately after to true
-    // to turn in fade in on every changes.
-    this.userTopTrack$.subscribe((_) => {
-      this.fadeInState = false;
-    });
-    this.userTopTrack$.subscribe((_) => {
-      this.fadeInState = true;
-    });
-    this.trackService.updateSpinner(true);
   }
 
   public loginSpotify() {
@@ -135,6 +116,23 @@ export class HomepageComponent implements OnInit {
         this.trackService.setStore(tracks);
         this.trackService.updateSpinner(false);
       });
+    this.loadTop50Tracks();
+  }
+
+  private async loadTop50Tracks() {
+    // Gets user's top 50 tracks.
+    this.userTopTracks = await this.spotifyService.getActiveUserTopTracks();
+    // Changes top track to display every 3.5s
+    this.userTopTrack$ = timer(0, 3500).pipe(
+      // Activates fade in animation
+      tap((_) => (this.fadeInState = true)),
+      map((n) => this.userTopTracks[n]),
+      take(50)
+    );
+
+    this.animationSub = this.userTopTrack$.subscribe((_) => {
+      this.fadeInState = false;
+    });
   }
 
   public playAll() {
@@ -186,20 +184,6 @@ export class HomepageComponent implements OnInit {
     });
   }
 
-  public refreshData() {
-    this.trackService.updateSpinner(true);
-    const user = this.authQuery.getActive();
-    const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
-    const response = saveFunction({
-      user,
-    })
-      .pipe(first())
-      .subscribe((tracks) => {
-        this.trackService.setStore(tracks);
-        this.trackService.updateSpinner(false);
-      });
-  }
-
   public signOut() {
     this.authService.signOut();
   }
@@ -226,5 +210,9 @@ export class HomepageComponent implements OnInit {
 
       this.trackService.addActive(trackIds);
     }
+  }
+
+  ngOnDestroy() {
+    this.animationSub.unsubscribe();
   }
 }
