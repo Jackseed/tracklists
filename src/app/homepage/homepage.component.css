@@ -41,3 +41,21 @@
 .no-margin {
   margin: 0;
 }
+
+.mat-card-avatar {
+  border-radius: 0;
+  height: 60px;
+  width: 60px;
+}
+.mat-progress-bar {
+  width: 284.11px;
+}
+
+.mat-card {
+  height: 100px;
+  width: 284.11px;
+}
+
+.mat-card-subtitle {
+  margin-bottom: 0;
+}

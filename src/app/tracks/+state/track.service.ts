@@ -20,9 +20,8 @@ export class TrackService {
   }
 
   public async setFirestoreTracks() {
-    // if data can be loaded from localStorage, don't call firestore
+    // If data can be loaded from localStorage, doesn't call Firestore.
     const data: any = await this.localforage.getItem('trackStore');
-    // if storage data, loads it
     if (data && !data.includes(':{}')) {
       this.store.loadFromStorage();
     } else {
@@ -34,11 +33,15 @@ export class TrackService {
     this.query.selectUserTracks$
       .pipe(
         tap((tracks) => {
-          tracks ? this.store.set(tracks) : this.store.set({});
+          tracks ? this.setStore(tracks) : this.store.set({});
           this.store.setActive([]);
         }, first())
       )
       .subscribe();
+  }
+
+  public setStore(tracks: Track[]) {
+    this.store.set(tracks);
   }
 
   selectFilteredTracks(): Observable<Track[]> {

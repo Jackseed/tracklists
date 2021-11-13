@@ -51,3 +51,4 @@ Thumbs.db
 firestore-debug.log
 ui-debug.log
 /functions/.runtimeconfig.json
+firebase-debug.log

@@ -24,8 +24,11 @@ import { PlaylistsModule } from './playlists/playlists.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AngularFireFunctionsModule } from '@angular/fire/functions';
+import { SETTINGS } from '@angular/fire/firestore';
+import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
 
 @NgModule({
   declarations: [
@@ -45,7 +48,6 @@ import { AngularFireFunctionsModule } from '@angular/fire/functions';
     PlaylistsModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
-    AngularFirestoreModule,
     MatButtonModule,
     MatCardModule,
     MatIconModule,
@@ -55,11 +57,23 @@ import { AngularFireFunctionsModule } from '@angular/fire/functions';
     MatTabsModule,
     MatDividerModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
     MatTooltipModule,
     AngularFireFunctionsModule,
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
-  providers: [],
+  providers: [
+    {
+      provide: SETTINGS,
+      useValue: environment.useEmulators
+        ? { host: 'localhost:8080', ssl: false }
+        : {},
+    },
+    {
+      provide: FUNCTIONS_ORIGIN,
+      useValue: environment.useEmulators ? 'http://localhost:5001' : undefined,
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
