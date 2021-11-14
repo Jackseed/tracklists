@@ -17,7 +17,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import firebase from 'firebase/app';
-import { AuthQuery, AuthService } from '../auth/+state';
+import { AuthQuery, AuthService, Devices, User } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
 import {
   Track,
@@ -55,62 +55,63 @@ export class SpotifyService {
     private http: HttpClient
   ) {}
 
-  public async initializePlayer() {
+  public async initializePlayer(trackUris?: string[]) {
     // @ts-ignore: Unreachable code error
     const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
-    const token$ = this.authQuery.token$;
 
-    // instantiate the player
-    token$
-      .pipe(
-        tap(async (token) => {
-          const player = new Player({
-            name: 'Tracklists',
-            getOAuthToken: (callback) => {
-              callback(token);
-            },
-          });
-          await player.connect();
-          // Ready
-          player.addListener('ready', ({ device_id }) => {
-            this.authService.saveDeviceId(device_id);
-          });
+    // Instantiates Spotify player.
+    const player = new Player({
+      name: 'Tracklists',
+      getOAuthToken: async (callback: any) => {
+        console.log('here');
+        const token = (await this.authService.getToken()).token;
 
-          // when player state change, set active the track
-          player.on('player_state_changed', async (state) => {
-            if (!state) return;
+        callback(token);
+      },
+    });
 
-            // gets it from db as there has been some errors
-            let dbTrack = this.trackQuery.getEntity(
-              state.track_window.current_track.id
-            );
-            // prevents error due to Track Relinking
-            if (!dbTrack)
-              dbTrack = this.trackQuery.getEntity(
-                state.track_window.current_track.linked_from.id
-              );
+    player.connect();
 
-            const track = {
-              ...dbTrack,
-              position: state.position,
-              paused: state.paused,
-            };
+    // Sets device id
+    player.addListener('ready', async ({ device_id }) => {
+      this.authService.saveDeviceId(device_id);
 
-            const pause = this.playerQuery.getPaused(track.id);
+      console.log('Device ready', device_id);
 
-            this.playerService.add(track);
-            this.playerService.setActive(track.id);
-            this.playerService.updatePosition(track.id, state.position);
-            this.playerService.updateShuffle(state.shuffle);
-            // update playing track with state paused
-            state.paused === pause
-              ? false
-              : this.playerService.updatePaused(track.id, state.paused);
-          });
-        }),
-        first()
-      )
-      .subscribe();
+      if (trackUris) this.play(trackUris, device_id);
+    });
+
+    // When player state changes, sets active the track.
+    player.on('player_state_changed', async (state) => {
+      if (!state) return;
+
+      // gets it from db as there has been some errors
+      let dbTrack = this.trackQuery.getEntity(
+        state.track_window.current_track.id
+      );
+      // prevents error due to Track Relinking
+      if (!dbTrack)
+        dbTrack = this.trackQuery.getEntity(
+          state.track_window.current_track.linked_from.id
+        );
+
+      const track = {
+        ...dbTrack,
+        position: state.position,
+        paused: state.paused,
+      };
+
+      const pause = this.playerQuery.getPaused(track.id);
+
+      this.playerService.add(track);
+      this.playerService.setActive(track.id);
+      this.playerService.updatePosition(track.id, state.position);
+      this.playerService.updateShuffle(state.shuffle);
+      // update playing track with state paused
+      state.paused === pause
+        ? false
+        : this.playerService.updatePaused(track.id, state.paused);
+    });
   }
 
   // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
@@ -322,17 +323,56 @@ export class SpotifyService {
     return this.postRequests(baseUrl, '', null);
   }
 
-  public async play(trackUris?: string[]) {
+  public async play(trackUris?: string[], newDeviceId?: string): Promise<void> {
+    let deviceId = newDeviceId ? newDeviceId : '';
+
+    // Verifies user device if no new device id is attached.
+    if (!newDeviceId) {
+      let user = this.authQuery.getActive();
+      deviceId = user.deviceId;
+
+      // Verifies that deviceId is still valid, otherwise updates it and relaunches play.
+      const deviceExists = await this.isDeviceExisting(user);
+      if (!deviceExists) {
+        await this.initializePlayer(trackUris);
+        return;
+      }
+    }
+    // Prepares and sends play request.
+    trackUris = this.limitTrackAmount(trackUris);
+    const baseUrl = 'https://api.spotify.com/v1/me/player/play';
+    const body = { uris: trackUris };
+    const queryParam = `?device_id=${deviceId}`;
+
+    this.putRequests(baseUrl, queryParam, body);
+  }
+
+  private limitTrackAmount(trackUris?: string[]): string[] {
     // Not documented by Spotify but it looks like there is a limit around 700 tracks.
     const urisLimit = 700;
     if (trackUris?.length > urisLimit)
       trackUris = trackUris.slice(0, urisLimit - 1);
-    const user = this.authQuery.getActive();
-    const baseUrl = 'https://api.spotify.com/v1/me/player/play';
-    const queryParam =
-      user.deviceId && trackUris ? `?device_id=${user.deviceId}` : '';
-    const body = trackUris ? { uris: trackUris } : null;
-    return this.putRequests(baseUrl, queryParam, body);
+    return trackUris;
+  }
+
+  private async isDeviceExisting(user: User): Promise<boolean> {
+    const devices = await this.userAvailableDevices();
+
+    let deviceExists = false;
+    devices.devices.forEach((device) => {
+      if (user.deviceId === device.id) deviceExists = true;
+    });
+
+    return deviceExists;
+  }
+
+  private async userAvailableDevices(): Promise<Devices> {
+    const headers = await this.getHeaders();
+    const url = 'https://api.spotify.com/v1/me/player/devices';
+    return this.http
+      .get(url, { headers })
+      .pipe(first())
+      .toPromise() as Promise<Devices>;
   }
 
   public async pause() {
@@ -376,7 +416,7 @@ export class SpotifyService {
 
   public async getActiveUserPlaylists(): Promise<Playlist[]> {
     const user = this.authQuery.getActive();
-    const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    const url = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
     return await (
       await this.getPromisedObjects(url, '?limit=50')
     )
@@ -389,7 +429,7 @@ export class SpotifyService {
 
   public async createPlaylist(name: string) {
     const user = this.authQuery.getActive();
-    const baseUrl = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    const baseUrl = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
     const body = { name };
 
     return this.postRequests(baseUrl, '', body);
@@ -478,22 +518,32 @@ export class SpotifyService {
     });
   }
 
-  private async getHeaders() {
-    const token$ = this.authQuery.token$;
-    let headers: HttpHeaders;
-    token$
-      .pipe(
-        tap(
-          (token) =>
-            (headers = new HttpHeaders().set(
-              'Authorization',
-              'Bearer ' + token
-            ))
-        ),
-        first()
-      )
-      .subscribe();
+  private async getHeaders(): Promise<HttpHeaders> {
+    const user = this.authQuery.getActive();
+    let token = user.tokens.access;
+    const isTokenValid = await this.isTokenStillValid();
+
+    if (!isTokenValid) token = (await this.authService.getToken()).token;
+
+    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
+
     return headers;
+  }
+
+  private async isTokenStillValid(): Promise<boolean> {
+    const user = this.authQuery.getActive();
+    let isTokenStillValid: boolean;
+
+    const tokenCreationTime =
+      (firebase.firestore.Timestamp.now().toMillis() -
+        user.tokens.addedTime.toMillis()) /
+      1000;
+
+    tokenCreationTime > 3600
+      ? (isTokenStillValid = false)
+      : (isTokenStillValid = true);
+
+    return isTokenStillValid;
   }
 
   public async getPromisedObjects(url: string, queryParam: string) {

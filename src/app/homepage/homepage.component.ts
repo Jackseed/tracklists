@@ -1,10 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, Subscription, timer } from 'rxjs';
-import { AuthQuery, AuthService } from '../auth/+state';
+import { NavigationEnd, Router, Scroll } from '@angular/router';
+import { combineLatest, Observable, Subscription, timer } from 'rxjs';
+import {
+  AuthQuery,
+  AuthService,
+  AuthStore,
+  Tokens,
+  User,
+} from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
-import { first, map, take, tap } from 'rxjs/operators';
+import { filter, first, map, take, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +21,7 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
 import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
+import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-homepage',
@@ -23,7 +30,7 @@ import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
   animations: [fadeInOnEnterAnimation(), fadeInAnimation({ duration: 1500 })],
 })
 export class HomepageComponent implements OnInit, OnDestroy {
-  public spotifyUserId$: Observable<string>;
+  public user$: Observable<User>;
   public trackNumber$: Observable<number>;
   public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
@@ -35,8 +42,10 @@ export class HomepageComponent implements OnInit, OnDestroy {
   private animationSub: Subscription;
 
   constructor(
+    private authStore: AuthStore,
     private authQuery: AuthQuery,
     private authService: AuthService,
+    private afAuth: AngularFireAuth,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
@@ -51,32 +60,46 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    const user = this.authQuery.getActive();
-    const url = this.router.url;
-    // check if there is already a code registered, otherwise save it
-    if (!url.includes('code')) {
-      this.authService.authSpotify();
-    }
-    this.authService.saveSpotifyCode();
-    // if first connexion, get an access token from spotify
-    if (!user.tokens) {
-      const user = this.authQuery.getActive();
-      const url = this.router.url;
-      const code = url.substring(url.indexOf('=') + 1);
+    // Signup / refresh Spotify token process.
+    this.afAuth.user
+      .pipe(
+        // Waits for redirection to be ended before checking url for a Spotify access code.
+        // filter(([user, event]) => event instanceof NavigationEnd),
+        tap(async (user) => {
+          console.log('starting login');
+          // If a user exists, refreshes Spotify access token.
+          if (user) {
+            console.log('user is here');
+            await this.getSpotifyToken();
+            return;
+          }
+          const url = this.router.url;
+          // If there is an access code within URL, creates a user.
+          if (url.includes('code')) {
+            console.log('spotting a code');
+            const tokens = await this.getSpotifyToken(this.getUrlCode(url));
+            if (tokens.custom_auth_token) {
+              const user = await this.afAuth.signInWithCustomToken(
+                tokens.custom_auth_token
+              );
+              this.authStore.setActive(user.user.uid);
+              this.authService.syncCollection();
+              // Resets the process if there is a code but user isn't connected.
+            } else {
+              return;
+            }
+            // If user isn't connected and there is no code within url, opens dialog to create one.
+          } else {
+            this.loginToSpotify();
+          }
+        }),
+        first()
+      )
+      .subscribe();
+    this.user$ = this.afAuth.user;
+    this.user$.subscribe((_) => console.log('user: ', _));
 
-      const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
-      const response = getTokenFunction({
-        code: code,
-        tokenType: 'access',
-        userId: user.id,
-      })
-        .pipe(first())
-        .subscribe();
-    }
-
-    this.spotifyUserId$ = this.authQuery.selectSpotifyUserId();
-
-    this.spotifyService.initializePlayer();
+    // this.spotifyService.initializePlayer();
 
     // Shows spinner to user.
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
@@ -84,7 +107,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.isTrackStoreEmpty$ = this.trackQuery
       .selectCount()
       .pipe(map((length) => (length === 0 ? true : false)));
-    this.trackService.setFirestoreTracks();
+
+    //this.trackService.setFirestoreTracks();
     this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.matIconRegistry.addSvgIcon(
@@ -100,7 +124,17 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.trackService.updateSpinner(false);
   }
 
-  public loginSpotify() {
+  // Gets a Spotify refresh or access token.
+  private async getSpotifyToken(code?: string): Promise<Tokens> {
+    return code ? this.authService.getToken(code) : this.authService.getToken();
+  }
+
+  // Gets Spotify access code within url.
+  private getUrlCode(url: string): string {
+    return url.substring(url.indexOf('=') + 1);
+  }
+
+  public loginToSpotify() {
     this.authService.authSpotify();
   }
 
@@ -122,6 +156,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
   private async loadTop50Tracks() {
     // Gets user's top 50 tracks.
     this.userTopTracks = await this.spotifyService.getActiveUserTopTracks();
+    console.log(this.userTopTracks);
     // Changes top track to display every 3.5s
     this.userTopTrack$ = timer(0, 3500).pipe(
       // Activates fade in animation

@@ -101,7 +101,7 @@ export async function saveUserTracks(data: any) {
       (endTime - startTime) / 1000
     ).toFixed(2)} seconds.`
   );
-  
+
   return uniqueFullTracks;
 }
 

@@ -8,7 +8,9 @@ import { AuthQuery } from './auth.query';
 import { firestore } from 'firebase/app';
 import { resetStores } from '@datorama/akita';
 import { LocalforageService } from 'src/app/utils/localforage.service';
-import { createUser, User } from './auth.model';
+import { createUser, Tokens, User } from './auth.model';
+import { AngularFireFunctions } from '@angular/fire/functions';
+import { first } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -18,7 +20,6 @@ export class AuthService extends CollectionService<AuthState> {
   baseUrl: string = environment.spotify.apiUrl;
   responseType: string = 'code';
   redirectURI = environment.spotify.redirectURI;
-  // TODO: change for necessary scope only
   scope = [
     'user-read-email',
     'user-read-currently-playing',
@@ -40,12 +41,15 @@ export class AuthService extends CollectionService<AuthState> {
     private query: AuthQuery,
     private afAuth: AngularFireAuth,
     private router: Router,
+    private fns: AngularFireFunctions,
 
     private localforage: LocalforageService
   ) {
     super(store);
   }
-
+  //--------------------------------
+  //         SPOTIFY TOKEN        //
+  //--------------------------------
   public authSpotify() {
     this.authorizeURL += '?' + 'client_id=' + this.clientId;
     this.authorizeURL += '&response_type=' + this.responseType;
@@ -53,6 +57,27 @@ export class AuthService extends CollectionService<AuthState> {
     this.authorizeURL += '&scope=' + this.scope;
 
     window.location.href = this.authorizeURL;
+  }
+
+  // Gets & saves access token if code as param, otherwise refreshes.
+  public async getToken(code?: string): Promise<Tokens> {
+    const user = this.query.getActive();
+    const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
+    let param: Object;
+    code
+      ? (param = { code: code, tokenType: 'access' })
+      : (param = {
+          tokenType: 'refresh',
+          refreshToken: user.tokens.refresh,
+          userId: user.uid,
+        });
+    return getTokenFunction(param).pipe(first()).toPromise();
+  }
+
+  public signInWithCustomToken(
+    token: string
+  ): Promise<firebase.auth.UserCredential> {
+    return this.afAuth.signInWithCustomToken(token);
   }
 
   public addLikedTrack(trackId: string) {
@@ -79,9 +104,9 @@ export class AuthService extends CollectionService<AuthState> {
     this.db.collection('users').doc(userId).update({ code });
   }
 
-  private async setUser(id: string, email: string): Promise<User> {
-    const user = createUser({ id, email });
-    await this.db.collection(this.currentPath).doc(id).set(user);
+  private async setUser(uid: string, email: string): Promise<User> {
+    const user = createUser({ uid, email });
+    await this.db.collection(this.currentPath).doc(uid).set(user);
     return user;
   }
 

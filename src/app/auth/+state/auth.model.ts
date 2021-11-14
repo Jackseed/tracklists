@@ -3,20 +3,37 @@ import firebase from 'firebase/app';
 import Timestamp = firebase.firestore.Timestamp;
 
 export interface User {
-  id: string;
+  uid: string;
+  displayName?: string;
   email?: string;
-  token?: string;
-  code?: string;
   tokens?: {
     access?: string;
     addedTime?: Timestamp;
     refresh?: string;
   };
-  name?: string;
-  spotifyId?: string;
   deviceId?: string;
   trackIds?: string[];
   playlistIds?: string[];
+}
+
+export interface Tokens {
+  token: string;
+  refresh_token: string;
+  custom_auth_token: string;
+}
+
+export interface Devices {
+  devices: Device[];
+}
+
+export interface Device {
+  id: string;
+  is_active: boolean;
+  is_private_session: boolean;
+  is_restricted: boolean;
+  name: string;
+  type: string;
+  volume_percent: number;
 }
 
 export interface SpotifyUser {
@@ -37,9 +54,9 @@ export interface SpotifyUser {
   uri: string;
 }
 
-export function createUser(params: Partial<User>) {
+export function createUser(params: Partial<User>): User {
   return {
-    id: params.id,
+    uid: params.uid,
     email: params.email,
     playlistIds: [],
     trackIds: [],

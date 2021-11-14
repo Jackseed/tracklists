@@ -1,5 +1,5 @@
 <div
-  *ngIf="spotifyUserId$ | async; else notConnected"
+  *ngIf="user$ | async; else notConnected"
   fxFlexFill
   fxLayout="column"
   fxLayoutAlign="start center"
@@ -72,7 +72,7 @@
                   (click)="signOut()"
                   matTooltip="Log out"
                 >
-                
+
                   <mat-icon>power_settings_new</mat-icon>
                 </button>
               </div>
@@ -133,7 +133,7 @@
     <div fxFlex class="text-centered">
       <h2>Log in to Spotify</h2>
       <p>You need to be connected to load your songs.</p>
-      <button mat-raised-button color="accent" (click)="loginSpotify()">
+      <button mat-raised-button color="accent" (click)="loginToSpotify()">
         Login
       </button>
     </div>

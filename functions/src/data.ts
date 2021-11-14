@@ -15,6 +15,12 @@ export interface User {
   playlistIds?: string[];
 }
 
+export interface Tokens {
+  token: string;
+  refresh_token: string;
+  custom_auth_token: string;
+}
+
 export interface SpotifyUser {
   country: string;
   display_name: string;
