@@ -3,7 +3,8 @@ import { CollectionGuard } from 'akita-ng-fire';
 import { PlaylistState, PlaylistService } from '..';
 import {
   debounceTime,
-  distinctUntilKeyChanged,
+  distinctUntilChanged,
+  pluck,
   switchMap,
   tap,
 } from 'rxjs/operators';
@@ -26,13 +27,21 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
 
   sync() {
     return this.authQuery.selectActive().pipe(
-      tap((_) => this.trackService.updateSpinner(true)),
+      pluck('playlistIds'),
+      // If playlists have already been saved,
+      // spawns spinner the time to load it.
+      tap((ids) => {
+        if (ids.length > 0) this.trackService.updateSpinner(true);
+      }),
       tap((_) => this.store.setActive([])),
       // Ugly fix to stop blinking on loading.
-      distinctUntilKeyChanged('playlistIds'),
+      distinctUntilChanged(),
       debounceTime(2000),
-      switchMap((user) => this.service.syncManyDocs(user.playlistIds)),
-      tap((_) => this.trackService.updateSpinner(false))
+      switchMap((ids) => this.service.syncManyDocs(ids)),
+      // Stops spinning.
+      tap((ids) => {
+        if (ids.length > 0) this.trackService.updateSpinner(false);
+      })
     );
   }
 }
