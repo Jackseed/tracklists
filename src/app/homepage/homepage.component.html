@@ -114,7 +114,8 @@
     fxFlex="15"
     fxLayout="row"
     *ngIf="
-      !(isTrackStoreEmpty$ | async) &&
+      (arePlaylistLoaded$ | async) &&
+      (areTracksLoaded$ | async) &&
       (playingTrack$ | async) &&
       !(isSpinning$ | async)
     "
@@ -128,21 +129,17 @@
 <!----------------- NO TRACKS SAVED ----------------->
 <ng-template #noTracks>
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex="nogrow" fxFlexOffset="7.5">
-      <div fxFlex="nogrow" class="text-centered">
-        <h2>Almost there</h2>
-        <p>
-          We need to load your songs from Spotify, it may take a few minutes.
-        </p>
-        <button
-          *ngIf="!(isSpinning$ | async)"
-          mat-raised-button
-          color="accent"
-          (click)="loadPlaylist()"
-        >
-          Load music
-        </button>
-      </div>
+    <div fxFlex="nogrow" class="text-centered">
+      <h2>Almost there</h2>
+      <p>We need to load your songs from Spotify, it may take a few minutes.</p>
+      <button
+        *ngIf="!(isSpinning$ | async)"
+        mat-raised-button
+        color="accent"
+        (click)="loadPlaylist()"
+      >
+        Load music
+      </button>
     </div>
   </div>
 </ng-template>
@@ -153,7 +150,7 @@
     <h2 class="text-centered">Loading your tracks</h2>
 
     <div *ngIf="!(this.userTopTrack$ | async) as track; else tracks">
-      <mat-spinner></mat-spinner>
+      <mat-spinner color="accent" mode="indeterminate"></mat-spinner>
     </div>
     <ng-template #tracks>
       <p class="text-centered">Including</p>

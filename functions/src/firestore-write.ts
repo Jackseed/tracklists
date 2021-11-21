@@ -126,12 +126,16 @@ export async function createFirebaseAccount(
   displayName: string,
   email: string
 ): Promise<string> {
+  const userDoc = await admin.firestore().collection('users').doc(uid).get();
+  let playlistIds: string[] = [];
+  if (userDoc.exists)
+    if (userDoc.data()!.playlistIds) playlistIds = userDoc.data()!.playlistIds;
   const dbTask = admin.firestore().collection('users').doc(uid).set(
     {
       uid,
       displayName,
       email,
-      playlistIds: [],
+      playlistIds,
     },
     { merge: true }
   );

@@ -3,9 +3,29 @@
     <div fxFlex class="text-centered">
       <h2>Log in to Spotify</h2>
       <p>You need to be connected to load your songs.</p>
-      <button mat-raised-button color="accent" (click)="loginToSpotify()">
-        Login
-      </button>
+      <div>
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="loginToSpotify()"
+          disabled="{{ loggingIn$ | async }}"
+        >
+          <span *ngIf="!(loggingIn$ | async)">Login</span>
+          <div
+            fxLayout="row"
+            fxLayoutAlign="center center"
+            *ngIf="loggingIn$ | async"
+          >
+            Logging in...
+            <mat-spinner
+              *ngIf="loggingIn$ | async"
+              diameter="16"
+              class="margin-left"
+              color="accent"
+            ></mat-spinner>
+          </div>
+        </button>
+      </div>
     </div>
   </div>
 </div>
