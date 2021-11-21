@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { CollectionGuard } from 'akita-ng-fire';
 import { PlaylistState, PlaylistService } from '..';
-import { pluck, switchMap, tap } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilKeyChanged,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 import { AuthQuery } from 'src/app/auth/+state';
 import { PlaylistStore } from '../playlist.store';
 
@@ -19,10 +24,11 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
 
   sync() {
     return this.authQuery.selectActive().pipe(
-      pluck('playlistIds'),
-      // set all playlist active
       tap((_) => this.store.setActive([])),
-      switchMap((playlistIds) => this.service.syncManyDocs(playlistIds))
+      // Ugly fix to stop blinking on loading.
+      distinctUntilKeyChanged('playlistIds'),
+      debounceTime(10000),
+      switchMap((user) => this.service.syncManyDocs(user.playlistIds))
     );
   }
 }

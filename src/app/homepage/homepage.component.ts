@@ -59,9 +59,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
       .selectCount()
       .pipe(map((length) => (length === 0 ? false : true)));
 
-    this.arePlaylistLoaded$.subscribe((_) => console.log('playlist: ', _));
-    this.areTracksLoaded$.subscribe((_) => console.log('tracks: ', _));
-
     this.trackService.setFirestoreTracks();
     // Shows spinner to user.
     this.isSpinning$ = this.trackQuery.selectSpinner();
@@ -82,7 +79,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   public loadPlaylist() {
     this.trackService.updateSpinner(true);
     const user = this.authQuery.getActive();
-    console.log(user);
     const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
     const response = saveFunction({
       user,
@@ -98,7 +94,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   private async loadTop50Tracks() {
     // Gets user's top 50 tracks.
     this.userTopTracks = await this.spotifyService.getActiveUserTopTracks();
-    console.log(this.userTopTracks);
     // Changes top track to display every 3.5s
     this.userTopTrack$ = timer(0, 3500).pipe(
       // Activates fade in animation
