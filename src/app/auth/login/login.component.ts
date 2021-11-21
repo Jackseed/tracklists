@@ -1,119 +1,65 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { AuthService, User } from '../+state';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { AngularFireAnalytics } from '@angular/fire/analytics';
+import { Component, OnInit } from '@angular/core';
+import { AuthService, Tokens, User } from '../+state';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { first, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
-  form: FormGroup;
-  user$: Observable<User>;
-  type: 'login' | 'signup' | 'reset' = 'signup';
-  loading = false;
-
+  public user$: Observable<User>;
+  public loggingIn$: Observable<boolean> = of(false);
   constructor(
-    public service: AuthService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-    private analytics: AngularFireAnalytics,
-    private router: Router
+    private afAuth: AngularFireAuth,
+    private router: Router,
+    private authService: AuthService
   ) {}
 
-  ngOnInit(): void {
-    this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.minLength(6), Validators.required]],
-      passwordConfirm: ['', []],
-    });
+  async ngOnInit() {
+    // Signup / refresh Spotify token process.
+    this.afAuth.user
+      .pipe(
+        tap(async (user) => {
+          // If a user exists, refreshes Spotify access token.
+          if (user) {
+            console.log('user is here');
+            await this.getSpotifyToken();
+            this.router.navigate(['home']);
+            return;
+          }
+          const url = this.router.url;
+          // If there is an access code within URL, creates a user.
+          if (url.includes('code')) {
+            this.loggingIn$ = of(true);
+            const tokens = await this.getSpotifyToken(this.getUrlCode(url));
+            if (tokens.custom_auth_token) {
+              const user = await this.afAuth.signInWithCustomToken(
+                tokens.custom_auth_token
+              );
+              this.router.navigate(['home']);
+            }
+          }
+        }),
+        first()
+      )
+      .subscribe();
   }
 
-  async onSubmit() {
-    this.loading = true;
-    const email = this.email.value;
-    const password = this.password.value;
-    let snackBarMessage: string;
-    let errorMessage: string;
-
-    if (this.isSignup) {
-      await this.service
-        .emailSignup(email, password)
-        .then((_) => {
-          this.analytics.logEvent('email_saved');
-          snackBarMessage = 'Account saved.';
-          this.router.navigateByUrl('/home');
-        })
-        .catch((error) => (errorMessage = error.message));
-    } else if (this.isLogin) {
-      await this.service
-        .emailLogin(email, password)
-        .then((_) => {
-          this.analytics.logEvent('email_login');
-          snackBarMessage = 'Successfully connected.';
-          this.router.navigate(['/home']);
-        })
-        .catch((error) => (errorMessage = error.message));
-    } else if (this.isPasswordReset) {
-      await this.service
-        .resetPassword(email)
-        .then((_) => {
-          this.analytics.logEvent('password_reset');
-          snackBarMessage = 'Email sent.';
-          this.router.navigate(['/home']);
-        })
-        .catch((error) => (errorMessage = error.message));
-    }
-    if (errorMessage) {
-      this.snackBar.open(errorMessage);
-    } else {
-      this.snackBar.open(snackBarMessage);
-    }
-
-    this.loading = false;
+  // Gets a Spotify refresh or access token.
+  private async getSpotifyToken(code?: string): Promise<Tokens> {
+    return code ? this.authService.getToken(code) : this.authService.getToken();
   }
 
-  changeType(type) {
-    this.type = type;
+  // Gets Spotify access code within url.
+  private getUrlCode(url: string): string {
+    return url.substring(url.indexOf('=') + 1);
   }
 
-  get isLogin() {
-    return this.type === 'login';
-  }
-
-  get isSignup() {
-    return this.type === 'signup';
-  }
-
-  get isPasswordReset() {
-    return this.type === 'reset';
-  }
-
-  get email() {
-    return this.form.get('email');
-  }
-
-  get password() {
-    return this.form.get('password');
-  }
-
-  get passwordConfirm() {
-    return this.form.get('passwordConfirm');
-  }
-
-  get passwordDoesMatch() {
-    const isMatching = this.password.value === this.passwordConfirm.value;
-
-    if (!isMatching) {
-      this.passwordConfirm.setErrors({
-        notMatching: true,
-      });
-    }
-    return isMatching;
+  public loginToSpotify() {
+    this.authService.authSpotify();
   }
 }

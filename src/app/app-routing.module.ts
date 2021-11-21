@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
 import { HomepageComponent } from './homepage/homepage.component';
 import {
   AngularFireAuthGuard,
@@ -9,14 +8,14 @@ import {
 } from '@angular/fire/auth-guard';
 import { ActiveGuard } from './auth/guard/active.guard';
 import { SyncPlaylistsGuard } from './playlists/+state/guard/sync-playlists.guard';
+import { LoginComponent } from './auth/login/login.component';
 
-const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['welcome']);
+const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['']);
 const redirectLoggedInToHome = () => redirectLoggedInTo(['home']);
 
 const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
   {
-    path: 'welcome',
+    path: '',
     component: LoginComponent,
     canActivate: [AngularFireAuthGuard],
     data: { authGuardPipe: redirectLoggedInToHome },

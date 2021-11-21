@@ -29,6 +29,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AngularFireFunctionsModule } from '@angular/fire/functions';
 import { SETTINGS } from '@angular/fire/firestore';
 import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
+import { USE_EMULATOR as AUTH_EMULATOR } from '@angular/fire/auth';
 
 @NgModule({
   declarations: [
@@ -62,7 +63,7 @@ import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
     AngularFireFunctionsModule,
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
-  providers: [
+ /*  providers: [
     {
       provide: SETTINGS,
       useValue: environment.useEmulators
@@ -73,7 +74,11 @@ import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
       provide: FUNCTIONS_ORIGIN,
       useValue: environment.useEmulators ? 'http://localhost:5001' : undefined,
     },
-  ],
+    {
+      provide: AUTH_EMULATOR,
+      useValue: environment.useEmulators ? ['localhost', 9099] : undefined,
+    },
+  ], */
   bootstrap: [AppComponent],
 })
 export class AppModule {}

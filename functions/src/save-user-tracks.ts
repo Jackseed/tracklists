@@ -10,6 +10,7 @@ import {
   SpotifySavedTrack,
   Track,
 } from './data';
+import functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios').default;
 
@@ -18,21 +19,13 @@ const axios = require('axios').default;
 //--------------------------------
 // TODO: replace user with userId
 export async function saveUserTracks(data: any) {
-  const startTime = performance.now();
   const user = data.user;
-
   // Gets user's playlists.
-  const startTimeGetPlaylist = performance.now();
   let playlists: Playlist[] = await getSpotifyObjectsByBatches(
     user,
     'playlists'
   );
-  const endTimeGetPlaylist = performance.now();
-  console.log(
-    `Playlists: get ${playlists.length} playlists in ${Number(
-      (endTimeGetPlaylist - startTimeGetPlaylist) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Playlists: get ${playlists.length} playlists.`);
 
   // Gets user's tracks.
   const trackCall = await getUserPlaylistFullTracks(user, playlists);
@@ -46,7 +39,7 @@ export async function saveUserTracks(data: any) {
     headers: {
       'Content-Type': 'application/json',
     },
-    url: 'http://localhost:5001/listy-bcc65/us-central1/firestoreWrite',
+    url: functions.config().functions.firestorewrite,
     data: {
       user,
       collection: 'playlists',
@@ -60,7 +53,7 @@ export async function saveUserTracks(data: any) {
     headers: {
       'Content-Type': 'application/json',
     },
-    url: 'http://localhost:5001/listy-bcc65/us-central1/firestoreWrite',
+    url: functions.config().functions.firestorewrite,
     data: {
       user,
       collection: 'tracks',
@@ -70,7 +63,7 @@ export async function saveUserTracks(data: any) {
   });
 
   // Writes playlist & track ids in user doc.
-  const userRef = admin.firestore().collection('users').doc(user.id);
+  const userRef = admin.firestore().collection('users').doc(user.uid);
   const playlistIds = playlists.map((playlist) => playlist.id);
   const uniqueTrackIds: string[] = uniqueFullTracks.map((track) => track.id!);
 
@@ -86,7 +79,7 @@ export async function saveUserTracks(data: any) {
     headers: {
       'Content-Type': 'application/json',
     },
-    url: 'http://localhost:5001/listy-bcc65/us-central1/extractGenresFromTrackToPlaylist',
+    url: functions.config().functions.extractgenresfromtracktoplaylist,
     data: {
       playlists,
       tracks: uniqueFullTracks,
@@ -94,14 +87,6 @@ export async function saveUserTracks(data: any) {
     method: 'POST',
   });
 
-  const endTime = performance.now();
-
-  console.log(
-    `Total: Saving user's tracks and playlists took ${Number(
-      (endTime - startTime) / 1000
-    ).toFixed(2)} seconds.`
-  );
-  
   return uniqueFullTracks;
 }
 
@@ -116,40 +101,28 @@ async function getUserPlaylistFullTracks(
   likedTrackPlaylist: Playlist;
 }> {
   // Gets liked tracks.
-  const startTimeGetLikedTracks = performance.now();
   const likedTracks: Track[] = (await getSpotifyObjectsByBatches(
     user,
     'likedTracks'
   )) as Track[];
 
-  const endTimeGetLikedTracks = performance.now();
-  console.log(
-    `Liked tracks: get ${likedTracks.length} tracks in ${Number(
-      (endTimeGetLikedTracks - startTimeGetLikedTracks) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Liked tracks: get ${likedTracks.length} tracks.`);
   const likedTrackIds: string[] = likedTracks.map((track) => track.id!);
 
   // Creates liked tracks as a playlist.
   const likedTrackPlaylist: Playlist = {
-    id: `${user.id}LikedTracks`,
+    id: `${user.uid}LikedTracks`,
     name: `Liked tracks`,
     trackIds: likedTrackIds,
     type: 'likedTracks',
   };
 
   // Extracts tracks from playlists and adds trackIds to playlists.
-  const startTimeGetTracks = performance.now();
   const playlistTracks = await getPlaylistsTracksAndAddTrackIdsToPlaylists(
     user,
     playlists
   );
-  const endTimeGetTracks = performance.now();
-  console.log(
-    `Playlist tracks: get ${playlistTracks.length} tracks in ${Number(
-      (endTimeGetTracks - startTimeGetTracks) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Playlist tracks: get ${playlistTracks.length} tracks.`);
 
   // Joins liked tracks to playlists tracks.
   const tracks = likedTracks.concat(playlistTracks);
@@ -165,19 +138,13 @@ async function getUserPlaylistFullTracks(
   );
 
   // Gets audio features for each tracks.
-  const startTimeGetAudioFeatures = performance.now();
   const audioFeatures = await getSpotifyObjectsByBatches(
     user,
     'audioFeatures',
     undefined,
     trackIds
   );
-  const endTimeGetAudioFeatures = performance.now();
-  console.log(
-    `Audio features: get ${audioFeatures.length} audio features in ${Number(
-      (endTimeGetAudioFeatures - startTimeGetAudioFeatures) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Audio features: get ${audioFeatures.length} audio features.`);
 
   // Gets artists for each track and extracts genres from it.
   const genres = await getGenreTracks(user, uniqueTracks);
@@ -233,19 +200,13 @@ async function getGenreTracks(
     }
   });
   // Gets artists.
-  const startTimeGetGenres = performance.now();
   const artists: Artist[] = await getSpotifyObjectsByBatches(
     user,
     'artists',
     undefined,
     artistIds
   );
-  const endTimeGetGenres = performance.now();
-  console.log(
-    `Artists & genres: get ${artists.length} artists and genres in ${Number(
-      (endTimeGetGenres - startTimeGetGenres) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Artists & genres: get ${artists.length} artists and genres.`);
 
   // Extracts genres from artists.
   const genres: string[][] = artists.map((artist) =>
@@ -290,7 +251,7 @@ async function getSpotifyObjectsByBatches(
   } else if (objectType === 'playlists') {
     limit = 50;
     total = await getTotalPlaylists(user);
-    url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    url = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
   } else if (objectType === 'audioFeatures') {
     limit = 100;
     if (ids) total = ids.length;
@@ -342,7 +303,7 @@ async function getTotalLikedTracks(user: User): Promise<number> {
 }
 
 async function getTotalPlaylists(user: User): Promise<number> {
-  const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+  const url = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
   const queryParam = '?limit=1';
 
   const playlists = await getPromisedObjects(user, url, queryParam);

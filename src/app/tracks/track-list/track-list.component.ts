@@ -35,7 +35,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.trackNumber$ = this.service.tracksLength$;
 
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
-      map(([tracks, total]) => (tracks.length === total ? false : true))
+      map(([tracks, total]) => (tracks?.length === total ? false : true))
     );
   }
 
@@ -47,7 +47,7 @@ export class TrackListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.page++;
     this.tracks$ = this.service.getMore(this.page);
     this.hasMore$ = combineLatest([this.tracks$, this.trackNumber$]).pipe(
-      map(([tracks, total]) => (tracks.length === total ? false : true))
+      map(([tracks, total]) => (tracks?.length === total ? false : true))
     );
   }
 

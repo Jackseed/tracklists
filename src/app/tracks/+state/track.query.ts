@@ -57,8 +57,8 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
   public get selectLikedTracks$(): Observable<Track[]> {
     const likedTracks$ = this.playlistQuery.likedTracksPlaylist.pipe(
-      filter(playlist => !!!playlist.trackIds),
-      map((playlist) => playlist.trackIds),
+      filter((playlist) => !!!playlist?.trackIds),
+      map((playlist) => playlist?.trackIds),
       switchMap((trackIds) => this.selectMany(trackIds))
     );
     return likedTracks$;
@@ -73,10 +73,6 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
   public selectSpinner(): Observable<boolean> {
     return this.select((state) => state.ui.spinner);
-  }
-
-  public selectLoadingItem(): Observable<string> {
-    return this.select((state) => state.ui.loadingItem);
   }
 
   public get getExtremeReleaseYears(): MinMax {

@@ -13,8 +13,6 @@ export async function firestoreWrite(req: any, res: any) {
   const firebaseWriteLimit = 500;
   let completeBatches: any[] = [];
 
-  const startTime = performance.now();
-
   for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
     const bactchObjects = objects.slice(
       firebaseWriteLimit * i,
@@ -29,7 +27,7 @@ export async function firestoreWrite(req: any, res: any) {
         type === 'tracks'
           ? (finalObject = {
               ...object,
-              userIds: admin.firestore.FieldValue.arrayUnion(user.id),
+              userIds: admin.firestore.FieldValue.arrayUnion(user.uid),
             })
           : (finalObject = object);
         batch.set(ref, finalObject, { merge: true });
@@ -46,13 +44,7 @@ export async function firestoreWrite(req: any, res: any) {
   res.json({
     result: response,
   });
-  const endTime = performance.now();
-
-  console.log(
-    `Firestore: saved ${objects.length} ${type} in ${Number(
-      (endTime - startTime) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Firestore: saved ${objects.length} ${type}. `);
   return res;
 }
 
@@ -61,8 +53,6 @@ export async function firestoreWrite(req: any, res: any) {
 //--------------------------------------------
 // To enable genre filtering, genres are saved on playlists.
 export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
-  const startTime = performance.now();
-
   const playlists: Playlist[] = req.body.playlists;
   const tracks: Partial<FullTrack>[] = req.body.tracks;
   let response: string = '';
@@ -124,12 +114,54 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   res.json({
     result: response,
   });
-  const endTime = performance.now();
-
-  console.log(
-    `Firestore: saved ${batchArray.length} of genres in ${Number(
-      (endTime - startTime) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Firestore: saved ${batchArray.length} of genres.`);
   return res;
+}
+
+//--------------------------------
+//   CREATES FIREBASE ACCOUNT   //
+//--------------------------------
+export async function createFirebaseAccount(
+  uid: string,
+  displayName: string,
+  email: string
+): Promise<string> {
+  const userDoc = await admin.firestore().collection('users').doc(uid).get();
+  let playlistIds: string[] = [];
+  if (userDoc.exists)
+    if (userDoc.data()!.playlistIds) playlistIds = userDoc.data()!.playlistIds;
+  const dbTask = admin.firestore().collection('users').doc(uid).set(
+    {
+      uid,
+      displayName,
+      email,
+      playlistIds,
+    },
+    { merge: true }
+  );
+  // Creates or update the user account.
+  const authTask = admin
+    .auth()
+    .updateUser(uid, {
+      displayName,
+      email,
+    })
+    .catch((error) => {
+      // If user does not exists we create it.
+      if (error.code === 'auth/user-not-found') {
+        return admin.auth().createUser({
+          uid,
+          displayName,
+          email,
+        });
+      }
+      throw error;
+    });
+  // Waits for all async tasks to complete, then generate and return a custom auth token.
+  await Promise.all([dbTask, authTask]);
+
+  // Creates a Firebase custom auth token.
+  const custom_auth_token = await admin.auth().createCustomToken(uid);
+
+  return custom_auth_token;
 }

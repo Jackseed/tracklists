@@ -1,9 +1,14 @@
 import functions = require('firebase-functions');
+import { Tokens } from './data';
+import { createFirebaseAccount } from './firestore-write';
 const axios = require('axios').default;
 const admin = require('firebase-admin');
-////////////////// REQUEST SPOTIFY REFRESH OR ACCESS TOKENS //////////////////
 
-export async function getSpotifyToken(data: any) {
+//--------------------------------
+//    Requests Spotify token    //
+//--------------------------------
+// Gets either an access or refresh Spotify token.
+export async function getSpotifyToken(data: any): Promise<Tokens> {
   const secret = Buffer.from(
     `${functions.config().spotify.clientid}:${
       functions.config().spotify.clientsecret
@@ -11,7 +16,7 @@ export async function getSpotifyToken(data: any) {
   ).toString('base64');
 
   const params = new URLSearchParams();
-  // same function for either getting an access & refresh tokens (through code, tokenType access) or an access token through refresh token
+  // Parameters change whether it's an access or a refresh token.
   if (data.tokenType === 'access') {
     params.append('grant_type', 'authorization_code');
     params.append('code', data.code);
@@ -30,7 +35,10 @@ export async function getSpotifyToken(data: any) {
 
   let token = '';
   let refresh_token = '';
+  let custom_auth_token = '';
+  let userId = data.userId ? data.userId : '';
 
+  // Requests token to Spotify.
   await axios
     .post('https://accounts.spotify.com/api/token', params, config)
     .then(
@@ -45,24 +53,49 @@ export async function getSpotifyToken(data: any) {
       }
     );
 
-  // save tokens on db
+  // Refresh token means first connexion.
+  if (refresh_token) {
+    // Create a user based on Spotify user info.
+    await axios
+      .get('https://api.spotify.com/v1/me', {
+        headers: { Authorization: 'Bearer ' + token },
+      })
+      .then(async (response: any) => {
+        const uid = response.data.id;
+        const displayName = response.data.display_name;
+        const email = response.data.email;
+        userId = uid;
+
+        custom_auth_token = await createFirebaseAccount(
+          uid,
+          displayName,
+          email
+        );
+      })
+      .catch((error: any) => console.log(error));
+  }
+
+  // Saves tokens on Firestore.
   await axios({
     headers: {
       'Content-Type': 'application/json',
     },
-    url: functions.config().spotify.savetokenfunction,
+    url: functions.config().functions.savetoken,
     data: {
       token,
       refreshToken: refresh_token,
       tokenType: data.tokenType,
-      userId: data.userId,
+      userId,
     },
     method: 'POST',
   }).catch((err: any) => console.log('error: ', err));
-
-  return { token, refresh_token };
+  return { token, refresh_token, custom_auth_token };
 }
 
+//--------------------------------
+//   Saves token to Firestore  //
+//--------------------------------
+// Saves Spotify access or refresh token to Firestore 'user' document.
 export async function saveToken(req: any, res: any) {
   const accessToken = req.body.token;
   if (accessToken) {
@@ -70,7 +103,7 @@ export async function saveToken(req: any, res: any) {
       access: accessToken,
       addedTime: admin.firestore.FieldValue.serverTimestamp(),
     };
-    // add refresh token only when requesting an access token for the first time
+    // Adds refresh token only when requesting an access token for the first time.
     if (req.body.tokenType === 'access')
       tokens = { ...tokens, refresh: req.body.refreshToken };
 

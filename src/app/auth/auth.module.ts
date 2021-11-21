@@ -15,6 +15,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
 
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 @NgModule({
   declarations: [LoginComponent],
   imports: [
@@ -33,7 +35,8 @@ import { RouterModule } from '@angular/router';
     FormsModule,
     MatDialogModule,
     RouterModule,
+    MatProgressSpinnerModule,
   ],
-  exports: [LoginComponent]
+  exports: [LoginComponent],
 })
 export class AuthModule {}

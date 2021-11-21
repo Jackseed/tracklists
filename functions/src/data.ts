@@ -1,18 +1,21 @@
 export interface User {
-  id: string;
+  uid: string;
+  displayName?: string;
   email?: string;
-  token?: string;
-  code?: string;
   tokens?: {
     access?: string;
     addedTime?: any;
     refresh?: string;
   };
-  name?: string;
-  spotifyId?: string;
   deviceId?: string;
   trackIds?: string[];
   playlistIds?: string[];
+}
+
+export interface Tokens {
+  token: string;
+  refresh_token: string;
+  custom_auth_token: string;
 }
 
 export interface SpotifyUser {
@@ -265,7 +268,6 @@ export function createAlbum(params: Partial<Album>): Album {
     id: params.id ? params.id : '',
     name: params.name,
     images: params.images!.map((image) => createImage(image)),
-    // TODO: check if genre is working
     genres: params.genres ? params.genres : [],
     release_year: params.release_date
       ? parseFloat(params.release_date.slice(0, 4))

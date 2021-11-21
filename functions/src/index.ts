@@ -7,7 +7,10 @@ import {
 } from './firestore-write';
 
 const admin = require('firebase-admin');
-admin.initializeApp();
+admin.initializeApp({
+  serviceAccountId:
+    'firebase-adminsdk-zyazz@listy-bcc65.iam.gserviceaccount.com',
+});
 
 //--------------------------------
 //    GETS SPOTIFY AUTH TOKEN   //

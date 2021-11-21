@@ -94,3 +94,7 @@ span {
 .mat-checkbox-background {
   background-color: rgb(204, 204, 204);
 }
+
+.text-centered {
+  text-align: center;
+}

@@ -1,20 +1,15 @@
-<div
-  *ngIf="spotifyUserId$ | async; else notConnected"
-  fxFlexFill
-  fxLayout="column"
-  fxLayoutAlign="start center"
->
+<div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
   <div
     [fxFlex]="(playingTrack$ | async) ? 85 : 100"
-    *ngIf="
-      !(isTrackstoreLoading$ | async) && !(isSpinning$ | async);
-      else loadingTracks
-    "
+    *ngIf="!(isSpinning$ | async); else loadingTracks"
     fxFlexFill
   >
     <div
       fxFlexFill
-      *ngIf="!(isTrackStoreEmpty$ | async); else noTracks"
+      *ngIf="
+        (arePlaylistLoaded$ | async) && (areTracksLoaded$ | async);
+        else noTracks
+      "
       fxLayout="row"
     >
       <!----------------- LEFT BAR ----------------->
@@ -89,13 +84,13 @@
                 <mat-icon>play_circle_outline</mat-icon>
                 Play tracklist
               </button>
-              <button
+<!--               <button
                 mat-raised-button
                 [disabled]="(trackNumber$ | async) === 0"
                 (click)="addRecommended()"
               >
                 Add recommendations
-              </button>
+              </button> -->
               <div fxFlex></div>
               <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
             </div>
@@ -118,7 +113,12 @@
     fxFlexFill
     fxFlex="15"
     fxLayout="row"
-    *ngIf="!(isTrackStoreEmpty$ | async) && (playingTrack$ | async)"
+    *ngIf="
+      (arePlaylistLoaded$ | async) &&
+      (areTracksLoaded$ | async) &&
+      (playingTrack$ | async) &&
+      !(isSpinning$ | async)
+    "
   >
     <div fxFlexOffset="10" fxFlex="70">
       <app-player [track$]="playingTrack$"></app-player>
@@ -126,37 +126,20 @@
   </div>
 </div>
 
-<!----------------- NOT CONNECTED TO SPOTIFY ----------------->
-<ng-template #notConnected>
-  <div fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex class="text-centered">
-      <h2>Log in to Spotify</h2>
-      <p>You need to be connected to load your songs.</p>
-      <button mat-raised-button color="accent" (click)="loginSpotify()">
-        Login
-      </button>
-    </div>
-  </div>
-</ng-template>
-
 <!----------------- NO TRACKS SAVED ----------------->
 <ng-template #noTracks>
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex="nogrow" fxFlexOffset="7.5">
-      <div fxFlex="nogrow" class="text-centered">
-        <h2>Almost there</h2>
-        <p>
-          We need to load your songs from Spotify, it may take a few minutes.
-        </p>
-        <button
-          *ngIf="!(isSpinning$ | async)"
-          mat-raised-button
-          color="accent"
-          (click)="loadPlaylist()"
-        >
-          Load music
-        </button>
-      </div>
+    <div fxFlex="nogrow" class="text-centered">
+      <h2>Almost there</h2>
+      <p>We need to load your songs from Spotify, it may take a few minutes.</p>
+      <button
+        *ngIf="!(isSpinning$ | async)"
+        mat-raised-button
+        color="accent"
+        (click)="loadPlaylist()"
+      >
+        Load music
+      </button>
     </div>
   </div>
 </ng-template>
@@ -167,7 +150,7 @@
     <h2 class="text-centered">Loading your tracks</h2>
 
     <div *ngIf="!(this.userTopTrack$ | async) as track; else tracks">
-      <mat-spinner></mat-spinner>
+      <mat-spinner color="accent" mode="indeterminate"></mat-spinner>
     </div>
     <ng-template #tracks>
       <p class="text-centered">Including</p>

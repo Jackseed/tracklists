@@ -1,11 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { Observable, Subscription, timer } from 'rxjs';
-import { AuthQuery, AuthService } from '../auth/+state';
+import { AuthQuery, AuthService, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, take, tap } from 'rxjs/operators';
-import { Playlist } from 'src/app/playlists/+state';
+import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -23,12 +22,12 @@ import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
   animations: [fadeInOnEnterAnimation(), fadeInAnimation({ duration: 1500 })],
 })
 export class HomepageComponent implements OnInit, OnDestroy {
-  public spotifyUserId$: Observable<string>;
+  public user$: Observable<User>;
   public trackNumber$: Observable<number>;
-  public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
   public isSpinning$: Observable<boolean>;
-  public isTrackStoreEmpty$: Observable<boolean>;
+  public arePlaylistLoaded$: Observable<boolean>;
+  public areTracksLoaded$: Observable<boolean>;
   public userTopTracks: Track[];
   public userTopTrack$: Observable<Track>;
   public fadeInState: boolean = false;
@@ -39,9 +38,9 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
+    private playlistQuery: PlaylistQuery,
     private playerQuery: PlayerQuery,
     private genreQuery: GenreQuery,
-    private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
@@ -51,40 +50,17 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    const user = this.authQuery.getActive();
-    const url = this.router.url;
-    // check if there is already a code registered, otherwise save it
-    if (!url.includes('code')) {
-      this.authService.authSpotify();
-    }
-    this.authService.saveSpotifyCode();
-    // if first connexion, get an access token from spotify
-    if (!user.tokens) {
-      const user = this.authQuery.getActive();
-      const url = this.router.url;
-      const code = url.substring(url.indexOf('=') + 1);
-
-      const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
-      const response = getTokenFunction({
-        code: code,
-        tokenType: 'access',
-        userId: user.id,
-      })
-        .pipe(first())
-        .subscribe();
-    }
-
-    this.spotifyUserId$ = this.authQuery.selectSpotifyUserId();
-
     this.spotifyService.initializePlayer();
 
-    // Shows spinner to user.
-    this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
-
-    this.isTrackStoreEmpty$ = this.trackQuery
+    this.arePlaylistLoaded$ = this.playlistQuery
       .selectCount()
-      .pipe(map((length) => (length === 0 ? true : false)));
+      .pipe(map((length) => (length === 0 ? false : true)));
+    this.areTracksLoaded$ = this.trackQuery
+      .selectCount()
+      .pipe(map((length) => (length === 0 ? false : true)));
+
     this.trackService.setFirestoreTracks();
+    // Shows spinner to user.
     this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.matIconRegistry.addSvgIcon(
@@ -98,10 +74,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.playingTrack$ = this.playerQuery.selectActive();
     // Updates spinner to false to disable loading page if page is reloaded.
     this.trackService.updateSpinner(false);
-  }
-
-  public loginSpotify() {
-    this.authService.authSpotify();
   }
 
   public loadPlaylist() {
@@ -152,7 +124,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
   openDialog(): void {
     const dialogRef = this.dialog.open(PlaylistFormComponent, {
-      width: '250px',
+      width: '400px',
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -213,6 +185,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.animationSub.unsubscribe();
+    if (this.animationSub) this.animationSub.unsubscribe();
   }
 }
