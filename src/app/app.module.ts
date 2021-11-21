@@ -63,7 +63,7 @@ import { USE_EMULATOR as AUTH_EMULATOR } from '@angular/fire/auth';
     AngularFireFunctionsModule,
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
-  providers: [
+ /*  providers: [
     {
       provide: SETTINGS,
       useValue: environment.useEmulators
@@ -78,7 +78,7 @@ import { USE_EMULATOR as AUTH_EMULATOR } from '@angular/fire/auth';
       provide: AUTH_EMULATOR,
       useValue: environment.useEmulators ? ['localhost', 9099] : undefined,
     },
-  ],
+  ], */
   bootstrap: [AppComponent],
 })
 export class AppModule {}

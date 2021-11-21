@@ -1,10 +1,7 @@
 <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
   <div
     [fxFlex]="(playingTrack$ | async) ? 85 : 100"
-    *ngIf="
-      !(isTrackstoreLoading$ | async);
-      else loadingTracks
-    "
+    *ngIf="!(isSpinning$ | async); else loadingTracks"
     fxFlexFill
   >
     <div
@@ -113,7 +110,11 @@
     fxFlexFill
     fxFlex="15"
     fxLayout="row"
-    *ngIf="!(isTrackStoreEmpty$ | async) && (playingTrack$ | async)"
+    *ngIf="
+      !(isTrackStoreEmpty$ | async) &&
+      (playingTrack$ | async) &&
+      !(isSpinning$ | async)
+    "
   >
     <div fxFlexOffset="10" fxFlex="70">
       <app-player [track$]="playingTrack$"></app-player>

@@ -75,8 +75,6 @@ export class SpotifyService {
     player.addListener('ready', async ({ device_id }) => {
       this.authService.saveDeviceId(device_id);
 
-      console.log('Device ready', device_id);
-
       if (trackUris) this.play(trackUris, device_id);
     });
 
@@ -494,7 +492,6 @@ export class SpotifyService {
   ) {
     // let firebaseWriteLimit: number;
     const userId = this.authQuery.getActiveId();
-    const startTime = performance.now();
     await Promise.all(
       objects.map((object) => {
         type === 'tracks'
@@ -506,15 +503,7 @@ export class SpotifyService {
               )
           : collection.doc(object.id).set(object, { merge: true });
       })
-    ).then((_) => {
-      const endTime = performance.now();
-
-      console.log(
-        `Call to firestoreWriteBatches ${type} took ${
-          endTime - startTime
-        } milliseconds`
-      );
-    });
+    );
   }
 
   private async getHeaders(): Promise<HttpHeaders> {

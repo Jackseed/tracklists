@@ -75,10 +75,6 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     return this.select((state) => state.ui.spinner);
   }
 
-  public selectLoadingItem(): Observable<string> {
-    return this.select((state) => state.ui.loadingItem);
-  }
-
   public get getExtremeReleaseYears(): MinMax {
     let releaseYears = this.getAll().map((track) =>
       track.album.release_year ? track.album.release_year : null

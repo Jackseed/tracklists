@@ -25,7 +25,6 @@ import { AngularFireAuth } from '@angular/fire/auth';
 export class HomepageComponent implements OnInit, OnDestroy {
   public user$: Observable<User>;
   public trackNumber$: Observable<number>;
-  public isTrackstoreLoading$: Observable<boolean>;
   public playingTrack$: Observable<PlayerTrack>;
   public isSpinning$: Observable<boolean>;
   public isTrackStoreEmpty$: Observable<boolean>;
@@ -53,14 +52,12 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.spotifyService.initializePlayer();
 
-    // Shows spinner to user.
-    this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
-
     this.isTrackStoreEmpty$ = this.trackQuery
       .selectCount()
       .pipe(map((length) => (length === 0 ? true : false)));
 
     this.trackService.setFirestoreTracks();
+    // Shows spinner to user.
     this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.matIconRegistry.addSvgIcon(
@@ -126,7 +123,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
   openDialog(): void {
     const dialogRef = this.dialog.open(PlaylistFormComponent, {
-      width: '250px',
+      width: '400px',
     });
 
     dialogRef.afterClosed().subscribe(async (result) => {

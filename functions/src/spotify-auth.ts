@@ -52,7 +52,7 @@ export async function getSpotifyToken(data: any): Promise<Tokens> {
         console.log('error: ', error);
       }
     );
- 
+
   // Refresh token means first connexion.
   if (refresh_token) {
     // Create a user based on Spotify user info.
@@ -72,7 +72,7 @@ export async function getSpotifyToken(data: any): Promise<Tokens> {
           email
         );
       })
-      .catch((error: any) => console.log(error.response.data));
+      .catch((error: any) => console.log(error));
   }
 
   // Saves tokens on Firestore.
@@ -80,7 +80,7 @@ export async function getSpotifyToken(data: any): Promise<Tokens> {
     headers: {
       'Content-Type': 'application/json',
     },
-    url: functions.config().spotify.savetokenfunction,
+    url: functions.config().functions.savetoken,
     data: {
       token,
       refreshToken: refresh_token,

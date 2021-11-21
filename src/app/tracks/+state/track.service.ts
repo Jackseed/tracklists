@@ -147,10 +147,6 @@ export class TrackService {
   }
 
   public updateSpinner(spinner: boolean) {
-    this.store.update({ ui: { spinner, loadingItem: '' } });
-  }
-
-  public updateLoadingItem(loadingItem: string) {
-    this.store.update({ ui: { spinner: true, loadingItem } });
+    this.store.update({ ui: { spinner } });
   }
 }

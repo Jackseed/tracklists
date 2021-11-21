@@ -13,12 +13,11 @@ export interface TrackState
     MultiActiveState {
   ui: {
     spinner: boolean;
-    loadingItem: string;
   };
 }
 
 const initialState = {
-  ui: { spinner: false, loadingItem: '' },
+  ui: { spinner: false },
 };
 
 @Injectable({ providedIn: 'root' })

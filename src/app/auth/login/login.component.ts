@@ -18,7 +18,7 @@ export class LoginComponent implements OnInit {
     private authService: AuthService
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit() {
     // Signup / refresh Spotify token process.
     this.afAuth.user
       .pipe(
@@ -37,6 +37,7 @@ export class LoginComponent implements OnInit {
           if (url.includes('code')) {
             console.log('spotting a code');
             const tokens = await this.getSpotifyToken(this.getUrlCode(url));
+            console.log(tokens);
             if (tokens.custom_auth_token) {
               const user = await this.afAuth.signInWithCustomToken(
                 tokens.custom_auth_token
@@ -56,6 +57,8 @@ export class LoginComponent implements OnInit {
 
     this.user$ = this.afAuth.user;
     this.user$.subscribe((_) => console.log('user: ', _));
+
+    this.afAuth.authState.subscribe(console.log);
   }
 
   // Gets a Spotify refresh or access token.

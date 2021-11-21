@@ -13,8 +13,6 @@ export async function firestoreWrite(req: any, res: any) {
   const firebaseWriteLimit = 500;
   let completeBatches: any[] = [];
 
-  const startTime = performance.now();
-
   for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
     const bactchObjects = objects.slice(
       firebaseWriteLimit * i,
@@ -46,13 +44,7 @@ export async function firestoreWrite(req: any, res: any) {
   res.json({
     result: response,
   });
-  const endTime = performance.now();
-
-  console.log(
-    `Firestore: saved ${objects.length} ${type} in ${Number(
-      (endTime - startTime) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Firestore: saved ${objects.length} ${type}. `);
   return res;
 }
 
@@ -61,8 +53,6 @@ export async function firestoreWrite(req: any, res: any) {
 //--------------------------------------------
 // To enable genre filtering, genres are saved on playlists.
 export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
-  const startTime = performance.now();
-
   const playlists: Playlist[] = req.body.playlists;
   const tracks: Partial<FullTrack>[] = req.body.tracks;
   let response: string = '';
@@ -124,13 +114,7 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   res.json({
     result: response,
   });
-  const endTime = performance.now();
-
-  console.log(
-    `Firestore: saved ${batchArray.length} of genres in ${Number(
-      (endTime - startTime) / 1000
-    ).toFixed(2)} seconds.`
-  );
+  console.log(`Firestore: saved ${batchArray.length} of genres.`);
   return res;
 }
 
