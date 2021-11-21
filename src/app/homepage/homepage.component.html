@@ -1,13 +1,8 @@
-<div
-  *ngIf="user$ | async; else notConnected"
-  fxFlexFill
-  fxLayout="column"
-  fxLayoutAlign="start center"
->
+<div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
   <div
     [fxFlex]="(playingTrack$ | async) ? 85 : 100"
     *ngIf="
-      !(isTrackstoreLoading$ | async) && !(isSpinning$ | async);
+      !(isTrackstoreLoading$ | async);
       else loadingTracks
     "
     fxFlexFill
@@ -72,7 +67,6 @@
                   (click)="signOut()"
                   matTooltip="Log out"
                 >
-
                   <mat-icon>power_settings_new</mat-icon>
                 </button>
               </div>
@@ -126,19 +120,6 @@
     </div>
   </div>
 </div>
-
-<!----------------- NOT CONNECTED TO SPOTIFY ----------------->
-<ng-template #notConnected>
-  <div fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex class="text-centered">
-      <h2>Log in to Spotify</h2>
-      <p>You need to be connected to load your songs.</p>
-      <button mat-raised-button color="accent" (click)="loginToSpotify()">
-        Login
-      </button>
-    </div>
-  </div>
-</ng-template>
 
 <!----------------- NO TRACKS SAVED ----------------->
 <ng-template #noTracks>

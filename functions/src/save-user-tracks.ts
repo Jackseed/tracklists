@@ -20,7 +20,6 @@ const axios = require('axios').default;
 export async function saveUserTracks(data: any) {
   const startTime = performance.now();
   const user = data.user;
-
   // Gets user's playlists.
   const startTimeGetPlaylist = performance.now();
   let playlists: Playlist[] = await getSpotifyObjectsByBatches(
@@ -70,7 +69,7 @@ export async function saveUserTracks(data: any) {
   });
 
   // Writes playlist & track ids in user doc.
-  const userRef = admin.firestore().collection('users').doc(user.id);
+  const userRef = admin.firestore().collection('users').doc(user.uid);
   const playlistIds = playlists.map((playlist) => playlist.id);
   const uniqueTrackIds: string[] = uniqueFullTracks.map((track) => track.id!);
 
@@ -132,7 +131,7 @@ async function getUserPlaylistFullTracks(
 
   // Creates liked tracks as a playlist.
   const likedTrackPlaylist: Playlist = {
-    id: `${user.id}LikedTracks`,
+    id: `${user.uid}LikedTracks`,
     name: `Liked tracks`,
     trackIds: likedTrackIds,
     type: 'likedTracks',
@@ -290,7 +289,7 @@ async function getSpotifyObjectsByBatches(
   } else if (objectType === 'playlists') {
     limit = 50;
     total = await getTotalPlaylists(user);
-    url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+    url = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
   } else if (objectType === 'audioFeatures') {
     limit = 100;
     if (ids) total = ids.length;
@@ -342,7 +341,7 @@ async function getTotalLikedTracks(user: User): Promise<number> {
 }
 
 async function getTotalPlaylists(user: User): Promise<number> {
-  const url = `https://api.spotify.com/v1/users/${user.spotifyId}/playlists`;
+  const url = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
   const queryParam = '?limit=1';
 
   const playlists = await getPromisedObjects(user, url, queryParam);

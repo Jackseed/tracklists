@@ -1,16 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NavigationEnd, Router, Scroll } from '@angular/router';
-import { combineLatest, Observable, Subscription, timer } from 'rxjs';
-import {
-  AuthQuery,
-  AuthService,
-  AuthStore,
-  Tokens,
-  User,
-} from '../auth/+state';
+import { Observable, Subscription, timer } from 'rxjs';
+import { AuthQuery, AuthService, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
-import { filter, first, map, take, tap } from 'rxjs/operators';
+import { first, map, take, tap } from 'rxjs/operators';
 import { Playlist } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -42,7 +35,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   private animationSub: Subscription;
 
   constructor(
-    private authStore: AuthStore,
     private authQuery: AuthQuery,
     private authService: AuthService,
     private afAuth: AngularFireAuth,
@@ -50,7 +42,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private trackService: TrackService,
     private playerQuery: PlayerQuery,
     private genreQuery: GenreQuery,
-    private router: Router,
     private spotifyService: SpotifyService,
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
@@ -60,46 +51,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Signup / refresh Spotify token process.
-    this.afAuth.user
-      .pipe(
-        // Waits for redirection to be ended before checking url for a Spotify access code.
-        // filter(([user, event]) => event instanceof NavigationEnd),
-        tap(async (user) => {
-          console.log('starting login');
-          // If a user exists, refreshes Spotify access token.
-          if (user) {
-            console.log('user is here');
-            await this.getSpotifyToken();
-            return;
-          }
-          const url = this.router.url;
-          // If there is an access code within URL, creates a user.
-          if (url.includes('code')) {
-            console.log('spotting a code');
-            const tokens = await this.getSpotifyToken(this.getUrlCode(url));
-            if (tokens.custom_auth_token) {
-              const user = await this.afAuth.signInWithCustomToken(
-                tokens.custom_auth_token
-              );
-              this.authStore.setActive(user.user.uid);
-              this.authService.syncCollection();
-              // Resets the process if there is a code but user isn't connected.
-            } else {
-              return;
-            }
-            // If user isn't connected and there is no code within url, opens dialog to create one.
-          } else {
-            this.loginToSpotify();
-          }
-        }),
-        first()
-      )
-      .subscribe();
-    this.user$ = this.afAuth.user;
-    this.user$.subscribe((_) => console.log('user: ', _));
-
-    // this.spotifyService.initializePlayer();
+    this.spotifyService.initializePlayer();
 
     // Shows spinner to user.
     this.isTrackstoreLoading$ = this.trackQuery.selectLoading();
@@ -108,7 +60,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
       .selectCount()
       .pipe(map((length) => (length === 0 ? true : false)));
 
-    //this.trackService.setFirestoreTracks();
+    this.trackService.setFirestoreTracks();
     this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.matIconRegistry.addSvgIcon(
@@ -124,23 +76,10 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.trackService.updateSpinner(false);
   }
 
-  // Gets a Spotify refresh or access token.
-  private async getSpotifyToken(code?: string): Promise<Tokens> {
-    return code ? this.authService.getToken(code) : this.authService.getToken();
-  }
-
-  // Gets Spotify access code within url.
-  private getUrlCode(url: string): string {
-    return url.substring(url.indexOf('=') + 1);
-  }
-
-  public loginToSpotify() {
-    this.authService.authSpotify();
-  }
-
   public loadPlaylist() {
     this.trackService.updateSpinner(true);
     const user = this.authQuery.getActive();
+    console.log(user);
     const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
     const response = saveFunction({
       user,
@@ -248,6 +187,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.animationSub.unsubscribe();
+    if (this.animationSub) this.animationSub.unsubscribe();
   }
 }

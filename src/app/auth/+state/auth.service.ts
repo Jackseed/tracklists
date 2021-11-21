@@ -131,8 +131,8 @@ export class AuthService extends CollectionService<AuthState> {
 
   public signOut() {
     this.afAuth.signOut().then((_) =>
-      this.router.navigate(['/welcome']).then((_) => {
-        this.router.navigate(['/welcome']);
+      this.router.navigate(['']).then((_) => {
+        this.router.navigate(['']);
         resetStores();
         this.localforage.removeItem('trackStore');
         this.localforage.removeItem('playlistStore');

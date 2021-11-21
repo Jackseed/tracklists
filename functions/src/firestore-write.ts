@@ -29,7 +29,7 @@ export async function firestoreWrite(req: any, res: any) {
         type === 'tracks'
           ? (finalObject = {
               ...object,
-              userIds: admin.firestore.FieldValue.arrayUnion(user.id),
+              userIds: admin.firestore.FieldValue.arrayUnion(user.uid),
             })
           : (finalObject = object);
         batch.set(ref, finalObject, { merge: true });

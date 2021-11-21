@@ -81,8 +81,6 @@ export class PlayerComponent implements OnInit {
       .subscribe();
   }
 
-  // TODO pause when space bar
-
   public async play() {
     await this.spotifyService.play();
   }

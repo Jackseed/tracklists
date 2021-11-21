@@ -63,7 +63,6 @@ export class SpotifyService {
     const player = new Player({
       name: 'Tracklists',
       getOAuthToken: async (callback: any) => {
-        console.log('here');
         const token = (await this.authService.getToken()).token;
 
         callback(token);

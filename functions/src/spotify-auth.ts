@@ -52,7 +52,7 @@ export async function getSpotifyToken(data: any): Promise<Tokens> {
         console.log('error: ', error);
       }
     );
-
+ 
   // Refresh token means first connexion.
   if (refresh_token) {
     // Create a user based on Spotify user info.
