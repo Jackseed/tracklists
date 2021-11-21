@@ -6,7 +6,10 @@
   >
     <div
       fxFlexFill
-      *ngIf="!(isTrackStoreEmpty$ | async); else noTracks"
+      *ngIf="
+        (arePlaylistLoaded$ | async) && (areTracksLoaded$ | async);
+        else noTracks
+      "
       fxLayout="row"
     >
       <!----------------- LEFT BAR ----------------->

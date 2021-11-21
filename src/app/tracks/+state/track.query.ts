@@ -57,8 +57,8 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
   public get selectLikedTracks$(): Observable<Track[]> {
     const likedTracks$ = this.playlistQuery.likedTracksPlaylist.pipe(
-      filter(playlist => !!!playlist.trackIds),
-      map((playlist) => playlist.trackIds),
+      filter((playlist) => !!!playlist?.trackIds),
+      map((playlist) => playlist?.trackIds),
       switchMap((trackIds) => this.selectMany(trackIds))
     );
     return likedTracks$;

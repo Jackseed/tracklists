@@ -80,7 +80,7 @@ export class TrackService {
   public get tracksLength$() {
     return this.selectFilteredTracks().pipe(
       map((tracks) => {
-        return tracks.length;
+        return tracks?.length;
       })
     );
   }

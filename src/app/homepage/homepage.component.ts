@@ -4,7 +4,7 @@ import { AuthQuery, AuthService, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
 import { first, map, take, tap } from 'rxjs/operators';
-import { Playlist } from 'src/app/playlists/+state';
+import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
 import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -14,7 +14,6 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
 import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
-import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-homepage',
@@ -27,7 +26,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
   public trackNumber$: Observable<number>;
   public playingTrack$: Observable<PlayerTrack>;
   public isSpinning$: Observable<boolean>;
-  public isTrackStoreEmpty$: Observable<boolean>;
+  public arePlaylistLoaded$: Observable<boolean>;
+  public areTracksLoaded$: Observable<boolean>;
   public userTopTracks: Track[];
   public userTopTrack$: Observable<Track>;
   public fadeInState: boolean = false;
@@ -36,9 +36,9 @@ export class HomepageComponent implements OnInit, OnDestroy {
   constructor(
     private authQuery: AuthQuery,
     private authService: AuthService,
-    private afAuth: AngularFireAuth,
     private trackQuery: TrackQuery,
     private trackService: TrackService,
+    private playlistQuery: PlaylistQuery,
     private playerQuery: PlayerQuery,
     private genreQuery: GenreQuery,
     private spotifyService: SpotifyService,
@@ -52,9 +52,15 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.spotifyService.initializePlayer();
 
-    this.isTrackStoreEmpty$ = this.trackQuery
+    this.arePlaylistLoaded$ = this.playlistQuery
       .selectCount()
-      .pipe(map((length) => (length === 0 ? true : false)));
+      .pipe(map((length) => (length === 0 ? false : true)));
+    this.areTracksLoaded$ = this.trackQuery
+      .selectCount()
+      .pipe(map((length) => (length === 0 ? false : true)));
+
+    this.arePlaylistLoaded$.subscribe((_) => console.log('playlist: ', _));
+    this.areTracksLoaded$.subscribe((_) => console.log('tracks: ', _));
 
     this.trackService.setFirestoreTracks();
     // Shows spinner to user.

@@ -131,7 +131,7 @@ export async function createFirebaseAccount(
       uid,
       displayName,
       email,
-      emailVerified: true,
+      playlistIds: [],
     },
     { merge: true }
   );
@@ -141,7 +141,6 @@ export async function createFirebaseAccount(
     .updateUser(uid, {
       displayName,
       email,
-      emailVerified: true,
     })
     .catch((error) => {
       // If user does not exists we create it.
@@ -150,7 +149,6 @@ export async function createFirebaseAccount(
           uid,
           displayName,
           email,
-          emailVerified: true,
         });
       }
       throw error;

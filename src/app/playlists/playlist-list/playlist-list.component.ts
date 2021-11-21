@@ -24,6 +24,7 @@ export class PlaylistListComponent implements OnInit {
   ngOnInit(): void {
     // TODO: reduce the amount of calls
     this.playlists$ = this.query.selectAll();
+    this.playlists$.subscribe(console.log);
   }
 
   public setAllActive(event: MatCheckboxChange) {
