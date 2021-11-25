@@ -52,9 +52,15 @@ export class TrackViewComponent implements OnInit {
   }
   public async addoToPlayback() {
     await this.spotifyService.addToPlayback(this.track.uri);
+    this._snackBar.open('Added to queue', '', {
+      duration: 2000,
+    });
   }
   public remove() {
     this.service.removeActive([this.track.id]);
+    this._snackBar.open('Removed from tracklist', '', {
+      duration: 2000,
+    });
   }
 
   public async like() {
