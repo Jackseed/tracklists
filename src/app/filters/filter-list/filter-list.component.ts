@@ -13,8 +13,8 @@ export class FilterListComponent implements OnInit {
     {
       property: 'energy',
       label: 'Energy',
-      min: 'sleep',
-      max: 'coffee',
+      min: 'Sleepy',
+      max: 'Energic',
       extremeValues: {
         min: 0,
         max: 1,
@@ -24,8 +24,8 @@ export class FilterListComponent implements OnInit {
     {
       property: 'danceability',
       label: 'Danceability',
-      min: 'armchair',
-      max: 'disco',
+      min: 'Chill',
+      max: 'Dancy',
       extremeValues: {
         min: 0,
         max: 1,
@@ -35,8 +35,8 @@ export class FilterListComponent implements OnInit {
     {
       property: 'valence',
       label: 'Happyness',
-      min: 'rainy',
-      max: 'sun',
+      min: 'Gloomy',
+      max: 'Joyful',
       extremeValues: {
         min: 0,
         max: 1,
@@ -46,8 +46,8 @@ export class FilterListComponent implements OnInit {
     {
       property: 'popularity',
       label: 'Popularity',
-      min: 'question',
-      max: 'star',
+      min: 'Unknown',
+      max: 'Star',
       extremeValues: {
         min: 0,
         max: 100,
@@ -57,24 +57,24 @@ export class FilterListComponent implements OnInit {
     {
       property: 'release_year',
       label: 'Release Year',
-      min: 'phonogram',
-      max: 'ipod',
+      min: 'Old',
+      max: 'New',
       extremeValues: this.extremeYears,
       step: 1,
     },
     {
       property: 'tempo',
       label: 'BPM',
-      min: 'bump',
-      max: 'pulse',
+      min: 'Low',
+      max: 'High',
       extremeValues: this.extremeTempos,
       step: 1,
     },
     {
       property: 'instrumentalness',
       label: 'Instrumental',
-      min: 'sing',
-      max: 'note',
+      min: 'A capella',
+      max: 'Instrumental',
       extremeValues: {
         min: 0,
         max: 1,
@@ -84,8 +84,8 @@ export class FilterListComponent implements OnInit {
     {
       property: 'acousticness',
       label: 'Acoustic',
-      min: 'electronic',
-      max: 'piano',
+      min: 'Electronic',
+      max: 'Acoustic',
       extremeValues: {
         min: 0,
         max: 1,
@@ -95,8 +95,8 @@ export class FilterListComponent implements OnInit {
     {
       property: 'liveness',
       label: 'Live music',
-      min: 'headset',
-      max: 'tickets',
+      min: 'Studio',
+      max: 'Live',
       extremeValues: {
         min: 0,
         max: 1,

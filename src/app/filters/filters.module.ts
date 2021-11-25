@@ -15,6 +15,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { NzSliderModule } from 'ng-zorro-antd/slider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [FilterViewComponent, FilterListComponent, GenreListComponent],
@@ -32,12 +33,9 @@ import { NzSliderModule } from 'ng-zorro-antd/slider';
     MatChipsModule,
     MatIconModule,
     FlexLayoutModule,
-    NzSliderModule
+    NzSliderModule,
+    MatTooltipModule,
   ],
-  exports: [
-    FilterViewComponent,
-    FilterListComponent,
-    GenreListComponent,
-  ],
+  exports: [FilterViewComponent, FilterListComponent, GenreListComponent],
 })
 export class FiltersModule {}
