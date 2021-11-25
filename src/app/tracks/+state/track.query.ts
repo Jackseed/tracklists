@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
 import { Observable, of } from 'rxjs';
-import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
+import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { MinMax, Track } from './track.model';
 import { AuthQuery } from 'src/app/auth/+state';
 import { AngularFirestore } from '@angular/fire/firestore';
@@ -57,7 +57,6 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
 
   public get selectLikedTracks$(): Observable<Track[]> {
     const likedTracks$ = this.playlistQuery.likedTracksPlaylist.pipe(
-      filter((playlist) => !!!playlist?.trackIds),
       map((playlist) => playlist?.trackIds),
       switchMap((trackIds) => this.selectMany(trackIds))
     );

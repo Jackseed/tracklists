@@ -14,7 +14,7 @@ export class FilterListComponent implements OnInit {
       property: 'energy',
       label: 'Energy',
       min: 'Sleepy',
-      max: 'Energic',
+      max: 'Dynamic',
       extremeValues: {
         min: 0,
         max: 1,

@@ -45,8 +45,9 @@ export class GenreListComponent implements OnInit {
     // genre list filtered by user search inputs
     this.filteredGenres$ = this.genreControl.valueChanges.pipe(
       startWith(''),
+      // Filters genre list with text input.
       switchMap((text) => (text ? this.textFilter(text) : this.genres$)),
-      // remove the already selected genres from genre list
+      // Removes the already selected genres from the genre list.
       map((genres) =>
         genres.filter((genre) => {
           const activeGenreIds = this.query.getActiveId();
@@ -92,12 +93,14 @@ export class GenreListComponent implements OnInit {
     if (input) {
       input.value = '';
     }
-
+    // Resets the form.
     this.genreControl.setValue(null);
   }
 
   remove(genreId: string): void {
     this.service.removeActive(genreId);
+    // Resets the form.
+    this.genreControl.setValue(null);
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {
