@@ -8,8 +8,7 @@ import {
 
 const admin = require('firebase-admin');
 admin.initializeApp({
-  serviceAccountId:
-    'firebase-adminsdk-zyazz@listy-bcc65.iam.gserviceaccount.com',
+  serviceAccountId: functions.config().functions.serviceaccountid,
 });
 
 //--------------------------------
