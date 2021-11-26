@@ -94,7 +94,7 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
     const extremes = {
       // remove 0
       min: Math.floor(Math.min(...tempos.filter(Boolean))),
-      max: Math.ceil(Math.max(...tempos)),
+      max: Math.ceil(Math.max(...tempos.filter(Boolean))),
     };
 
     return extremes;
