@@ -30,6 +30,7 @@ import { AngularFireFunctionsModule } from '@angular/fire/functions';
 import { SETTINGS } from '@angular/fire/firestore';
 import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
 import { USE_EMULATOR as AUTH_EMULATOR } from '@angular/fire/auth';
+import { LandingComponent } from './landing/landing.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import { USE_EMULATOR as AUTH_EMULATOR } from '@angular/fire/auth';
     HomepageComponent,
     PlayerComponent,
     SecToMinPipe,
+    LandingComponent,
   ],
   imports: [
     BrowserModule,

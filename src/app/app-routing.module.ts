@@ -9,11 +9,16 @@ import {
 import { ActiveGuard } from './auth/guard/active.guard';
 import { SyncPlaylistsGuard } from './playlists/+state/guard/sync-playlists.guard';
 import { LoginComponent } from './auth/login/login.component';
+import { LandingComponent } from './landing/landing.component';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['']);
 const redirectLoggedInToHome = () => redirectLoggedInTo(['home']);
 
 const routes: Routes = [
+  {
+    path: 'landing',
+    component: LandingComponent,
+  },
   {
     path: '',
     component: LoginComponent,
