@@ -16,11 +16,11 @@ const redirectLoggedInToHome = () => redirectLoggedInTo(['home']);
 
 const routes: Routes = [
   {
-    path: 'landing',
+    path: '',
     component: LandingComponent,
   },
   {
-    path: '',
+    path: 'login',
     component: LoginComponent,
     canActivate: [AngularFireAuthGuard],
     data: { authGuardPipe: redirectLoggedInToHome },

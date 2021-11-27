@@ -1,0 +1,45 @@
+section {
+  position: relative;
+  min-height: 400px;
+  padding: 100px 20vw;
+}
+
+#blue {
+  background-color: black;
+}
+
+#green {
+  background-color: green;
+}
+
+#yellow {
+  background-color: yellow;
+}
+
+#purple {
+  background-color: purple;
+}
+
+#orange {
+  background-color: orange;
+}
+
+.spacer {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.layer1 {
+  background-image: url("../../assets/layers/layer1.svg");
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 45%;
+  aspect-ratio: 1;
+}
+
+.text {
+  line-height: 60px;
+  margin: 0;
+}
