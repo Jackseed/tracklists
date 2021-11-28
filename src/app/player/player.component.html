@@ -33,7 +33,12 @@
         fxLayoutAlign="start center"
         *ngIf="track$ | async as track"
       >
-        <button fxFlex="5" fxFlexOffset="32" mat-icon-button (click)="shuffle()">
+        <button
+          fxFlex="5"
+          fxFlexOffset="32"
+          mat-icon-button
+          (click)="shuffle()"
+        >
           <mat-icon
             [ngClass]="{ green: (shuffle$ | async) }"
             class="icon"

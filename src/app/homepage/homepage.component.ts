@@ -66,7 +66,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.matIconRegistry.addSvgIcon(
       'arrow',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../assets/purple_arrow.svg`
+        `../assets/buttons/purple_arrow.svg`
       )
     );
 

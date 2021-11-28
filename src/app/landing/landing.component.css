@@ -4,6 +4,19 @@ section {
   padding: 100px 20vw;
 }
 
+#logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 20px;
+}
+
+.icon {
+  transform: scale(0.8);
+  padding-top: 1.5px;
+  padding-right: 5px;
+}
+
 #blue {
   background-color: black;
 }
@@ -30,6 +43,11 @@ section {
   background-size: cover;
 }
 
+.text {
+  line-height: 60px;
+  margin: 0;
+}
+
 .layer1 {
   background-image: url("../../assets/layers/layer1.svg");
   position: absolute;
@@ -39,7 +57,11 @@ section {
   aspect-ratio: 1;
 }
 
-.text {
-  line-height: 60px;
-  margin: 0;
+.layer2 {
+  background-image: url("../../assets/layers/layer2.svg");
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  aspect-ratio: 1;
 }
