@@ -3,6 +3,15 @@ section {
   min-height: 400px;
   padding: 100px 20vw;
 }
+p {
+  margin: 0;
+  font-size: calc(1rem + 0.5vmin);
+}
+
+img {
+  width: calc(3rem + 3vmin);
+  height: calc(3rem + 3vmin);
+}
 
 #logo {
   position: absolute;
@@ -15,26 +24,6 @@ section {
   transform: scale(0.8);
   padding-top: 1.5px;
   padding-right: 5px;
-}
-
-#blue {
-  background-color: black;
-}
-
-#green {
-  background-color: green;
-}
-
-#yellow {
-  background-color: yellow;
-}
-
-#purple {
-  background-color: purple;
-}
-
-#orange {
-  background-color: orange;
 }
 
 .spacer {
@@ -64,4 +53,66 @@ section {
   left: 0;
   width: 45%;
   aspect-ratio: 1;
+}
+
+.layer3 {
+  background-image: url("../../assets/layers/layer3.svg");
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  aspect-ratio: 1;
+}
+
+.layer4 {
+  background-image: url("../../assets/layers/layer4.svg");
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 47%;
+  aspect-ratio: 1.475;
+}
+
+.layer5 {
+  background-image: url("../../assets/layers/layer5.svg");
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 47.2%;
+  aspect-ratio: 0.87;
+}
+
+.layer6 {
+  background-image: url("../../assets/layers/layer6.svg");
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  aspect-ratio: 1;
+}
+
+.layer7 {
+  background-image: url("../../assets/layers/layer7.svg");
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  aspect-ratio: 1;
+}
+
+.layer8 {
+  background-image: url("../../assets/layers/layer8.svg");
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 45%;
+  aspect-ratio: 1;
+}
+
+a:hover {
+  color: red;
+}
+
+a {
+  text-decoration: none;
 }
