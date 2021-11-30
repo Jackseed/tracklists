@@ -32,7 +32,7 @@ export class PlayerComponent implements OnInit {
     this.matIconRegistry.addSvgIcon(
       'shuffle',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../../assets/shuffle.svg`
+        `../assets/buttons/shuffle.svg`
       )
     );
     let interval;

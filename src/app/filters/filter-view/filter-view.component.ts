@@ -33,13 +33,13 @@ export class FilterViewComponent implements OnInit {
     this.matIconRegistry.addSvgIcon(
       this.filter.min,
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../../assets/${this.filter.min}.svg`
+        `../../assets/filters/${this.filter.min}.svg`
       )
     );
     this.matIconRegistry.addSvgIcon(
       this.filter.max,
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../../assets/${this.filter.max}.svg`
+        `../../assets/filters/${this.filter.max}.svg`
       )
     );
   }
