@@ -34,6 +34,10 @@ html::-webkit-scrollbar-thumb {
   font-size: calc(1.1rem + 1.5vmin);
 }
 
+a {
+  text-decoration: none;
+}
+
 h1 {
   margin: 0 !important;
   font-size: calc(1.2rem + 3vmin) !important;
