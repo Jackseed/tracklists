@@ -7,7 +7,7 @@
   <div class="text-centered text">
     <h1>Dig your tracks</h1>
     <p>using Spotify's hidden parameters</p>
-    <button mat-raised-button color="accent">
+    <button mat-raised-button color="accent" (click)="navigateToLogin()">
       <mat-icon class="icon" svgIcon="shovel"></mat-icon><span>Dig it!</span>
     </button>
   </div>
@@ -18,7 +18,9 @@
     <img src="../../assets/download.svg" />
     <h1>Load your library</h1>
     <p>based on your playlists and liked tracks</p>
-    <button mat-raised-button color="primary">Let's go!</button>
+    <button mat-raised-button color="primary" (click)="navigateToLogin()">
+      Let's go!
+    </button>
   </div>
   <div class="spacer layer4"></div>
 </section>
@@ -28,7 +30,9 @@
     <img src="../../assets/filters.svg" />
     <h1>Play with parameters</h1>
     <p>Like danceability, chill or BPM</p>
-    <button mat-raised-button color="primary">Let's play!</button>
+    <button mat-raised-button color="primary" (click)="navigateToLogin()">
+      Let's play!
+    </button>
   </div>
 </section>
 <section fxFlexFill fxLayout="column" fxLayoutAlign="center end">
@@ -36,7 +40,9 @@
     <img src="../../assets/funk.svg" />
     <h1>Discover all the genres</h1>
     <p>behind your tracks</p>
-    <button mat-raised-button color="primary">Go!</button>
+    <button mat-raised-button color="primary" (click)="navigateToLogin()">
+      Go!
+    </button>
   </div>
   <div class="spacer layer6"></div>
 </section>

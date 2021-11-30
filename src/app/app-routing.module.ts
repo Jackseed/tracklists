@@ -18,6 +18,8 @@ const routes: Routes = [
   {
     path: '',
     component: LandingComponent,
+    canActivate: [AngularFireAuthGuard],
+    data: { authGuardPipe: redirectLoggedInToHome },
   },
   {
     path: 'login',
@@ -38,6 +40,11 @@ const routes: Routes = [
         component: HomepageComponent,
       },
     ],
+  },
+  {
+    path: '**',
+    redirectTo: '',
+    pathMatch: 'full',
   },
 ];
 

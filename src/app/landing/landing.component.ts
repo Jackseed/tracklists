@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-landing',
@@ -10,7 +11,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class LandingComponent implements OnInit {
   constructor(
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private router: Router
   ) {
     this.matIconRegistry.addSvgIcon(
       'shovel',
@@ -21,4 +23,8 @@ export class LandingComponent implements OnInit {
   }
 
   ngOnInit(): void {}
+
+  navigateToLogin() {
+    this.router.navigate(['login']);
+  }
 }
