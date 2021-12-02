@@ -1,36 +1,74 @@
-<section fxFlexFill fxLayout="row" fxLayoutAlign="center center">
+<section
+  class="overflow-hidden"
+  fxFlexFill
+  fxLayout="row"
+  fxLayoutAlign="center center"
+>
   <div id="logo">
     <h1><a class="white" href="">Tracklists</a></h1>
   </div>
-  <div class="spacer layer1"></div>
-  <div class="spacer layer2"></div>
+  <div
+    class="spacer layer1"
+    [@heartBeat]="animStates[1]"
+    (@heartBeat.done)="animDone(1)"
+  ></div>
+  <div
+    class="spacer layer2"
+    [@heartBeat]="animStates[1]"
+    (@heartBeat.done)="animDone(1)"
+  ></div>
   <div class="text-centered text">
     <h1>Dig your tracks</h1>
     <p>using Spotify's hidden parameters</p>
-    <button mat-raised-button color="accent" (click)="navigateToLogin()">
+    <button
+      mat-raised-button
+      color="accent"
+      (click)="navigateToLogin()"
+      (mouseenter)="toggleAnimation(1)"
+      (mouseleave)="toggleAnimation(1)"
+    >
       <mat-icon class="icon" svgIcon="shovel"></mat-icon><span>Dig it!</span>
     </button>
   </div>
 </section>
 <section fxFlexFill fxLayout="column" fxLayoutAlign="start end">
-  <div class="spacer layer3"></div>
+  <div
+    class="spacer layer3"
+    [@heartBeat]="animStates[1]"
+    (@heartBeat.done)="animDone(1)"
+  ></div>
   <div class="text margin-top">
     <img src="../../assets/download.svg" />
     <h1>Load your library</h1>
     <p>based on your playlists and liked tracks</p>
-    <button mat-raised-button color="primary" (click)="navigateToLogin()">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="navigateToLogin()"
+      (mouseenter)="toggleAnimation(2)"
+      (mouseleave)="toggleAnimation(2)"
+    >
       Let's go!
     </button>
   </div>
-  <div class="spacer layer4"></div>
 </section>
-<section fxFlexFill fxLayout="column" fxLayoutAlign="center start">
-  <div class="spacer layer5"></div>
+<section id="three" fxFlexFill fxLayout="column" fxLayoutAlign="center start">
+  <div
+    class="spacer layer4"
+    [@rotate]="animStates[2]"
+    (@rotate.done)="animDone(2)"
+  ></div>
   <div class="text">
     <img src="../../assets/filters.svg" />
     <h1>Play with parameters</h1>
     <p>Like danceability, chill or BPM</p>
-    <button mat-raised-button color="primary" (click)="navigateToLogin()">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="navigateToLogin()"
+      (mouseenter)="toggleAnimation(2)"
+      (mouseleave)="toggleAnimation(2)"
+    >
       Let's play!
     </button>
   </div>
@@ -44,11 +82,28 @@
       Go!
     </button>
   </div>
-  <div class="spacer layer6"></div>
+  <div
+    class="spacer layer5"
+    [@pulse]="animStates[3]"
+    (@pulse.done)="loopDone()"
+  ></div>
 </section>
-<section fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-  <div class="spacer layer7"></div>
-  <div class="spacer layer8"></div>
+<section
+  class="overflow-hidden"
+  fxFlexFill
+  fxLayout="row"
+  fxLayoutAlign="center center"
+>
+  <div
+    class="spacer layer6"
+    [@pulse]="animStates[3]"
+    (@pulse.done)="loopDone()"
+  ></div>
+  <div
+    class="spacer layer7"
+    [@pulse]="animStates[3]"
+    (@pulse.done)="loopDone()"
+  ></div>
   <div class="text-centered text">
     <h1>Free and open source</h1>
     <br />
