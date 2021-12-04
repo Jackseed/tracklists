@@ -12,11 +12,6 @@ section {
   overflow: clip visible;
 }
 
-p {
-  margin: 0;
-  font-size: calc(1rem + 0.5vmin);
-}
-
 img {
   width: calc(3rem + 3vmin);
   height: calc(3rem + 3vmin);

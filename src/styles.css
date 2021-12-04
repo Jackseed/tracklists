@@ -107,13 +107,19 @@ span {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 20px;
+  padding: 36px;
 }
+
+#logo-text {
+  font-size: calc(2rem + 3vmin) !important;
+}
+
 .white {
   color: white;
 }
 
-.text {
-  line-height: 60px;
-  margin: 0;
+.bigger {
+  padding-top: 12px;
+  line-height: calc(0.5rem + 3vmin);
+  font-size: calc(1rem + 0.5vmin);
 }

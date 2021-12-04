@@ -5,7 +5,7 @@
   fxLayoutAlign="center center"
 >
   <div id="logo">
-    <h1><a class="white" href="">Tracklists</a></h1>
+    <h1><a class="white" id="logo-text" href="">Tracklists</a></h1>
   </div>
   <div
     class="spacer layer1"
@@ -17,9 +17,9 @@
     [@heartBeat]="animStates[1]"
     (@heartBeat.done)="animDone(1)"
   ></div>
-  <div class="text-centered text">
+  <div class="text-centered">
     <h1>Dig your tracks</h1>
-    <p>using Spotify's hidden parameters</p>
+    <p class="bigger">using Spotify's hidden parameters</p>
     <button
       mat-raised-button
       color="accent"
@@ -37,10 +37,10 @@
     [@heartBeat]="animStates[1]"
     (@heartBeat.done)="animDone(1)"
   ></div>
-  <div class="text margin-top">
+  <div class="margin-top">
     <img src="../../assets/download.svg" />
     <h1>Load your library</h1>
-    <p>based on your playlists and liked tracks</p>
+    <p class="bigger">based on your playlists and liked tracks</p>
     <button
       mat-raised-button
       color="primary"
@@ -58,10 +58,10 @@
     [@rotate]="animStates[2]"
     (@rotate.done)="animDone(2)"
   ></div>
-  <div class="text">
+  <div>
     <img src="../../assets/filters.svg" />
     <h1>Play with parameters</h1>
-    <p>Like danceability, chill or BPM</p>
+    <p class="bigger">Like danceability, chill or BPM</p>
     <button
       mat-raised-button
       color="primary"
@@ -74,10 +74,10 @@
   </div>
 </section>
 <section fxFlexFill fxLayout="column" fxLayoutAlign="center end">
-  <div class="text">
+  <div>
     <img src="../../assets/funk.svg" />
     <h1>Discover all the genres</h1>
-    <p>behind your tracks</p>
+    <p class="bigger">behind your tracks</p>
     <button mat-raised-button color="primary" (click)="navigateToLogin()">
       Go!
     </button>
@@ -104,7 +104,7 @@
     [@pulse]="animStates[3]"
     (@pulse.done)="loopDone()"
   ></div>
-  <div class="text-centered text">
+  <div class="text-centered">
     <h1>Free and open source</h1>
     <br />
     <h1>

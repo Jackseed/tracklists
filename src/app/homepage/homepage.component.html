@@ -84,7 +84,7 @@
                 <mat-icon>play_circle_outline</mat-icon>
                 Play tracklist
               </button>
-<!--               <button
+              <!--               <button
                 mat-raised-button
                 [disabled]="(trackNumber$ | async) === 0"
                 (click)="addRecommended()"
@@ -129,9 +129,11 @@
 <!----------------- NO TRACKS SAVED ----------------->
 <ng-template #noTracks>
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
-    <div fxFlex="nogrow" class="text-centered">
-      <h2>Almost there</h2>
-      <p>We need to load your songs from Spotify, it may take a few minutes.</p>
+    <div fxFlex="nogrow" class="text-centered text">
+      <h1>Almost there</h1>
+      <p class="bigger">
+        We need to load your songs from Spotify, it may take a few minutes.
+      </p>
       <button
         *ngIf="!(isSpinning$ | async)"
         mat-raised-button
