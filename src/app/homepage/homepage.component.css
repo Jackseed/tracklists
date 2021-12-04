@@ -55,3 +55,8 @@
 .mat-card-subtitle {
   margin-bottom: 0;
 }
+
+::ng-deep.mat-tab-label,
+::ng-deep.mat-tab-label-active {
+  min-width: 128px !important;
+}
