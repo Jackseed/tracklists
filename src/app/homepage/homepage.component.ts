@@ -51,6 +51,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.spotifyService.initializePlayer();
+    // Shows spinner to user.
+    this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.arePlaylistLoaded$ = this.playlistQuery
       .selectCount()
@@ -60,8 +62,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
       .pipe(map((length) => (length === 0 ? false : true)));
 
     this.trackService.setFirestoreTracks();
-    // Shows spinner to user.
-    this.isSpinning$ = this.trackQuery.selectSpinner();
 
     this.matIconRegistry.addSvgIcon(
       'arrow',
@@ -72,8 +72,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
-    // Updates spinner to false to disable loading page if page is reloaded.
-    this.trackService.updateSpinner(false);
   }
 
   public loadPlaylist() {
