@@ -33,7 +33,6 @@ export class GenreService extends CollectionService<GenreState> {
 
   // Adds genres to the store.
   public addPlaylistGenres(playlistId: string) {
-    const startTime = performance.now();
     this.db
       .collection('playlists')
       .doc(playlistId)
@@ -58,10 +57,7 @@ export class GenreService extends CollectionService<GenreState> {
         ),
         first()
       )
-      .subscribe((_) => {
-        const endTime = performance.now();
-        console.log(`Adding genres took ${(endTime - startTime) / 1000}s.`);
-      });
+      .subscribe();
   }
   // Removes genres from the store.
   public removePlaylistGenres(playlistId: string) {
