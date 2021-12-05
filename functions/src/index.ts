@@ -29,7 +29,7 @@ exports.saveToken = functions
 //     SAVES USER PLAYLISTS     //
 //--------------------------------
 exports.saveUserPlaylists = functions
-  .runWith({ timeoutSeconds: 500 })
+  .runWith({ timeoutSeconds: 500, memory: '512MB' })
   .https.onCall(saveUserTracks);
 
 //--------------------------------
