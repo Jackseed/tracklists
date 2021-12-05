@@ -31,8 +31,7 @@ export class GenreService extends CollectionService<GenreState> {
     this.store.toggleActive(genreId);
   }
 
-
-  // add genres to the store
+  // Adds genres to the store.
   public addPlaylistGenres(playlistId: string) {
     this.db
       .collection('playlists')
@@ -41,22 +40,18 @@ export class GenreService extends CollectionService<GenreState> {
       .valueChanges()
       .pipe(
         tap((genres: Genre[]) =>
-          genres.map((genre) => {
-            const trackIds = this.trackQuery.getAll().map((track) => track.id);
-            this.store.upsert(genre.id, (entity) => ({
-              id: genre.id,
-              // if the genre already exists in the store, add the tracks to that genre
+          genres.map((newGenre) => {
+            this.store.upsert(newGenre.id, (existingGenre) => ({
+              id: newGenre.id,
+              // if the genre already exists in the store, add the new unique tracks to that genre
               // otherwise, add its tracks only
-              // verify also that the track exists in the store
-              trackIds: entity.trackIds
-                ? entity.trackIds.concat(
-                    genre.trackIds.filter(
-                      (trackId) =>
-                        !entity.trackIds.includes(trackId) &&
-                        trackIds.includes(trackId)
+              trackIds: existingGenre.trackIds
+                ? existingGenre.trackIds.concat(
+                    newGenre.trackIds.filter(
+                      (trackId) => !existingGenre.trackIds.includes(trackId)
                     )
                   )
-                : genre.trackIds,
+                : newGenre.trackIds,
             }));
           })
         ),
@@ -64,7 +59,7 @@ export class GenreService extends CollectionService<GenreState> {
       )
       .subscribe();
   }
-  // remove genres to the store
+  // Removes genres from the store.
   public removePlaylistGenres(playlistId: string) {
     this.db
       .collection('playlists')
