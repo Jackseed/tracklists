@@ -13,7 +13,13 @@
       fxLayout="row"
     >
       <!----------------- LEFT BAR ----------------->
-      <div fxFlexOffset="10" fxFlex="25" fxFlexFill>
+      <div
+        fxFlexOffset.lt-lg="5"
+        fxFlexOffset="10"
+        fxFlex.lt-lg="30"
+        fxFlex="25"
+        fxFlexFill
+      >
         <div fxLayout="column" fxFlexFill>
           <div fxFlexOffset="10" fxFlex="90" class="left-bar">
             <mat-tab-group mat-align-tabs="center" fxFlexFill>
@@ -35,15 +41,9 @@
         </div>
       </div>
       <!----------------- RIGHT BAR ----------------->
-      <div fxFlex="40" fxFlexOffset="5" fxFlexFill>
+      <div fxFlex.lt-lg="55" fxFlex="40" fxFlexOffset="5" fxFlexFill>
         <div fxLayout="column" fxFlexFill>
-          <div
-            fxFlexOffset="5"
-            fxLayout="column"
-            fxFlexFill
-            class="header"
-            fxFlex="15"
-          >
+          <div fxFlexOffset="5" fxLayout="column" fxFlexFill fxFlex.lt-md="10" fxFlex="15">
             <div fxFlex="nogrow" fxAlign="row">
               <h1>Tracklists</h1>
               <div fxFlex></div>
