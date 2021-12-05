@@ -14,6 +14,7 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
 import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
+import { MediaObserver } from '@angular/flex-layout';
 
 @Component({
   selector: 'app-homepage',
@@ -46,7 +47,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private fns: AngularFireFunctions
+    private fns: AngularFireFunctions,
+    public media: MediaObserver
   ) {}
 
   ngOnInit() {

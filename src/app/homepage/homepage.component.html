@@ -10,99 +10,112 @@
         (arePlaylistLoaded$ | async) && (areTracksLoaded$ | async);
         else noTracks
       "
-      fxLayout="row"
     >
-      <!----------------- LEFT BAR ----------------->
       <div
-        fxFlexOffset.lt-lg="5"
-        fxFlexOffset="10"
-        fxFlex.lt-lg="30"
-        fxFlex="25"
+        *ngIf="!this.media.isActive('xs'); else mobile"
         fxFlexFill
+        fxLayout="row"
       >
-        <div fxLayout="column" fxFlexFill>
-          <div fxFlexOffset="10" fxFlex="90" class="left-bar">
-            <mat-tab-group mat-align-tabs="center" fxFlexFill>
-              <mat-tab label="Playlists">
-                <div fxLayout="row" fxLayoutAlign="center center">
-                  <div fxFlex="90"><app-playlist-list></app-playlist-list></div>
-                </div>
-              </mat-tab>
-              <mat-tab label="Filters">
-                <div fxLayout="row" fxLayoutAlign="center center">
-                  <div fxFlex="80">
-                    <app-genre-list></app-genre-list>
-                    <app-filter-list></app-filter-list>
+        <!----------------- LEFT BAR ----------------->
+        <div
+          fxFlexOffset.lt-lg="5"
+          fxFlexOffset="10"
+          fxFlex.lt-lg="30"
+          fxFlex="25"
+          fxFlexFill
+        >
+          <div fxLayout="column" fxFlexFill>
+            <div fxFlexOffset="10" fxFlex="90" class="left-bar">
+              <mat-tab-group mat-align-tabs="center" fxFlexFill>
+                <mat-tab label="Playlists">
+                  <div fxLayout="row" fxLayoutAlign="center center">
+                    <div fxFlex="90">
+                      <app-playlist-list></app-playlist-list>
+                    </div>
                   </div>
-                </div>
-              </mat-tab>
-            </mat-tab-group>
+                </mat-tab>
+                <mat-tab label="Filters">
+                  <div fxLayout="row" fxLayoutAlign="center center">
+                    <div fxFlex="80">
+                      <app-genre-list></app-genre-list>
+                      <app-filter-list></app-filter-list>
+                    </div>
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
+            </div>
           </div>
         </div>
-      </div>
-      <!----------------- RIGHT BAR ----------------->
-      <div fxFlex.lt-lg="55" fxFlex="40" fxFlexOffset="5" fxFlexFill>
-        <div fxLayout="column" fxFlexFill>
-          <div fxFlexOffset="5" fxLayout="column" fxFlexFill fxFlex.lt-md="10" fxFlex="15">
-            <div fxFlex="nogrow" fxAlign="row">
-              <h1>Tracklists</h1>
-              <div fxFlex></div>
-              <div fxFlex="nogrow">
-                <button
-                  mat-icon-button
-                  (click)="savePlaylist()"
-                  matTooltip="Save as playlist"
-                >
-                  <mat-icon>save</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  (click)="loadPlaylist()"
-                  matTooltip="Reload Spotify tracks"
-                >
-                  <mat-icon>refresh</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  (click)="signOut()"
-                  matTooltip="Log out"
-                >
-                  <mat-icon>power_settings_new</mat-icon>
-                </button>
+        <!----------------- RIGHT BAR ----------------->
+        <div fxFlex.lt-lg="55" fxFlex="40" fxFlexOffset="5" fxFlexFill>
+          <div fxLayout="column" fxFlexFill>
+            <div
+              fxFlexOffset="5"
+              fxLayout="column"
+              fxFlexFill
+              fxFlex.lt-md="10"
+              fxFlex="15"
+            >
+              <div fxFlex="nogrow" fxAlign="row">
+                <h1>Tracklists</h1>
+                <div fxFlex></div>
+                <div fxFlex="nogrow">
+                  <button
+                    mat-icon-button
+                    (click)="savePlaylist()"
+                    matTooltip="Save as playlist"
+                  >
+                    <mat-icon>save</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    (click)="loadPlaylist()"
+                    matTooltip="Reload Spotify tracks"
+                  >
+                    <mat-icon>refresh</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    (click)="signOut()"
+                    matTooltip="Log out"
+                  >
+                    <mat-icon>power_settings_new</mat-icon>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <mat-divider></mat-divider>
-            <div fxFlex="nogrow" fxAlign="row" fxLayoutAlign="start center">
-              <button
-                mat-raised-button
-                color="accent"
-                class="play"
-                (click)="playAll()"
-                [disabled]="(trackNumber$ | async) === 0"
-              >
-                <mat-icon>play_circle_outline</mat-icon>
-                Play tracklist
-              </button>
-              <!--               <button
+              <mat-divider></mat-divider>
+              <div fxFlex="nogrow" fxAlign="row" fxLayoutAlign="start center">
+                <button
+                  mat-raised-button
+                  color="accent"
+                  class="play"
+                  (click)="playAll()"
+                  [disabled]="(trackNumber$ | async) === 0"
+                >
+                  <mat-icon>play_circle_outline</mat-icon>
+                  Play tracklist
+                </button>
+                <!--               <button
                 mat-raised-button
                 [disabled]="(trackNumber$ | async) === 0"
                 (click)="addRecommended()"
               >
                 Add recommendations
               </button> -->
-              <div fxFlex></div>
-              <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
+                <div fxFlex></div>
+                <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
+              </div>
             </div>
-          </div>
-          <!----------------- TRACK LIST ----------------->
-          <div
-            class="track-list"
-            fxFlexFill
-            fxFlex
-            *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
-          >
-            <app-track-list></app-track-list>
+            <!----------------- TRACK LIST ----------------->
+            <div
+              class="track-list"
+              fxFlexFill
+              fxFlex
+              *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
+            >
+              <app-track-list></app-track-list>
+            </div>
           </div>
         </div>
       </div>
@@ -201,5 +214,46 @@
       class="icon"
       svgIcon="arrow"
     ></mat-icon>
+  </div>
+</ng-template>
+
+<!----------------- MOBILE VERSION ----------------->
+<ng-template #mobile>
+  <div fxFlexFill fxLayout="column">
+    <div fxFlexOffset="5" class="text-centered"><h1>Tracklists</h1></div>
+
+    <div>
+      <mat-tab-group mat-align-tabs="center" fxFlexFill>
+        <mat-tab label="Tracks">
+          <div fxLayout="row" fxLayoutAlign="center center">
+            <div fxFlex="80">
+              <div
+                class="track-list"
+                fxFlexFill
+                fxFlex
+                *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
+              >
+                <app-track-list></app-track-list>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+        <mat-tab label="Playlists">
+          <div fxLayout="row" fxLayoutAlign="center center">
+            <div fxFlex="80">
+              <app-playlist-list></app-playlist-list>
+            </div>
+          </div>
+        </mat-tab>
+        <mat-tab label="Filters">
+          <div fxLayout="row" fxLayoutAlign="center center">
+            <div fxFlex="80">
+              <app-genre-list></app-genre-list>
+              <app-filter-list></app-filter-list>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
   </div>
 </ng-template>
