@@ -220,12 +220,37 @@
 <!----------------- MOBILE VERSION ----------------->
 <ng-template #mobile>
   <div fxFlexFill fxLayout="column">
-    <div fxFlexOffset="5" class="text-centered"><h1>Tracklists</h1></div>
+    <div fxFlexOffset="5" fxFlex="5" class="text-centered">
+      <h1>Tracklists</h1>
+    </div>
 
-    <div>
-      <mat-tab-group mat-align-tabs="center" fxFlexFill>
-        <mat-tab label="Tracks">
-          <div fxLayout="row" fxLayoutAlign="center center">
+    <div fxFlex="92">
+      <mat-tab-group
+        fxFlexFill
+        fxFill
+        mat-align-tabs="center"
+        headerPosition="below"
+      >
+        <mat-tab #tracks>
+          <ng-template mat-tab-label>
+            <div
+              fxLayout="column"
+              class="margin-top"
+              fxLayoutAlign="center center"
+            >
+              <mat-icon
+                svgIcon="tracklists-fill"
+                *ngIf="tracks?.isActive"
+              ></mat-icon>
+              <mat-icon
+                svgIcon="tracklists-empty"
+                *ngIf="!tracks?.isActive"
+              ></mat-icon>
+
+              <div class="nav-titles">Tracks</div>
+            </div>
+          </ng-template>
+          <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
             <div fxFlex="80">
               <div
                 class="track-list"
@@ -238,14 +263,49 @@
             </div>
           </div>
         </mat-tab>
-        <mat-tab label="Playlists">
-          <div fxLayout="row" fxLayoutAlign="center center">
+        <mat-tab #playlists>
+          <ng-template mat-tab-label>
+            <div
+              fxLayout="column"
+              class="margin-top"
+              fxLayoutAlign="center center"
+            >
+              <mat-icon
+                svgIcon="playlists-fill"
+                *ngIf="playlists?.isActive"
+              ></mat-icon>
+              <mat-icon
+                svgIcon="playlists-empty"
+                *ngIf="!playlists?.isActive"
+              ></mat-icon>
+
+              <div class="nav-titles">Playlists</div>
+            </div>
+          </ng-template>
+          <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
             <div fxFlex="80">
               <app-playlist-list></app-playlist-list>
             </div>
           </div>
         </mat-tab>
-        <mat-tab label="Filters">
+        <mat-tab #filters>
+          <ng-template mat-tab-label>
+            <div
+              fxLayout="column"
+              class="margin-top"
+              fxLayoutAlign="center center"
+            >
+              <mat-icon
+                svgIcon="filters-fill"
+                *ngIf="filters?.isActive"
+              ></mat-icon>
+              <mat-icon
+                svgIcon="filters-empty"
+                *ngIf="!filters?.isActive"
+              ></mat-icon>
+              <div class="nav-titles">Filters</div>
+            </div>
+          </ng-template>
           <div fxLayout="row" fxLayoutAlign="center center">
             <div fxFlex="80">
               <app-genre-list></app-genre-list>

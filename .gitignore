@@ -52,3 +52,4 @@ firestore-debug.log
 ui-debug.log
 /functions/.runtimeconfig.json
 firebase-debug.log
+functions/emulator.json

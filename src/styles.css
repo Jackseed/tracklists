@@ -123,3 +123,23 @@ span {
   line-height: calc(0.5rem + 3vmin);
   font-size: calc(1rem + 0.5vmin);
 }
+
+/* gt-xs */
+@media screen and (min-width: 600px) {
+  .mat-tab-label,
+  .mat-tab-label-active {
+    min-width: 128px !important;
+  }
+}
+/* xs */
+@media screen and (max-width: 599px) {
+  .mat-tab-label,
+  .mat-tab-label-active {
+    padding: 0px 12px !important;
+    width: 33% !important;
+  }
+}
+
+.mat-tab-label.mat-tab-label-active {
+  opacity: 1;
+}
