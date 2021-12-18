@@ -6,6 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlaylistQuery, PlaylistService } from 'src/app/playlists/+state';
 import { first, map, tap } from 'rxjs/operators';
 import { PlayerQuery } from 'src/app/player/+state';
+import { MediaObserver } from '@angular/flex-layout';
 
 @Component({
   selector: 'app-track-view',
@@ -24,7 +25,8 @@ export class TrackViewComponent implements OnInit {
     private playlistQuery: PlaylistQuery,
     private playlistService: PlaylistService,
     private playerQuery: PlayerQuery,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    public media: MediaObserver
   ) {}
 
   ngOnInit(): void {
