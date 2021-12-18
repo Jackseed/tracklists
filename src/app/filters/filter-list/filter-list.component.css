@@ -1,3 +1,7 @@
 div:not(:first-child) {
   margin-top: 25px;
 }
+
+.filters {
+  margin-bottom: 25px;
+}

@@ -114,6 +114,7 @@ span {
   font-size: calc(2rem + 3vmin) !important;
 }
 
+
 .white {
   color: white;
 }
@@ -142,4 +143,8 @@ span {
 
 .mat-tab-label.mat-tab-label-active {
   opacity: 1;
+}
+
+.mat-tab-body-wrapper {
+  height: 100%;
 }

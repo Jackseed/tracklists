@@ -16,13 +16,13 @@
 </div>
 
 <ng-template #mobile>
-  <div fxFlexFill *ngIf="playlists$ | async as playlists">
+  <div fxFlexFill *ngIf="playlists$ | async as playlists" id="playlists">
     <div class="margins">
       <mat-slide-toggle color="primary" (change)="setAllActive($event)">
         Select all
       </mat-slide-toggle>
     </div>
-    <div *ngFor="let playlist of playlists">
+    <div *ngFor="let playlist of playlists" class="playlist">
       <app-playlist-view [playlist]="playlist"></app-playlist-view>
     </div>
   </div>

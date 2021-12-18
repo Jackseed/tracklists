@@ -203,16 +203,24 @@
 <!----------------- NO ACTIVE TRACK----------------->
 <ng-template #noActiveTrack>
   <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
-    <div fxFlex="15"></div>
+    <div fxFlex.xs="100" fxFlex="15"></div>
     <h3 fxFlex="nogrow" class="text-centered">No playlist selected</h3>
     <p fxFlex="nogrow" class="text-centered">
       Select a playlist to load its tracks
     </p>
     <mat-icon
+      *ngIf="!this.media.isActive('xs')"
       fxFlexOffset="10"
       fxFlex="nogrow"
       class="icon"
-      svgIcon="arrow"
+      svgIcon="curvy-arrow"
+    ></mat-icon>
+    <mat-icon
+      *ngIf="this.media.isActive('xs')"
+      fxFlexOffset="15"
+      fxFlex="nogrow"
+      class="rotate"
+      svgIcon="straight-arrow"
     ></mat-icon>
   </div>
 </ng-template>
@@ -220,11 +228,59 @@
 <!----------------- MOBILE VERSION ----------------->
 <ng-template #mobile>
   <div fxFlexFill fxLayout="column">
-    <div fxFlexOffset="5" fxFlex="5" class="text-centered">
-      <h1>Tracklists</h1>
+    <div fxFlexOffset="5" fxFlex="5" class="text-centered margin-bottom-4">
+      <div
+        fxFlexFill
+        fxLayout="row"
+        class="padding-left"
+        fxLayoutAlign="start center"
+      >
+        <h1 class="padding-top-4">Tracklists</h1>
+        <div fxFlex></div>
+        <div fxFlex="nogrow">
+          <button
+            mat-icon-button
+            (click)="savePlaylist()"
+            matTooltip="Save as playlist"
+          >
+            <mat-icon>save</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="loadPlaylist()"
+            matTooltip="Reload Spotify tracks"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button mat-icon-button (click)="signOut()" matTooltip="Log out">
+            <mat-icon>power_settings_new</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!--  TODO: Create a header component -->
+    <mat-divider></mat-divider>
+    <div
+      fxFlex="nogrow"
+      fxAlign="row"
+      fxLayoutAlign="start center"
+      class="margins"
+    >
+      <button
+        mat-raised-button
+        color="accent"
+        class="play"
+        (click)="playAll()"
+        [disabled]="(trackNumber$ | async) === 0"
+      >
+        <mat-icon>play_circle_outline</mat-icon>
+        Play tracklist
+      </button>
+      <div fxFlex></div>
+      <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
     </div>
 
-    <div fxFlex="92">
+    <div fxFlex="83">
       <mat-tab-group
         fxFlexFill
         fxFill
@@ -255,7 +311,6 @@
               <div
                 class="track-list"
                 fxFlexFill
-                fxFlex
                 *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
               >
                 <app-track-list></app-track-list>
@@ -283,7 +338,7 @@
             </div>
           </ng-template>
           <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-            <div fxFlex="80">
+            <div fxFlex="80" class="playlists">
               <app-playlist-list></app-playlist-list>
             </div>
           </div>

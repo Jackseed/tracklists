@@ -51,9 +51,15 @@ export class HomepageComponent implements OnInit, OnDestroy {
     public media: MediaObserver
   ) {
     this.matIconRegistry.addSvgIcon(
-      'arrow',
+      'curvy-arrow',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../assets/buttons/purple_arrow.svg`
+        `../assets/curvy_arrow.svg`
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'straight-arrow',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        `../assets/straight-arrow.svg`
       )
     );
     this.matIconRegistry.addSvgIcon(

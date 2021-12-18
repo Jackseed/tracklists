@@ -56,7 +56,30 @@
   margin-bottom: 0;
 }
 
-
 .nav-titles {
   font-size: 10px;
+}
+
+.playlists {
+  height: 100%;
+}
+
+.padding-left {
+  padding-left: 16px;
+}
+
+.rotate {
+  transform: rotate(290deg) scale(5);
+}
+
+.margin-bottom-4 {
+  margin-bottom: 4px;
+}
+
+.padding-top-4 {
+  padding-top: 4px;
+}
+
+.margins {
+  margin: 0px 16px;
 }
