@@ -1,0 +1,12 @@
+.margins {
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.playlist {
+  margin: 5px 0;
+}
+
+#playlists:last-child {
+  padding-bottom: 10px;
+}

@@ -1,4 +1,8 @@
-<div fxLayout="row" fxLayoutAlign="center center">
+<div
+  *ngIf="!this.media.isActive('xs'); else mobile"
+  fxLayout="row"
+  fxLayoutAlign="center center"
+>
   <mat-card
     class="card"
     [ngClass]="{ playing: (isPlaying$ | async) }"
@@ -54,3 +58,26 @@
     </mat-card-header>
   </mat-card>
 </div>
+
+<ng-template #mobile>
+  <div
+    fxLayout="row"
+    fxLayoutAlign="start center"
+    class="container"
+    (click)="play()"
+  >
+    <div
+      class="cover"
+      [ngStyle]="{
+        'background-image': 'url(' + track.album.images[0].url + ')',
+        'background-size': 'cover'
+      }"
+    ></div>
+    <div fxFlexOffset="5" fxFlex="nogrow">
+      <p id="title" [ngClass]="{ active: (isPlaying$ | async) }">
+        {{ track.name }}
+      </p>
+      <p id="subtitle">{{ track.artists[0].name }}</p>
+    </div>
+  </div>
+</ng-template>

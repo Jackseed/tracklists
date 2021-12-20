@@ -1,14 +1,29 @@
 <div *ngIf="playlists$ | async as playlists">
-  <mat-card>
-    <mat-card-content>
-      <div>
-        <mat-slide-toggle color="primary" (change)="setAllActive($event)">
-          Select all
-        </mat-slide-toggle>
-      </div>
-      <div *ngFor="let playlist of playlists">
-        <app-playlist-view [playlist]="playlist"></app-playlist-view>
-      </div>
-    </mat-card-content>
-  </mat-card>
+  <div *ngIf="!this.media.isActive('xs'); else mobile">
+    <mat-card>
+      <mat-card-content>
+        <div>
+          <mat-slide-toggle color="primary" (change)="setAllActive($event)">
+            Select all
+          </mat-slide-toggle>
+        </div>
+        <div *ngFor="let playlist of playlists">
+          <app-playlist-view [playlist]="playlist"></app-playlist-view>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>
+
+<ng-template #mobile>
+  <div fxFlexFill *ngIf="playlists$ | async as playlists" id="playlists">
+    <div class="margins">
+      <mat-slide-toggle color="primary" (change)="setAllActive($event)">
+        Select all
+      </mat-slide-toggle>
+    </div>
+    <div *ngFor="let playlist of playlists" class="playlist">
+      <app-playlist-view [playlist]="playlist"></app-playlist-view>
+    </div>
+  </div>
+</ng-template>

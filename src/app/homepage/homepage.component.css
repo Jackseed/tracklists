@@ -56,7 +56,40 @@
   margin-bottom: 0;
 }
 
-::ng-deep.mat-tab-label,
-::ng-deep.mat-tab-label-active {
-  min-width: 128px !important;
+.nav-titles {
+  font-size: 10px;
+}
+
+.playlists {
+  height: 100%;
+}
+
+.padding-left {
+  padding-left: 16px;
+}
+
+.rotate {
+  transform: rotate(290deg) scale(5);
+}
+
+.margin-bottom-4 {
+  margin-bottom: 4px;
+}
+
+.padding-top-4 {
+  padding-top: 4px;
+}
+
+.margins {
+  margin: 0px 16px;
+}
+
+.container {
+  position: relative;
+}
+
+.player {
+  position: absolute;
+  bottom: 60px;
+  z-index: 1;
 }

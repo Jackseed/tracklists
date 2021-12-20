@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MediaObserver } from '@angular/flex-layout';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Observable } from 'rxjs';
 import { first, map, tap } from 'rxjs/operators';
@@ -18,7 +19,8 @@ export class PlaylistListComponent implements OnInit {
     private query: PlaylistQuery,
     private service: PlaylistService,
     private trackService: TrackService,
-    private genreService: GenreService
+    private genreService: GenreService,
+    public media: MediaObserver
   ) {}
 
   ngOnInit(): void {

@@ -2,13 +2,14 @@
   <mat-card
     fxFlexFill
     class="card"
-    fxFlex
     fxLayoutAlign="start center"
+    fxLayoutAlign.xs="center center"
     fxLayout="row"
   >
     <mat-card-header
-      fxFlexOffset="3"
+      fxFlexOffset.gt-xs="3"
       fxFlex="30"
+      fxFlex.xs="70"
       *ngIf="track$ | async as track"
     >
       <div
@@ -22,8 +23,9 @@
       <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
     </mat-card-header>
     <div
-      fxFlexOffset="15"
+      fxFlexOffset.gt-xs="15"
       fxFlex="48"
+      fxFlex.xs="25"
       fxLayoutAlign="center center"
       fxLayout="column"
     >
@@ -36,6 +38,7 @@
         <button
           fxFlex="5"
           fxFlexOffset="32"
+          fxHide.xs
           mat-icon-button
           (click)="shuffle()"
         >
@@ -48,15 +51,38 @@
         <button
           fxFlex="5"
           fxFlexOffset="5"
+          fxHide.xs
           mat-icon-button
           (click)="previous()"
         >
           <mat-icon>skip_previous</mat-icon>
         </button>
         <button
+          fxHide.gt-xs
+          class="mobile-icon"
+          *ngIf="isLiked$ | async"
+          mat-icon-button
+          (click)="unlike()"
+          matTooltip="Unlike"
+        >
+          <mat-icon>favorite</mat-icon>
+        </button>
+        <button
+          fxHide.gt-xs
+          class="mobile-icon"
+          *ngIf="!(isLiked$ | async)"
+          mat-icon-button
+          (click)="like()"
+          matTooltip="Like"
+        >
+          <mat-icon>favorite_border</mat-icon>
+        </button>
+        <button
           id="play-button"
           fxFlex="8"
+          fxFlex.xs="30"
           fxFlexOffset="3"
+          class="mobile-icon"
           mat-icon-button
           (click)="play()"
           *ngIf="paused$ | async"
@@ -66,20 +92,30 @@
         <button
           id="play-button"
           fxFlex="8"
+          fxFlex.xs="30"
           fxFlexOffset="3"
+          class="mobile-icon"
           mat-icon-button
           (click)="pause()"
           *ngIf="!(paused$ | async)"
         >
           <mat-icon id="play-icon">pause_circle_outline</mat-icon>
         </button>
-        <button fxFlex="5" fxFlexOffset="3" mat-icon-button (click)="next()">
+        <button
+          fxFlex="5"
+          fxFlex.xs="30"
+          fxFlexOffset="3"
+          class="mobile-icon"
+          mat-icon-button
+          (click)="next()"
+        >
           <mat-icon>skip_next</mat-icon>
         </button>
       </mat-card-actions>
       <mat-card-content
         fxFlexFill
         fxFlex="90"
+        fxHide.xs
         fxLayoutAlign="center center"
         fxLayout="row"
         *ngIf="track$ | async as track"

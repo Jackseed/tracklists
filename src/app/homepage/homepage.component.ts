@@ -14,6 +14,7 @@ import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 import { AngularFireFunctions } from '@angular/fire/functions';
 import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
+import { MediaObserver } from '@angular/flex-layout';
 
 @Component({
   selector: 'app-homepage',
@@ -46,8 +47,58 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private fns: AngularFireFunctions
-  ) {}
+    private fns: AngularFireFunctions,
+    public media: MediaObserver
+  ) {
+    this.matIconRegistry.addSvgIcon(
+      'curvy-arrow',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        `../assets/curvy_arrow.svg`
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'straight-arrow',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        `../assets/straight-arrow.svg`
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'tracklists-empty',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        '../assets/navbar/tracklists-empty.svg'
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'tracklists-fill',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        '../assets/navbar/tracklists-fill.svg'
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'playlists-empty',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        '../assets/navbar/playlists-empty.svg'
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'playlists-fill',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        '../assets/navbar/playlists-fill.svg'
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'filters-empty',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        '../assets/navbar/filters-empty.svg'
+      )
+    );
+    this.matIconRegistry.addSvgIcon(
+      'filters-fill',
+      this.domSanitizer.bypassSecurityTrustResourceUrl(
+        '../assets/navbar/filters-fill.svg'
+      )
+    );
+  }
 
   ngOnInit() {
     this.spotifyService.initializePlayer();
@@ -62,13 +113,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
       .pipe(map((length) => (length === 0 ? false : true)));
 
     this.trackService.setFirestoreTracks();
-
-    this.matIconRegistry.addSvgIcon(
-      'arrow',
-      this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../assets/buttons/purple_arrow.svg`
-      )
-    );
 
     this.trackNumber$ = this.trackService.tracksLength$;
     this.playingTrack$ = this.playerQuery.selectActive();
