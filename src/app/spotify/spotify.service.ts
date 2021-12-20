@@ -31,6 +31,7 @@ import {
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
 import { AkitaFilter } from 'akita-filters-plugin';
+import { Title } from '@angular/platform-browser';
 
 declare global {
   interface Window {
@@ -52,7 +53,8 @@ export class SpotifyService {
     private playerQuery: PlayerQuery,
     private playerService: PlayerService,
     private trackQuery: TrackQuery,
-    private http: HttpClient
+    private http: HttpClient,
+    private title: Title
   ) {}
 
   public async initializePlayer(trackUris?: string[]) {
@@ -108,6 +110,10 @@ export class SpotifyService {
       state.paused === pause
         ? false
         : this.playerService.updatePaused(track.id, state.paused);
+
+      state.paused
+        ? this.title.setTitle('Tracklists')
+        : this.title.setTitle(`${track.name} - ${track.artists[0].name}`);
     });
   }
 
