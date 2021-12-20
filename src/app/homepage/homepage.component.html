@@ -1,6 +1,6 @@
 <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
   <div
-    [fxFlex]="(playingTrack$ | async) ? 85 : 100"
+    [fxFlex]="(playingTrack$ | async) && !this.media.isActive('xs') ? 85 : 100"
     *ngIf="!(isSpinning$ | async); else loadingTracks"
     fxFlexFill
   >
@@ -130,7 +130,8 @@
       (arePlaylistLoaded$ | async) &&
       (areTracksLoaded$ | async) &&
       (playingTrack$ | async) &&
-      !(isSpinning$ | async)
+      !(isSpinning$ | async) &&
+      !this.media.isActive('xs')
     "
   >
     <div fxFlexOffset="10" fxFlex="70">
@@ -227,7 +228,7 @@
 
 <!----------------- MOBILE VERSION ----------------->
 <ng-template #mobile>
-  <div fxFlexFill fxLayout="column">
+  <div fxFlexFill fxLayout="column" class="container">
     <div fxFlexOffset="5" fxFlex="5" class="text-centered margin-bottom-4">
       <div
         fxFlexFill
@@ -369,6 +370,24 @@
           </div>
         </mat-tab>
       </mat-tab-group>
+    </div>
+    <!----------------- PLAYER ----------------->
+    <div
+      fxFlexFill
+      fxFlex="15"
+      fxLayout="row"
+      *ngIf="
+        (arePlaylistLoaded$ | async) &&
+        (areTracksLoaded$ | async) &&
+        (playingTrack$ | async) &&
+        !(isSpinning$ | async) &&
+        tracks?.isActive
+      "
+      class="player"
+    >
+      <div fxFlexOffset="5" fxFlex="90">
+        <app-player [track$]="playingTrack$"></app-player>
+      </div>
     </div>
   </div>
 </ng-template>

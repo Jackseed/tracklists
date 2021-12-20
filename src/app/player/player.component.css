@@ -14,33 +14,86 @@
   padding: 0;
 }
 
-.mat-icon {
-  font-size: 30px;
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
-}
-
-.mat-icon-button {
-  width: 30px;
-  height: 30px;
-}
-
-#play-button {
-  width: 40px;
-  height: 40px;
-}
-#play-icon {
-  font-size: 40px;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-}
-
 .icon {
   transform: scale(0.7);
 }
 
 .green {
   fill: #69f0ae;
+}
+
+/* gt-xs */
+@media screen and (min-width: 600px) {
+  #play-button {
+    width: 40px;
+    height: 40px;
+  }
+  #play-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .mat-icon {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .mat-icon-button {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* xs */
+@media screen and (max-width: 599px) {
+  ::ng-deep .mat-card-header-text {
+    margin: 0 12px !important;
+  }
+  ::ng-deep .mat-card-title {
+    font-size: calc(1rem + 0.5vmin) !important;
+    font-weight: 400;
+    margin: 0;
+    width: 155px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  ::ng-deep .mat-card-subtitle {
+    font-size: calc(0.8rem + 0.5vmin) !important;
+    font-weight: 300;
+    margin: 0;
+    width: 155px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  ::ng-deep .mat-card {
+    padding: 4px !important;
+  }
+  .card {
+    height: 80% !important;
+    min-height: 80% !important;
+  }
+  .mobile-icon {
+    font-size: 25px !important;
+    width: 25px !important;
+    height: 25px !important;
+    line-height: 25px !important;
+  }
+
+  .mat-icon {
+    font-size: 25px;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+  }
+
+  .mat-icon-button {
+    width: 25px;
+    height: 25px;
+  }
 }

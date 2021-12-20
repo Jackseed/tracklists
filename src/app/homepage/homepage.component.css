@@ -83,3 +83,13 @@
 .margins {
   margin: 0px 16px;
 }
+
+.container {
+  position: relative;
+}
+
+.player {
+  position: absolute;
+  bottom: 60px;
+  z-index: 1;
+}

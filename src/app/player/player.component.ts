@@ -1,11 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DomSanitizer } from '@angular/platform-browser';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Observable } from 'rxjs';
-import { filter, map, switchMap, tap } from 'rxjs/operators';
+import { combineLatest, Observable } from 'rxjs';
+import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { PlaylistQuery, PlaylistService } from '../playlists/+state';
 import { SpotifyService } from '../spotify/spotify.service';
-import { Track } from '../tracks/+state';
+import { Track, TrackQuery } from '../tracks/+state';
 import { PlayerQuery } from './+state';
 
 @UntilDestroy()
@@ -18,17 +20,25 @@ export class PlayerComponent implements OnInit {
   @Input() track$: Observable<Track>;
   paused$: Observable<boolean>;
   shuffle$: Observable<boolean>;
+  isLiked$: Observable<boolean>;
   value = 0;
   isTicking = false;
 
   constructor(
     private query: PlayerQuery,
+    private trackQuery: TrackQuery,
+    private playlistQuery: PlaylistQuery,
+    private playlistService: PlaylistService,
     private spotifyService: SpotifyService,
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
+    private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    this.isLiked$ = this.track$.pipe(
+      switchMap((track) => this.trackQuery.isLiked$(track.id))
+    );
     this.matIconRegistry.addSvgIcon(
       'shuffle',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
@@ -101,5 +111,38 @@ export class PlayerComponent implements OnInit {
   public async shuffle() {
     const state = this.query.getShuffle();
     await this.spotifyService.shuffle(!state);
+  }
+
+  /* TODO: Add this in track service */
+  public async like() {
+    const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
+    combineLatest([likedTracksPlaylist$, this.track$])
+      .pipe(
+        tap(async ([playlist, track]) => {
+          this.playlistService.addTrack(playlist.id, track.id);
+          await this.spotifyService.addToLikedTracks(track.id);
+          this._snackBar.open('Added to Liked tracks', '', {
+            duration: 2000,
+          });
+        }),
+        first()
+      )
+      .subscribe();
+  }
+
+  public async unlike() {
+    const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
+    combineLatest([likedTracksPlaylist$, this.track$])
+      .pipe(
+        tap(async ([playlist, track]) => {
+          this.playlistService.removeTrack(playlist.id, track.id);
+          await this.spotifyService.removeFromLikedTracks(track.id);
+          this._snackBar.open('Removed from Liked tracks', '', {
+            duration: 2000,
+          });
+        }),
+        first()
+      )
+      .subscribe();
   }
 }
