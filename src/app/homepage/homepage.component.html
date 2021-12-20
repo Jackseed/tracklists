@@ -204,7 +204,7 @@
 <!----------------- NO ACTIVE TRACK----------------->
 <ng-template #noActiveTrack>
   <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
-    <div fxFlex.xs="100" fxFlex="15"></div>
+    <div fxFlex="15" fxFlex.xs="30"></div>
     <h3 fxFlex="nogrow" class="text-centered">No playlist selected</h3>
     <p fxFlex="nogrow" class="text-centered">
       Select a playlist to load its tracks
@@ -261,12 +261,7 @@
     </div>
     <!--  TODO: Create a header component -->
     <mat-divider></mat-divider>
-    <div
-      fxFlex="nogrow"
-      fxAlign="row"
-      fxLayoutAlign="start center"
-      class="margins"
-    >
+    <div fxFlex="5" fxAlign="row" fxLayoutAlign="start center" class="margins">
       <button
         mat-raised-button
         color="accent"
@@ -281,7 +276,7 @@
       <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
     </div>
 
-    <div fxFlex="83">
+    <div fxFlex="85">
       <mat-tab-group
         fxFlexFill
         fxFill
@@ -308,14 +303,14 @@
             </div>
           </ng-template>
           <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-            <div fxFlex="80">
-              <div
-                class="track-list"
-                fxFlexFill
-                *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
-              >
-                <app-track-list></app-track-list>
-              </div>
+            <div
+              class="track-list"
+              fxFlexFill
+              *ngIf="(trackNumber$ | async) > 0; else noActiveTrack"
+              fxFlex="90"
+              fxFlexOffset="10"
+            >
+              <app-track-list></app-track-list>
             </div>
           </div>
         </mat-tab>
