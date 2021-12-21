@@ -107,13 +107,12 @@ span {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 36px;
+  padding: calc(1rem + 2vmin);
 }
 
 #logo-text {
   font-size: calc(2rem + 3vmin) !important;
 }
-
 
 .white {
   color: white;
