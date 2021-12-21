@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnInit } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -97,6 +97,23 @@ export class PlayerComponent implements OnInit {
   public async pause() {
     await this.spotifyService.pause();
   }
+  // Implements spacebar as play / pause button.
+/*   @HostListener('document:keydown', ['$event']) onKeydownHandler(
+    event: KeyboardEvent
+  ) {
+    if (event.key === ' ') {
+      this.paused$
+        .pipe(
+          tap((isPaused) => {
+            isPaused ? this.play() : this.pause();
+          }),
+          first()
+        )
+        .subscribe();
+    }
+  }
+ */
+
   public async previous() {
     await this.spotifyService.previous();
   }

@@ -1,6 +1,7 @@
 #title {
+  font-size: calc(0.7rem + 0.5vmin);
   margin: 0 4px;
-  width: 250px;
+  width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
