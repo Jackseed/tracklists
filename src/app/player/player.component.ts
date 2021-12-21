@@ -113,33 +113,24 @@ export class PlayerComponent implements OnInit {
     await this.spotifyService.shuffle(!state);
   }
 
-  /* TODO: Add this in track service */
-  public async like() {
+  public async like(isLiked: boolean) {
     const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
     combineLatest([likedTracksPlaylist$, this.track$])
       .pipe(
         tap(async ([playlist, track]) => {
-          this.playlistService.addTrack(playlist.id, track.id);
-          await this.spotifyService.addToLikedTracks(track.id);
-          this._snackBar.open('Added to Liked tracks', '', {
-            duration: 2000,
-          });
-        }),
-        first()
-      )
-      .subscribe();
-  }
-
-  public async unlike() {
-    const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
-    combineLatest([likedTracksPlaylist$, this.track$])
-      .pipe(
-        tap(async ([playlist, track]) => {
-          this.playlistService.removeTrack(playlist.id, track.id);
-          await this.spotifyService.removeFromLikedTracks(track.id);
-          this._snackBar.open('Removed from Liked tracks', '', {
-            duration: 2000,
-          });
+          if (isLiked) {
+            this.playlistService.addTrack(playlist.id, track.id);
+            await this.spotifyService.addToLikedTracks(track.id);
+            this._snackBar.open('Added to Liked tracks', '', {
+              duration: 2000,
+            });
+          } else {
+            this.playlistService.removeTrack(playlist.id, track.id);
+            await this.spotifyService.removeFromLikedTracks(track.id);
+            this._snackBar.open('Removed from Liked tracks', '', {
+              duration: 2000,
+            });
+          }
         }),
         first()
       )

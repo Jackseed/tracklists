@@ -58,26 +58,6 @@
           <mat-icon>skip_previous</mat-icon>
         </button>
         <button
-          fxHide.gt-xs
-          class="mobile-icon"
-          *ngIf="isLiked$ | async"
-          mat-icon-button
-          (click)="unlike()"
-          matTooltip="Unlike"
-        >
-          <mat-icon>favorite</mat-icon>
-        </button>
-        <button
-          fxHide.gt-xs
-          class="mobile-icon"
-          *ngIf="!(isLiked$ | async)"
-          mat-icon-button
-          (click)="like()"
-          matTooltip="Like"
-        >
-          <mat-icon>favorite_border</mat-icon>
-        </button>
-        <button
           id="play-button"
           fxFlex="8"
           fxFlex.xs="30"
@@ -110,6 +90,27 @@
           (click)="next()"
         >
           <mat-icon>skip_next</mat-icon>
+        </button>
+        <button
+          fxFlex="5"
+          fxFlexOffset="5"
+          *ngIf="isLiked$ | async"
+          mat-icon-button
+          (click)="like(false)"
+          matTooltip="Unlike"
+        >
+          <mat-icon>favorite</mat-icon>
+        </button>
+        <button
+          fxFlex="5"
+          fxFlexOffset="5"
+          class="mobile-icon"
+          *ngIf="!(isLiked$ | async)"
+          mat-icon-button
+          (click)="like(true)"
+          matTooltip="Like"
+        >
+          <mat-icon>favorite_border</mat-icon>
         </button>
       </mat-card-actions>
       <mat-card-content
