@@ -122,12 +122,21 @@
               "devServerTarget": "listy:serve:production"
             }
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
   },
   "defaultProject": "listy",
   "cli": {
-    "defaultCollection": "@datorama/akita"
+    "defaultCollection": "@angular-eslint/schematics"
   }
 }
