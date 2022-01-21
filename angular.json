@@ -11,13 +11,16 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "allowedCommonJsDependencies": [
               "firebase/app",
               "@firebase/auth",
               "@firebase/functions"
             ],
+            "customWebpackConfig": {
+              "path": "src/webpack.config.js"
+            },
             "outputPath": "dist/listy",
             "index": "src/index.html",
             "main": "src/main.ts",
