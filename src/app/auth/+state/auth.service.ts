@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { AuthState, AuthStore } from './auth.store';
 import { environment } from 'src/environments/environment';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
-import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { AuthQuery } from './auth.query';
-import { firestore } from 'firebase/app';
+import { firestore } from 'firebase/compat/app';
 import { resetStores } from '@datorama/akita';
 import { LocalforageService } from 'src/app/utils/localforage.service';
 import { createUser, Tokens, User } from './auth.model';
-import { AngularFireFunctions } from '@angular/fire/functions';
+import { AngularFireFunctions } from '@angular/fire/compat/functions';
 import { first } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })

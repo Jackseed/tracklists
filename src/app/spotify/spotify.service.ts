@@ -4,7 +4,7 @@ import {
   HttpHeaders,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { firestore } from 'firebase/app';
+import { firestore } from 'firebase/compat/app';
 import { of, timer } from 'rxjs';
 import {
   catchError,
@@ -16,7 +16,7 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import firebase from 'firebase/app';
+import firebase from 'firebase/compat/app';
 import { AuthQuery, AuthService, Devices, User } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
 import {

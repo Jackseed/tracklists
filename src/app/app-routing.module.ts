@@ -5,7 +5,7 @@ import {
   AngularFireAuthGuard,
   redirectLoggedInTo,
   redirectUnauthorizedTo,
-} from '@angular/fire/auth-guard';
+} from '@angular/fire/compat/auth-guard';
 import { ActiveGuard } from './auth/guard/active.guard';
 import { SyncPlaylistsGuard } from './playlists/+state/guard/sync-playlists.guard';
 import { LoginComponent } from './auth/login/login.component';

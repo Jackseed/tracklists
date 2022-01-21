@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { PlaylistState, PlaylistStore } from './playlist.store';
-import { firestore } from 'firebase/app';
+import { firestore } from 'firebase/compat/app';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'playlists' })

@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { MinMax, Track } from './track.model';
 import { AuthQuery } from 'src/app/auth/+state';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { PlaylistQuery } from 'src/app/playlists/+state';
 import { AkitaFiltersPlugin } from 'akita-filters-plugin';
 import { LocalforageService } from 'src/app/utils/localforage.service';
