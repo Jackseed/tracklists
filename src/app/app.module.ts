@@ -31,6 +31,7 @@ import { SETTINGS } from '@angular/fire/firestore';
 import { ORIGIN as FUNCTIONS_ORIGIN } from '@angular/fire/functions';
 import { USE_EMULATOR as AUTH_EMULATOR } from '@angular/fire/auth';
 import { LandingComponent } from './landing/landing.component';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 @NgModule({
   declarations: [
@@ -63,6 +64,12 @@ import { LandingComponent } from './landing/landing.component';
     MatProgressBarModule,
     MatTooltipModule,
     AngularFireFunctionsModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the app is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
+    }),
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
  /*  providers: [
