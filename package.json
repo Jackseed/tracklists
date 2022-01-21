@@ -36,7 +36,7 @@
     "cors": "^2.8.5",
     "firebase": "^9.4.0",
     "localforage": "^1.9.0",
-    "ng-zorro-antd": "^11.4.2",
+    "ng-zorro-antd": "^13.0.1",
     "primeicons": "^4.1.0",
     "primeng": "^11.4.3",
     "puppeteer": "^7.1.0",
