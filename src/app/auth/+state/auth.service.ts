@@ -1,16 +1,29 @@
+// Angular
 import { Injectable } from '@angular/core';
-import { AuthState, AuthStore } from './auth.store';
-import { environment } from 'src/environments/environment';
-import { CollectionConfig, CollectionService } from 'akita-ng-fire';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
-import { AuthQuery } from './auth.query';
-import { firestore } from 'firebase/compat/app';
-import { resetStores } from '@datorama/akita';
-import { LocalforageService } from 'src/app/utils/localforage.service';
-import { createUser, Tokens, User } from './auth.model';
+import { environment } from 'src/environments/environment';
+// Angularfire
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
+// Firebase
+import {
+  getAuth,
+  signInWithCustomToken,
+  signInWithEmailAndPassword,
+  UserCredential,
+} from 'firebase/auth';
+import { arrayUnion } from 'firebase/firestore';
+// Rxjs
 import { first } from 'rxjs/operators';
+// Akita (ng fire)
+import { CollectionConfig, CollectionService } from 'akita-ng-fire';
+import { resetStores } from '@datorama/akita';
+// Localforage
+import { LocalforageService } from 'src/app/utils/localforage.service';
+// Auth
+import { AuthState, AuthStore } from './auth.store';
+import { AuthQuery } from './auth.query';
+import { createUser, Tokens, User } from './auth.model';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -74,10 +87,9 @@ export class AuthService extends CollectionService<AuthState> {
     return getTokenFunction(param).pipe(first()).toPromise();
   }
 
-  public signInWithCustomToken(
-    token: string
-  ): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.signInWithCustomToken(token);
+  public signInWithCustomToken(token: string): Promise<UserCredential> {
+    const auth = getAuth();
+    return signInWithCustomToken(auth, token);
   }
 
   public addLikedTrack(trackId: string) {
@@ -86,7 +98,7 @@ export class AuthService extends CollectionService<AuthState> {
       .collection(this.currentPath)
       .doc(userId)
       .update({
-        likedTracksIds: firestore.FieldValue.arrayUnion(trackId),
+        likedTracksIds: arrayUnion(trackId),
       });
   }
 
@@ -121,8 +133,9 @@ export class AuthService extends CollectionService<AuthState> {
   public async emailLogin(
     email: string,
     password: string
-  ): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.signInWithEmailAndPassword(email, password);
+  ): Promise<UserCredential> {
+    const auth = getAuth();
+    return signInWithEmailAndPassword(auth, email, password);
   }
 
   public async resetPassword(email: string): Promise<void> {

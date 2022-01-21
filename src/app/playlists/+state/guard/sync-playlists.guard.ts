@@ -39,7 +39,7 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
       debounceTime(2000),
       switchMap((ids) => this.service.syncManyDocs(ids)),
       // Stops spinning.
-      tap((ids) => {
+      tap((ids: string[]) => {
         if (ids.length > 0) this.trackService.updateSpinner(false);
       })
     );

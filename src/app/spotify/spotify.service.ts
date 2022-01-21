@@ -1,10 +1,12 @@
+// Angular
 import {
   HttpClient,
   HttpErrorResponse,
   HttpHeaders,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { firestore } from 'firebase/compat/app';
+import { Title } from '@angular/platform-browser';
+// Rxjs
 import { of, timer } from 'rxjs';
 import {
   catchError,
@@ -16,7 +18,12 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
+// Firebase
 import firebase from 'firebase/compat/app';
+import { arrayUnion } from 'firebase/firestore';
+// Akita
+import { AkitaFilter } from 'akita-filters-plugin';
+// States
 import { AuthQuery, AuthService, Devices, User } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
 import {
@@ -30,8 +37,6 @@ import {
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
-import { AkitaFilter } from 'akita-filters-plugin';
-import { Title } from '@angular/platform-browser';
 
 declare global {
   interface Window {
@@ -503,10 +508,7 @@ export class SpotifyService {
         type === 'tracks'
           ? collection
               .doc(object.id)
-              .set(
-                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
-                { merge: true }
-              )
+              .set({ ...object, userIds: arrayUnion(userId) }, { merge: true })
           : collection.doc(object.id).set(object, { merge: true });
       })
     );

@@ -41,7 +41,7 @@ export class GenreService extends CollectionService<GenreState> {
       .pipe(
         tap((genres: Genre[]) =>
           genres.map((newGenre) => {
-            this.store.upsert(newGenre.id, (existingGenre) => ({
+            this.store.upsert(newGenre.id, (existingGenre: Genre) => ({
               id: newGenre.id,
               // if the genre already exists in the store, add the new unique tracks to that genre
               // otherwise, add its tracks only
