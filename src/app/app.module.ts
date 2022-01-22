@@ -19,9 +19,6 @@ import { HomepageComponent } from './homepage/homepage.component';
 import { PlayerComponent } from './player/player.component';
 import { LandingComponent } from './landing/landing.component';
 // Angularfire
-import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
-import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import {
   connectFirestoreEmulator,
@@ -83,9 +80,6 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
-    /*     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule,
-    AngularFireFunctionsModule, */
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => {
       const firestore = getFirestore();
@@ -105,22 +99,6 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     }),
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
-  /*  providers: [
-    {
-      provide: SETTINGS,
-      useValue: environment.useEmulators
-        ? { host: 'localhost:8080', ssl: false }
-        : {},
-    },
-    {
-      provide: FUNCTIONS_ORIGIN,
-      useValue: environment.useEmulators ? 'http://localhost:5001' : undefined,
-    },
-    {
-      provide: AUTH_EMULATOR,
-      useValue: environment.useEmulators ? ['localhost', 9099] : undefined,
-    },
-  ], */
   bootstrap: [AppComponent],
 })
 export class AppModule {}
