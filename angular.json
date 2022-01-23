@@ -31,7 +31,9 @@
               "src/favicon_dark.ico",
               "src/favicon_light.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/sitemap.xml",
+              "src/robots.txt"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/purple-green.css",

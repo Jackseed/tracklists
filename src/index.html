@@ -5,6 +5,10 @@
     <title>Tracklists</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://sdk.scdn.co/ 'unsafe-inline'; font-src 'self' https://fonts.googleapis.com/ https://fonts.gstatic.com/; style-src 'self' https://fonts.googleapis.com/ 'unsafe-inline';"
+    />
     <link
       rel="icon"
       href="favicon_light.ico"
@@ -21,7 +25,7 @@
       media="(prefers-color-scheme:light)"
     />
     <link
-      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&amp;display=swap"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap"
       rel="stylesheet"
     />
     <link
@@ -40,7 +44,10 @@
   <body class="mat-typography">
     <app-root></app-root>
     <!-- Initiate spotify web player -->
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script
+      title="Spotify"
+      src="https://sdk.scdn.co/spotify-player.js"
+    ></script>
     <script>
       window.onSpotifyWebPlaybackSDKReady = () => {};
     </script>

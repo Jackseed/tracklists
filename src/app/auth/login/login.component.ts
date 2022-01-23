@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { first, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Auth, signInWithCustomToken, user } from '@angular/fire/auth';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private auth: Auth,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private meta: Meta
   ) {}
 
   async ngOnInit() {
@@ -48,6 +50,37 @@ export class LoginComponent implements OnInit {
         first()
       )
       .subscribe();
+
+    this.meta.addTags([
+      { name: 'title', content: 'Login - Tracklists' },
+      {
+        name: 'description',
+        content:
+          'Login to Spotify to allow Tracklists to load your music library.',
+      },
+      {
+        name: 'keywords',
+        content:
+          'Music, Spotify, Filters, Playlist, Free, Open source, Library',
+      },
+      { name: 'robots', content: 'index, follow' },
+      { name: 'author', content: 'JackSeed' },
+      {
+        name: 'og:url',
+        content: `https://tracklists.io/login`,
+      },
+      { name: 'og:title', content: 'Login - Tracklists' },
+      {
+        name: 'og:description',
+        content:
+          'Login to Spotify to allow Tracklists to load your music library.',
+      },
+      {
+        name: 'og:image',
+        content:
+          'https://firebasestorage.googleapis.com/v0/b/listy-prod.appspot.com/o/tracklists-logo.png?alt=media&token=03541895-fe6a-4617-88e0-c62fd10b16a2',
+      },
+    ]);
   }
 
   // Gets a Spotify refresh or access token.
