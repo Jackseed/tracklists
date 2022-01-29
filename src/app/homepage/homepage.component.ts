@@ -1,20 +1,32 @@
+// Angular
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription, timer } from 'rxjs';
+import { DomSanitizer } from '@angular/platform-browser';
+// Rxjs
+import { Observable, of, Subscription, timer } from 'rxjs';
+import { first, map, take, tap } from 'rxjs/operators';
+// Angularfire
+import {
+  Functions,
+  httpsCallable,
+  HttpsCallableResult,
+} from '@angular/fire/functions';
+// States
 import { AuthQuery, AuthService, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
-import { first, map, take, tap } from 'rxjs/operators';
-import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
-import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
+import { Playlist, PlaylistQuery } from '../playlists/+state';
+import { PlayerQuery, PlayerTrack } from '../player/+state';
+import { GenreQuery } from '../filters/genre-filters/+state';
+// Components
+import { PlaylistFormComponent } from '../playlists/playlist-form/playlist-form.component';
+// Flex layout
+import { MediaObserver } from '@angular/flex-layout';
+// Material
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
-import { PlayerQuery, PlayerTrack } from '../player/+state';
-import { GenreQuery } from '../filters/genre-filters/+state';
-import { AngularFireFunctions } from '@angular/fire/functions';
+// Animations
 import { fadeInAnimation, fadeInOnEnterAnimation } from 'angular-animations';
-import { MediaObserver } from '@angular/flex-layout';
 
 @Component({
   selector: 'app-homepage',
@@ -30,7 +42,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
   public arePlaylistLoaded$: Observable<boolean>;
   public areTracksLoaded$: Observable<boolean>;
   public userTopTracks: Track[];
-  public userTopTrack$: Observable<Track>;
+  public userTopTrack$: Observable<Track | boolean> = of(false);
   public fadeInState: boolean = false;
   private animationSub: Subscription;
 
@@ -47,7 +59,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
     private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
-    private fns: AngularFireFunctions,
+    private functions: Functions,
     public media: MediaObserver
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -118,18 +130,19 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.playingTrack$ = this.playerQuery.selectActive();
   }
 
-  public loadPlaylist() {
+  public async loadPlaylist() {
     this.trackService.updateSpinner(true);
     const user = this.authQuery.getActive();
-    const saveFunction = this.fns.httpsCallable('saveUserPlaylists');
-    const response = saveFunction({
-      user,
-    })
-      .pipe(first())
-      .subscribe((tracks) => {
+    const saveFunction = httpsCallable(this.functions, 'saveUserPlaylists');
+
+    saveFunction({ user })
+      .then((response: HttpsCallableResult<Track[]>) => {
+        const tracks = response.data;
+        console.log(tracks);
         this.trackService.setStore(tracks);
         this.trackService.updateSpinner(false);
-      });
+      })
+      .catch((err) => console.log(err));
     this.loadTop50Tracks();
   }
 

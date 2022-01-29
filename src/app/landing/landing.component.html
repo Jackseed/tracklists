@@ -5,7 +5,11 @@
   fxLayoutAlign="center center"
 >
   <div id="logo">
-    <h1><a class="white" id="logo-text" href="">Tracklists</a></h1>
+    <h1>
+      <a class="white" id="logo-text" href="https://tracklists.io"
+        >Tracklists</a
+      >
+    </h1>
   </div>
   <div
     class="spacer layer1"
@@ -38,7 +42,10 @@
     (@heartBeat.done)="animDone(1)"
   ></div>
   <div class="margin-top">
-    <img src="../../assets/landing/download.svg" />
+    <img
+      alt="Load your Spotify library"
+      src="../../assets/landing/download.svg"
+    />
     <h1>Load your library</h1>
     <p class="bigger">based on your playlists and liked tracks</p>
     <button
@@ -59,7 +66,10 @@
     (@rotate.done)="animDone(2)"
   ></div>
   <div>
-    <img src="../../assets/landing/filters.svg" />
+    <img
+      alt="Filter your Spotify library"
+      src="../../assets/landing/filters.svg"
+    />
     <h1>Play with parameters</h1>
     <p class="bigger">Like danceability, chill or BPM</p>
     <button
@@ -75,7 +85,10 @@
 </section>
 <section fxFlexFill fxLayout="column" fxLayoutAlign="center end">
   <div>
-    <img src="../../assets/landing/funk.svg" />
+    <img
+      alt="(Re)discover your Spotify library"
+      src="../../assets/landing/funk.svg"
+    />
     <h1>Discover all the genres</h1>
     <p class="bigger">behind your tracks</p>
     <button mat-raised-button color="primary" (click)="navigateToLogin()">
@@ -111,6 +124,7 @@
       <a
         class="red purple"
         target="_blank"
+        rel="noreferrer"
         href="https://github.com/Jackseed/tracklists"
         >❤</a
       >

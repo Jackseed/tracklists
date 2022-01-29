@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
+import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { first, tap } from 'rxjs/operators';
-import { PlaylistQuery } from 'src/app/playlists/+state';
-import { TrackQuery } from 'src/app/tracks/+state';
+import { PlaylistQuery } from '../../../playlists/+state';
 import { Genre } from './genre.model';
 import { GenreQuery } from './genre.query';
 import { GenreState, GenreStore } from './genre.store';
@@ -14,7 +14,7 @@ export class GenreService extends CollectionService<GenreState> {
     store: GenreStore,
     private query: GenreQuery,
     private playlistQuery: PlaylistQuery,
-    private trackQuery: TrackQuery
+    private firestore: Firestore
   ) {
     super(store);
   }
@@ -33,15 +33,15 @@ export class GenreService extends CollectionService<GenreState> {
 
   // Adds genres to the store.
   public addPlaylistGenres(playlistId: string) {
-    this.db
-      .collection('playlists')
-      .doc(playlistId)
-      .collection('genres')
-      .valueChanges()
+    const genreCollection = collection(
+      this.firestore,
+      `playlists/${playlistId}/genres`
+    );
+    collectionData(genreCollection)
       .pipe(
         tap((genres: Genre[]) =>
           genres.map((newGenre) => {
-            this.store.upsert(newGenre.id, (existingGenre) => ({
+            this.store.upsert(newGenre.id, (existingGenre: Genre) => ({
               id: newGenre.id,
               // if the genre already exists in the store, add the new unique tracks to that genre
               // otherwise, add its tracks only
@@ -61,11 +61,11 @@ export class GenreService extends CollectionService<GenreState> {
   }
   // Removes genres from the store.
   public removePlaylistGenres(playlistId: string) {
-    this.db
-      .collection('playlists')
-      .doc(playlistId)
-      .collection('genres')
-      .valueChanges()
+    const genreCollection = collection(
+      this.firestore,
+      `playlists/${playlistId}/genres`
+    );
+    collectionData(genreCollection)
       .pipe(
         tap((genres: Genre[]) =>
           genres.map((genre) => {

@@ -11,24 +11,30 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "allowedCommonJsDependencies": [
               "firebase/app",
               "@firebase/auth",
               "@firebase/functions"
             ],
+            "customWebpackConfig": {
+              "path": "src/webpack.config.js"
+            },
             "outputPath": "dist/listy",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
+            "sourceMap": true,
             "aot": true,
             "assets": [
               "src/favicon_dark.ico",
               "src/favicon_light.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/sitemap.xml",
+              "src/robots.txt"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
@@ -68,6 +74,14 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
           }
         },
@@ -79,8 +93,12 @@
           "configurations": {
             "production": {
               "browserTarget": "listy:build:production"
+            },
+            "development": {
+              "browserTarget": "listy:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -108,17 +126,6 @@
             "scripts": []
           }
         },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
-            ],
-            "exclude": ["**/node_modules/**"]
-          }
-        },
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
@@ -130,12 +137,18 @@
               "devServerTarget": "listy:serve:production"
             }
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+          }
         }
       }
     }
   },
   "defaultProject": "listy",
   "cli": {
-    "defaultCollection": "@datorama/akita"
+    "defaultCollection": "@angular-eslint/schematics"
   }
 }

@@ -8,9 +8,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
-import { AuthQuery } from 'src/app/auth/+state';
+import { AuthQuery } from '../../../auth/+state';
 import { PlaylistStore } from '../playlist.store';
-import { TrackService } from 'src/app/tracks/+state';
+import { TrackService } from '../../../tracks/+state';
 
 @Injectable({
   providedIn: 'root',
@@ -39,7 +39,7 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
       debounceTime(2000),
       switchMap((ids) => this.service.syncManyDocs(ids)),
       // Stops spinning.
-      tap((ids) => {
+      tap((ids: string[]) => {
         if (ids.length > 0) this.trackService.updateSpinner(false);
       })
     );

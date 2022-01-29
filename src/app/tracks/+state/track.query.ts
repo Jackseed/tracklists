@@ -4,11 +4,17 @@ import { TrackStore, TrackState } from './track.store';
 import { Observable, of } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { MinMax, Track } from './track.model';
-import { AuthQuery } from 'src/app/auth/+state';
-import { AngularFirestore } from '@angular/fire/firestore';
-import { PlaylistQuery } from 'src/app/playlists/+state';
+import { AuthQuery } from '../../auth/+state';
+import { PlaylistQuery } from '../../playlists/+state';
 import { AkitaFiltersPlugin } from 'akita-filters-plugin';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
+import {
+  collection,
+  collectionData,
+  Firestore,
+  query,
+  where,
+} from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState, Track> {
@@ -17,7 +23,7 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
   constructor(
     protected store: TrackStore,
     private authQuery: AuthQuery,
-    private afs: AngularFirestore,
+    private firestore: Firestore,
     private playlistQuery: PlaylistQuery,
     private localforage: LocalforageService
   ) {
@@ -43,14 +49,14 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
   public get selectUserTracks$(): Observable<Track[]> {
     const userId$ = this.authQuery.selectActiveId();
     const tracks$ = userId$.pipe(
-      switchMap(
-        (userId) =>
-          this.afs
-            .collection('tracks', (ref) =>
-              ref.where('userIds', 'array-contains', userId)
-            )
-            .valueChanges() as Observable<Track[]>
-      )
+      switchMap((userId) => {
+        const trackCollection = collection(this.firestore, 'tracks');
+        const userQuery = query(
+          trackCollection,
+          where('userIds', 'array-contains', userId)
+        );
+        return collectionData(userQuery) as Observable<Track[]>;
+      })
     );
     return tracks$;
   }

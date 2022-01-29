@@ -1,10 +1,12 @@
+// Angular
 import {
   HttpClient,
   HttpErrorResponse,
   HttpHeaders,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { firestore } from 'firebase/app';
+import { Title } from '@angular/platform-browser';
+// Rxjs
 import { of, timer } from 'rxjs';
 import {
   catchError,
@@ -16,7 +18,19 @@ import {
   take,
   tap,
 } from 'rxjs/operators';
-import firebase from 'firebase/app';
+// Angularfire
+import {
+  arrayUnion,
+  collection,
+  CollectionReference,
+  doc,
+  Firestore,
+  setDoc,
+  Timestamp,
+} from '@angular/fire/firestore';
+// Akita
+import { AkitaFilter } from 'akita-filters-plugin';
+// States
 import { AuthQuery, AuthService, Devices, User } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
 import {
@@ -30,8 +44,6 @@ import {
 } from '../tracks/+state';
 import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
-import { AkitaFilter } from 'akita-filters-plugin';
-import { Title } from '@angular/platform-browser';
 
 declare global {
   interface Window {
@@ -45,9 +57,8 @@ declare global {
   providedIn: 'root',
 })
 export class SpotifyService {
-  db = firebase.firestore();
-
   constructor(
+    private firestore: Firestore,
     private authQuery: AuthQuery,
     private authService: AuthService,
     private playerQuery: PlayerQuery,
@@ -204,7 +215,7 @@ export class SpotifyService {
             }));
 
             // write tracks by batches
-            const trackCollection = this.db.collection('tracks');
+            const trackCollection = collection(this.firestore, 'tracks');
             this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
 
             return fullTracks;
@@ -492,7 +503,7 @@ export class SpotifyService {
   //--------------------------------
 
   private async firestoreWriteBatches(
-    collection: firebase.firestore.CollectionReference,
+    collection: CollectionReference,
     objects,
     type: string
   ) {
@@ -500,14 +511,14 @@ export class SpotifyService {
     const userId = this.authQuery.getActiveId();
     await Promise.all(
       objects.map((object) => {
+        const objectDoc = doc(this.firestore, `${collection}/${object.id}`);
         type === 'tracks'
-          ? collection
-              .doc(object.id)
-              .set(
-                { ...object, userIds: firestore.FieldValue.arrayUnion(userId) },
-                { merge: true }
-              )
-          : collection.doc(object.id).set(object, { merge: true });
+          ? setDoc(
+              objectDoc,
+              { ...object, userIds: arrayUnion(userId) },
+              { merge: true }
+            )
+          : setDoc(objectDoc, object, { merge: true });
       })
     );
   }
@@ -529,9 +540,7 @@ export class SpotifyService {
     let isTokenStillValid: boolean;
 
     const tokenCreationTime =
-      (firebase.firestore.Timestamp.now().toMillis() -
-        user.tokens.addedTime.toMillis()) /
-      1000;
+      (Timestamp.now().toMillis() - user.tokens.addedTime.toMillis()) / 1000;
 
     tokenCreationTime > 3600
       ? (isTokenStillValid = false)

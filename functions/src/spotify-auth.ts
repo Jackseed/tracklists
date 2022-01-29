@@ -1,8 +1,8 @@
-import functions = require('firebase-functions');
+import * as functions from 'firebase-functions';
 import { Tokens } from './data';
 import { createFirebaseAccount } from './firestore-write';
 const axios = require('axios').default;
-const admin = require('firebase-admin');
+import * as admin from 'firebase-admin';
 
 //--------------------------------
 //    Requests Spotify token    //

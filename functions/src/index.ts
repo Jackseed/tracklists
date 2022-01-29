@@ -1,12 +1,11 @@
-import functions = require('firebase-functions');
+import * as functions from 'firebase-functions';
 import { saveUserTracks } from './save-user-tracks';
 import { getSpotifyToken, saveToken } from './spotify-auth';
 import {
   extractGenresFromTrackToPlaylist,
   firestoreWrite,
 } from './firestore-write';
-
-const admin = require('firebase-admin');
+import * as admin from 'firebase-admin';
 admin.initializeApp({
   serviceAccountId: functions.config().functions.serviceaccountid,
 });

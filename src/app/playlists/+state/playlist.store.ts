@@ -5,7 +5,7 @@ import {
   MultiActiveState,
   StoreConfig,
 } from '@datorama/akita';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
 import { Playlist } from './playlist.model';
 
 export interface PlaylistState

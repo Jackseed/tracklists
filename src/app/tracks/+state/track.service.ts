@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
 import { filter, first, map, switchMap, tap } from 'rxjs/operators';
 import { Track } from './track.model';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
 
 @Injectable({ providedIn: 'root' })
 export class TrackService {

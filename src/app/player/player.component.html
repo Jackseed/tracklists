@@ -77,7 +77,7 @@
           class="mobile-icon"
           mat-icon-button
           (click)="pause()"
-          *ngIf="!(paused$ | async)"
+          *ngIf="(paused$ | async) === false"
         >
           <mat-icon id="play-icon">pause_circle_outline</mat-icon>
         </button>
@@ -105,7 +105,7 @@
           fxFlex="5"
           fxFlexOffset="5"
           class="mobile-icon"
-          *ngIf="!(isLiked$ | async)"
+          *ngIf="(isLiked$ | async) === false"
           mat-icon-button
           (click)="like(true)"
           matTooltip="Like"

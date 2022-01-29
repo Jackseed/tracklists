@@ -9,7 +9,7 @@ import { MatChipInputEvent } from '@angular/material/chips';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { filter, map, startWith, switchMap, tap } from 'rxjs/operators';
-import { TrackService } from 'src/app/tracks/+state';
+import { TrackService } from '../../../tracks/+state';
 import { Genre, GenreQuery, GenreService } from '../+state';
 
 @UntilDestroy()

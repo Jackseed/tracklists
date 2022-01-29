@@ -1,7 +1,7 @@
 <div fxFlexFill fxLayout="column" fxLayoutAlign="start center">
   <div
     [fxFlex]="(playingTrack$ | async) && !this.media.isActive('xs') ? 85 : 100"
-    *ngIf="!(isSpinning$ | async); else loadingTracks"
+    *ngIf="(isSpinning$ | async) === false; else loadingTracks"
     fxFlexFill
   >
     <div
@@ -130,7 +130,7 @@
       (arePlaylistLoaded$ | async) &&
       (areTracksLoaded$ | async) &&
       (playingTrack$ | async) &&
-      !(isSpinning$ | async) &&
+      (isSpinning$ | async) === false &&
       !this.media.isActive('xs')
     "
   >
@@ -149,7 +149,7 @@
         We need to load your songs from Spotify, it may take a few minutes.
       </p>
       <button
-        *ngIf="!(isSpinning$ | async)"
+        *ngIf="(isSpinning$ | async) === false"
         mat-raised-button
         color="accent"
         (click)="loadPlaylist()"
@@ -168,7 +168,7 @@
   <div fxLayout="column" fxFlexFill fxLayoutAlign="center center">
     <h2 class="text-centered">Loading your tracks</h2>
 
-    <div *ngIf="!(this.userTopTrack$ | async) as track; else tracks">
+    <div *ngIf="(this.userTopTrack$ | async) === false as track; else tracks">
       <mat-spinner color="accent" mode="indeterminate"></mat-spinner>
     </div>
     <ng-template #tracks>
@@ -378,7 +378,7 @@
         (arePlaylistLoaded$ | async) &&
         (areTracksLoaded$ | async) &&
         (playingTrack$ | async) &&
-        !(isSpinning$ | async) &&
+        (isSpinning$ | async) === false &&
         tracks?.isActive
       "
       class="player"

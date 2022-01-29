@@ -1,16 +1,39 @@
+// Angular
 import { Injectable } from '@angular/core';
-import { AuthState, AuthStore } from './auth.store';
-import { environment } from 'src/environments/environment';
-import { CollectionConfig, CollectionService } from 'akita-ng-fire';
-import { AngularFireAuth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { AuthQuery } from './auth.query';
-import { firestore } from 'firebase/app';
+import { environment } from '../../../environments/environment';
+// Angularfire
+import {
+  doc,
+  Firestore,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+} from '@angular/fire/firestore';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithCustomToken,
+  signInWithEmailAndPassword,
+  signOut,
+  UserCredential,
+} from '@angular/fire/auth';
+import {
+  Functions,
+  HttpsCallable,
+  httpsCallable,
+} from '@angular/fire/functions';
+// Akita (ng fire)
+import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { resetStores } from '@datorama/akita';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+// Localforage
+import { LocalforageService } from '../../utils/localforage.service';
+// Auth state
+import { AuthState, AuthStore } from './auth.store';
+import { AuthQuery } from './auth.query';
 import { createUser, Tokens, User } from './auth.model';
-import { AngularFireFunctions } from '@angular/fire/functions';
-import { first } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 @CollectionConfig({ path: 'users' })
@@ -39,11 +62,11 @@ export class AuthService extends CollectionService<AuthState> {
   constructor(
     store: AuthStore,
     private query: AuthQuery,
-    private afAuth: AngularFireAuth,
+    private auth: Auth,
     private router: Router,
-    private fns: AngularFireFunctions,
-
-    private localforage: LocalforageService
+    private functions: Functions,
+    private localforage: LocalforageService,
+    private firestore: Firestore
   ) {
     super(store);
   }
@@ -62,7 +85,10 @@ export class AuthService extends CollectionService<AuthState> {
   // Gets & saves access token if code as param, otherwise refreshes.
   public async getToken(code?: string): Promise<Tokens> {
     const user = this.query.getActive();
-    const getTokenFunction = this.fns.httpsCallable('getSpotifyToken');
+    const getTokenFunction: HttpsCallable<unknown, unknown> = httpsCallable(
+      this.functions,
+      'getSpotifyToken'
+    );
     let param: Object;
     code
       ? (param = { code: code, tokenType: 'access' })
@@ -71,28 +97,27 @@ export class AuthService extends CollectionService<AuthState> {
           refreshToken: user.tokens.refresh,
           userId: user.uid,
         });
-    return getTokenFunction(param).pipe(first()).toPromise();
+    const token: Tokens = (await getTokenFunction(param)).data as Tokens;
+    return token;
   }
 
-  public signInWithCustomToken(
-    token: string
-  ): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.signInWithCustomToken(token);
+  public signInWithCustomToken(token: string): Promise<UserCredential> {
+    const auth = getAuth();
+    return signInWithCustomToken(auth, token);
   }
 
   public addLikedTrack(trackId: string) {
     const userId = this.query.getActiveId();
-    this.db
-      .collection(this.currentPath)
-      .doc(userId)
-      .update({
-        likedTracksIds: firestore.FieldValue.arrayUnion(trackId),
-      });
+    const userDoc = doc(this.firestore, `users/${userId}`);
+    updateDoc(userDoc, {
+      likedTracksIds: arrayUnion(trackId),
+    });
   }
 
   public saveDeviceId(deviceId: string) {
     const userId = this.query.getActiveId();
-    this.db.collection(this.currentPath).doc(userId).update({
+    const userDoc = doc(this.firestore, `users/${userId}`);
+    updateDoc(userDoc, {
       deviceId,
     });
   }
@@ -101,36 +126,41 @@ export class AuthService extends CollectionService<AuthState> {
     const url = this.router.url;
     const code = url.substring(url.indexOf('=') + 1);
     const userId = this.query.getActiveId();
-    this.db.collection('users').doc(userId).update({ code });
+    const userDoc = doc(this.firestore, `users/${userId}`);
+    updateDoc(userDoc, {
+      code,
+    });
   }
 
   private async setUser(uid: string, email: string): Promise<User> {
     const user = createUser({ uid, email });
-    await this.db.collection(this.currentPath).doc(uid).set(user);
+    const userDoc = doc(this.firestore, `users/${uid}`);
+    await setDoc(userDoc, user).catch((err) => console.log(err));
     return user;
   }
 
   public async emailSignup(email: string, password: string) {
-    return this.afAuth
-      .createUserWithEmailAndPassword(email, password)
-      .then((user) => {
+    return createUserWithEmailAndPassword(this.auth, email, password).then(
+      (user) => {
         return this.setUser(user.user.uid, user.user.email);
-      });
+      }
+    );
   }
 
   public async emailLogin(
     email: string,
     password: string
-  ): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.signInWithEmailAndPassword(email, password);
+  ): Promise<UserCredential> {
+    const auth = getAuth();
+    return signInWithEmailAndPassword(auth, email, password);
   }
 
   public async resetPassword(email: string): Promise<void> {
-    return this.afAuth.sendPasswordResetEmail(email);
+    return sendPasswordResetEmail(this.auth, email);
   }
 
   public signOut() {
-    this.afAuth.signOut().then((_) =>
+    signOut(this.auth).then((_) =>
       this.router.navigate(['']).then((_) => {
         this.router.navigate(['']);
         resetStores();

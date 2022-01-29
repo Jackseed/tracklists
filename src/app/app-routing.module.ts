@@ -2,9 +2,9 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomepageComponent } from './homepage/homepage.component';
 import {
-  AngularFireAuthGuard,
-  redirectLoggedInTo,
+  AuthGuard,
   redirectUnauthorizedTo,
+  redirectLoggedInTo,
 } from '@angular/fire/auth-guard';
 import { ActiveGuard } from './auth/guard/active.guard';
 import { SyncPlaylistsGuard } from './playlists/+state/guard/sync-playlists.guard';
@@ -18,18 +18,18 @@ const routes: Routes = [
   {
     path: '',
     component: LandingComponent,
-    canActivate: [AngularFireAuthGuard],
+    canActivate: [AuthGuard],
     data: { authGuardPipe: redirectLoggedInToHome },
   },
   {
     path: 'login',
     component: LoginComponent,
-    canActivate: [AngularFireAuthGuard],
+    canActivate: [AuthGuard],
     data: { authGuardPipe: redirectLoggedInToHome },
   },
   {
     path: 'home',
-    canActivate: [AngularFireAuthGuard, ActiveGuard],
+    canActivate: [AuthGuard, ActiveGuard],
     data: { authGuardPipe: redirectUnauthorizedToLogin },
     canDeactivate: [ActiveGuard],
     children: [

@@ -1,12 +1,17 @@
+// Angular
 import { Component, Input, OnInit } from '@angular/core';
+// Rxjs
 import { Observable } from 'rxjs';
-import { SpotifyService } from 'src/app/spotify/spotify.service';
-import { Track, TrackQuery, TrackService } from '../+state';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PlaylistQuery, PlaylistService } from 'src/app/playlists/+state';
 import { first, map, tap } from 'rxjs/operators';
-import { PlayerQuery } from 'src/app/player/+state';
+// States
+import { Track, TrackQuery, TrackService } from '../+state';
+import { PlaylistQuery, PlaylistService } from '../../playlists/+state';
+import { SpotifyService } from '../../spotify/spotify.service';
+import { PlayerQuery } from '../../player/+state';
+// Flex layout
 import { MediaObserver } from '@angular/flex-layout';
+// Material
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-track-view',

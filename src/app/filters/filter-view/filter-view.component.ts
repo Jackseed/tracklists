@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { MinMax, TrackService } from 'src/app/tracks/+state';
+import { MinMax, TrackService } from '../../tracks/+state';
 
 @Component({
   selector: 'app-filter-view',
