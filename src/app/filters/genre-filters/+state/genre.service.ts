@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { first, tap } from 'rxjs/operators';
-import { PlaylistQuery } from 'src/app/playlists/+state';
+import { PlaylistQuery } from '../../../playlists/+state';
 import { Genre } from './genre.model';
 import { GenreQuery } from './genre.query';
 import { GenreState, GenreStore } from './genre.store';

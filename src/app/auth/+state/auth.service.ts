@@ -1,7 +1,7 @@
 // Angular
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { environment } from 'src/environments/environment';
+import { environment } from '../../../environments/environment';
 // Angularfire
 import {
   doc,
@@ -29,7 +29,7 @@ import {
 import { CollectionConfig, CollectionService } from 'akita-ng-fire';
 import { resetStores } from '@datorama/akita';
 // Localforage
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
 // Auth state
 import { AuthState, AuthStore } from './auth.store';
 import { AuthQuery } from './auth.query';

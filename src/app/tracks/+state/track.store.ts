@@ -6,7 +6,7 @@ import {
   MultiActiveState,
   StoreConfig,
 } from '@datorama/akita';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
 
 export interface TrackState
   extends EntityState<Track, string>,

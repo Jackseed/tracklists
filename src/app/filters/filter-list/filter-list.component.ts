@@ -1,12 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { TrackQuery, TrackService } from 'src/app/tracks/+state';
+import { Component } from '@angular/core';
+import { TrackQuery, TrackService } from '../../tracks/+state';
 
 @Component({
   selector: 'app-filter-list',
   templateUrl: './filter-list.component.html',
   styleUrls: ['./filter-list.component.css'],
 })
-export class FilterListComponent implements OnInit {
+export class FilterListComponent {
   extremeYears = this.trackQuery.getExtremeReleaseYears;
   extremeTempos = this.trackQuery.getExtremeTempos;
   filters = [
@@ -112,6 +112,4 @@ export class FilterListComponent implements OnInit {
   public clearFilters() {
     this.trackService.clearFilters();
   }
-
-  ngOnInit(): void {}
 }

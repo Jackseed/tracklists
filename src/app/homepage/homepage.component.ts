@@ -14,11 +14,11 @@ import {
 import { AuthQuery, AuthService, User } from '../auth/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
-import { Playlist, PlaylistQuery } from 'src/app/playlists/+state';
+import { Playlist, PlaylistQuery } from '../playlists/+state';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { GenreQuery } from '../filters/genre-filters/+state';
 // Components
-import { PlaylistFormComponent } from 'src/app/playlists/playlist-form/playlist-form.component';
+import { PlaylistFormComponent } from '../playlists/playlist-form/playlist-form.component';
 // Flex layout
 import { MediaObserver } from '@angular/flex-layout';
 // Material

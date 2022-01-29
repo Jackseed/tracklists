@@ -2,8 +2,8 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GenreService } from 'src/app/filters/genre-filters/+state';
-import { TrackService } from 'src/app/tracks/+state';
+import { GenreService } from '../../filters/genre-filters/+state';
+import { TrackService } from '../../tracks/+state';
 import { Playlist, PlaylistQuery, PlaylistService } from '../+state';
 
 @Component({

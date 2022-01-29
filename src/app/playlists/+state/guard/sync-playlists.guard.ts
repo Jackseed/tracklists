@@ -8,9 +8,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs/operators';
-import { AuthQuery } from 'src/app/auth/+state';
+import { AuthQuery } from '../../../auth/+state';
 import { PlaylistStore } from '../playlist.store';
-import { TrackService } from 'src/app/tracks/+state';
+import { TrackService } from '../../../tracks/+state';
 
 @Injectable({
   providedIn: 'root',

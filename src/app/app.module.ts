@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ServiceWorkerModule } from '@angular/service-worker';
 // Env
-import { environment } from 'src/environments/environment';
+import { environment } from '../environments/environment';
 // Modules
 import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './auth/auth.module';
@@ -55,7 +55,7 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     LandingComponent,
   ],
   imports: [
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     CommonModule,
     BrowserAnimationsModule,
     AppRoutingModule,

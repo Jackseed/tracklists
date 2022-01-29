@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { Observable, of } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
 import { Playlist } from './playlist.model';
 import { PlaylistState, PlaylistStore } from './playlist.store';
 

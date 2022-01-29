@@ -4,10 +4,10 @@ import { TrackStore, TrackState } from './track.store';
 import { Observable, of } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { MinMax, Track } from './track.model';
-import { AuthQuery } from 'src/app/auth/+state';
-import { PlaylistQuery } from 'src/app/playlists/+state';
+import { AuthQuery } from '../../auth/+state';
+import { PlaylistQuery } from '../../playlists/+state';
 import { AkitaFiltersPlugin } from 'akita-filters-plugin';
-import { LocalforageService } from 'src/app/utils/localforage.service';
+import { LocalforageService } from '../../utils/localforage.service';
 import {
   collection,
   collectionData,
