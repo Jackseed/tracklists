@@ -26,9 +26,11 @@ import {
   provideFirestore,
 } from '@angular/fire/firestore';
 import { provideFunctions } from '@angular/fire/functions';
+import { getPerformance, providePerformance } from '@angular/fire/performance';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { provideAuth } from '@angular/fire/auth';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
+
 // Akita
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 // Material
@@ -55,7 +57,7 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     LandingComponent,
   ],
   imports: [
-    BrowserModule.withServerTransition({ appId: 'serverApp' }),
+    BrowserModule,
     CommonModule,
     BrowserAnimationsModule,
     AppRoutingModule,
@@ -97,6 +99,7 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
       //connectAuthEmulator(auth, 'http://localhost:9099');
       return auth;
     }),
+    providePerformance(() => getPerformance()),
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
   ],
   bootstrap: [AppComponent],
