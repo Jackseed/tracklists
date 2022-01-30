@@ -8,7 +8,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "deploy:prod": "firebase use listy-prod && ng build --configuration production && firebase deploy"
+    "deploy": "firebase use listy-prod && ng build --configuration production  && npm run editngsw && firebase deploy --only hosting",
+    "editngsw": "gsed -i '/onFetch(event) {/,/const req = event.request;/c onFetch(event){const req=event.request;const whitelist=[\"sentry\"];if(whitelist.some(word=>req.url.toLowerCase().includes(word.toLowerCase()))){return}' ./dist/listy/ngsw-worker.js"
   },
   "private": true,
   "dependencies": {
@@ -29,6 +30,8 @@
     "@datorama/akita-ng-router-store": "^5.1.9",
     "@datorama/akita-ngdevtools": "^5.0.3",
     "@ngneat/until-destroy": "^8.1.1",
+    "@sentry/angular": "^6.17.3",
+    "@sentry/tracing": "^6.17.3",
     "@types/spotify-web-playback-sdk": "^0.1.10",
     "akita-filters-plugin": "^4.1.1",
     "akita-ng-fire": "^7.0.0-beta.3",

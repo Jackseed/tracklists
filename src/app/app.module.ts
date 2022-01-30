@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { TracksModule } from './tracks/tracks.module';
 import { FiltersModule } from './filters/filters.module';
 import { PlaylistsModule } from './playlists/playlists.module';
+import { SentryModule } from './utils/sentry/sentry.module';
 // Components
 import { AppComponent } from './app.component';
 import { HomepageComponent } from './homepage/homepage.component';
@@ -30,7 +31,6 @@ import { getPerformance, providePerformance } from '@angular/fire/performance';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { provideAuth } from '@angular/fire/auth';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
-
 // Akita
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 // Material
@@ -48,6 +48,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 // Pipes
 import { SecToMinPipe } from './utils/sec-to-min.pipe';
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -60,22 +61,6 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     BrowserModule,
     CommonModule,
     BrowserAnimationsModule,
-    AppRoutingModule,
-    AuthModule,
-    TracksModule,
-    FiltersModule,
-    PlaylistsModule,
-    MatButtonModule,
-    MatCardModule,
-    MatIconModule,
-    FormsModule,
-    FlexLayoutModule,
-    MatSliderModule,
-    MatTabsModule,
-    MatDividerModule,
-    MatProgressSpinnerModule,
-    MatProgressBarModule,
-    MatTooltipModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable
@@ -101,6 +86,23 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     }),
     providePerformance(() => getPerformance()),
     // environment.production ? [] : AkitaNgDevtools.forRoot(),
+    AppRoutingModule,
+    SentryModule,
+    AuthModule,
+    TracksModule,
+    FiltersModule,
+    PlaylistsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    FormsModule,
+    FlexLayoutModule,
+    MatSliderModule,
+    MatTabsModule,
+    MatDividerModule,
+    MatProgressSpinnerModule,
+    MatProgressBarModule,
+    MatTooltipModule,
   ],
   bootstrap: [AppComponent],
 })

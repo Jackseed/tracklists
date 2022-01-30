@@ -26,5 +26,20 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "sentry",
+      "urls": ["sentry.io/api"],
+
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "3d12h"
+      },
+
+      "cacheQueryOptions": {
+        "ignoreSearch": true
+      }
+    }
   ]
 }
