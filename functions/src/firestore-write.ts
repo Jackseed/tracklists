@@ -13,25 +13,26 @@ export async function firestoreWrite(req: any, res: any) {
   const firebaseWriteLimit = 500;
   let completeBatches: any[] = [];
 
+  // Prepares batches to respect firestore write limits
   for (let i = 0; i <= Math.floor(objects.length / firebaseWriteLimit); i++) {
     const bactchObjects = objects.slice(
       firebaseWriteLimit * i,
       firebaseWriteLimit * (i + 1)
     );
     const batch = admin.firestore().batch();
+    // Prepares each batch with the firestore writings
     for (const object of bactchObjects) {
-      if (object) {
-        const ref = collection.doc(object.id);
-        let finalObject: any;
-        // Adds userId if it's a track.
-        type === 'tracks'
-          ? (finalObject = {
-              ...object,
-              userIds: admin.firestore.FieldValue.arrayUnion(user.uid),
-            })
-          : (finalObject = object);
-        batch.set(ref, finalObject, { merge: true });
-      }
+      if (!object) return;
+      const ref = collection.doc(object.id);
+      let finalObject: any;
+      // Adds userId if it's a track.
+      type === 'tracks'
+        ? (finalObject = {
+            ...object,
+            userIds: admin.firestore.FieldValue.arrayUnion(user.uid),
+          })
+        : (finalObject = object);
+      batch.set(ref, finalObject, { merge: true });
     }
     completeBatches = completeBatches.concat(batch.commit());
   }
@@ -45,6 +46,47 @@ export async function firestoreWrite(req: any, res: any) {
     result: response,
   });
   console.log(`Firestore: saved ${objects.length} ${type}. `);
+  return res;
+}
+
+//--------------------------------
+//     REMOVES UNUSED TRACKS    //
+//--------------------------------
+export async function removesUnusedTracks(req: any, res: any) {
+  console.log('starting to remove unused tracks');
+  const user: User = req.body.user;
+  const collection: any = admin.firestore().collection('tracks');
+  const trackIds: string[] = req.body.trackIds;
+  let response: string = '';
+  const firebaseWriteLimit = 500;
+  let completeBatches: any[] = [];
+
+  // Prepares batches to respect firestore write limits
+  for (let i = 0; i <= Math.floor(trackIds.length / firebaseWriteLimit); i++) {
+    const batchedTrackIds = trackIds.slice(
+      firebaseWriteLimit * i,
+      firebaseWriteLimit * (i + 1)
+    );
+    const batch = admin.firestore().batch();
+    // Prepares each batch with the firestore writings
+    for (const trackId of batchedTrackIds) {
+      if (!trackId) return;
+      const ref = collection.doc(trackId);
+      batch.update(ref, {
+        userIds: admin.firestore.FieldValue.arrayRemove(user.uid),
+      });
+    }
+    completeBatches = completeBatches.concat(batch.commit());
+  }
+  await Promise.all(completeBatches)
+    .catch((error: any) => (response = error.response))
+    .then((_) => {
+      response = `${trackIds.length} tracks correctly removed from user.`;
+    });
+  res.json({
+    result: response,
+  });
+  console.log(`Firestore: removed ${trackIds.length} tracks from user. `);
   return res;
 }
 

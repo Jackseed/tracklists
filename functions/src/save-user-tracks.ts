@@ -20,6 +20,14 @@ const axios = require('axios').default;
 // TODO: replace user with userId
 export async function saveUserTracks(data: any) {
   const user = data.user;
+
+  const userDocs = await admin
+    .firestore()
+    .collection('tracks')
+    .where('userIds', 'array-contains', user.id)
+    .get();
+  const firebaseUserTrackIds = userDocs.docs.map((doc) => doc.data().id);
+
   // Gets user's playlists.
   let playlists: Playlist[] = await getSpotifyObjectsByBatches(
     user,
@@ -27,9 +35,34 @@ export async function saveUserTracks(data: any) {
   );
   console.log(`Playlists: get ${playlists.length} playlists.`);
 
-  // Gets user's tracks.
+  // Gets user's Spotify tracks.
   const trackCall = await getUserPlaylistFullTracks(user, playlists);
   const uniqueFullTracks = trackCall.tracks;
+  const spotifyUserTrackIds = uniqueFullTracks.map((track) => track.id);
+
+  // Gets tracks saved to Firebase but removed from Spotify
+  const removedTrackIds = firebaseUserTrackIds.filter(
+    (id) => !spotifyUserTrackIds.includes(id)
+  );
+  console.log(
+    'Firebase length: ',
+    firebaseUserTrackIds.length,
+    'Spotify length: ',
+    spotifyUserTrackIds.length, 'tracks to remove: ',
+    removedTrackIds.length
+  );
+  // Removes unused tracks
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    url: functions.config().functions.removesunusedtracks,
+    data: {
+      user,
+      trackIds: removedTrackIds,
+    },
+    method: 'POST',
+  });
 
   // Adds liked tracks to the playlists.
   playlists = playlists.concat(trackCall.likedTrackPlaylist);

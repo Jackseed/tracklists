@@ -4,6 +4,7 @@ import { getSpotifyToken, saveToken } from './spotify-auth';
 import {
   extractGenresFromTrackToPlaylist,
   firestoreWrite,
+  removesUnusedTracks,
 } from './firestore-write';
 import * as admin from 'firebase-admin';
 admin.initializeApp({
@@ -39,6 +40,15 @@ exports.firestoreWrite = functions
     timeoutSeconds: 500,
   })
   .https.onRequest(firestoreWrite);
+
+//--------------------------------
+//     REMOVES UNUSED TRACKS    //
+//--------------------------------
+exports.removesUnusedTracks = functions
+  .runWith({
+    timeoutSeconds: 500,
+  })
+  .https.onRequest(removesUnusedTracks);
 
 //--------------------------------------------
 // EXTRACTS GENRES FROM TRACKS TO PLAYLISTS //

@@ -15,7 +15,6 @@ export interface TrackState
     spinner: boolean;
   };
 }
-
 const initialState = {
   ui: { spinner: false },
 };
@@ -27,16 +26,13 @@ export class TrackStore extends EntityStore<TrackState, Track> {
     super(initialState);
     this.loadFromStorage();
   }
-  // call storage instead of firebase
+  // Calls local storage instead of firebase when it's loaded
   async loadFromStorage() {
     const data: any = await this.localforage.getItem('trackStore');
-    if (data) {
-      // don't set store if empty
-      if (!data.includes(':{}')) {
-        this._setState((_) => JSON.parse(data));
-        this.setActive([]);
-        this.setLoading(false);
-      }
-    }
+    if (!data || data.includes(':{}')) return;
+
+    this._setState((_) => JSON.parse(data));
+    this.setActive([]);
+    this.setLoading(false);
   }
 }

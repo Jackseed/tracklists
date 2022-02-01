@@ -13,7 +13,7 @@
           (click)="loginToSpotify()"
           disabled="{{ loggingIn$ | async }}"
         >
-          <span *ngIf="!(loggingIn$ | async)">Login</span>
+          <span *ngIf="(loggingIn$ | async) === false">Login</span>
           <div
             fxLayout="row"
             fxLayoutAlign="center center"
