@@ -69,18 +69,18 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => {
       const firestore = getFirestore();
-      // connectFirestoreEmulator(firestore, 'localhost', 8080);
+      connectFirestoreEmulator(firestore, 'localhost', 8080);
       return firestore;
     }),
 
     provideFunctions(() => {
       const functions = getFunctions();
-      // connectFunctionsEmulator(functions, 'localhost', 5001);
+      connectFunctionsEmulator(functions, 'localhost', 5001);
       return functions;
     }),
     provideAuth(() => {
       const auth = getAuth();
-      // connectAuthEmulator(auth, 'http://localhost:9099');
+      connectAuthEmulator(auth, 'http://localhost:9099');
       return auth;
     }),
     providePerformance(() => getPerformance()),

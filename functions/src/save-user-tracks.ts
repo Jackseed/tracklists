@@ -21,12 +21,12 @@ const axios = require('axios').default;
 export async function saveUserTracks(data: any) {
   const user = data.user;
 
-  const userDocs = await admin
+  const userTrackDocs = await admin
     .firestore()
     .collection('tracks')
     .where('userIds', 'array-contains', user.id)
     .get();
-  const firebaseUserTrackIds = userDocs.docs.map((doc) => doc.data().id);
+  const firebaseUserTrackIds = userTrackDocs.docs.map((doc) => doc.data().id);
 
   // Gets user's playlists.
   let playlists: Playlist[] = await getSpotifyObjectsByBatches(
@@ -44,26 +44,43 @@ export async function saveUserTracks(data: any) {
   const removedTrackIds = firebaseUserTrackIds.filter(
     (id) => !spotifyUserTrackIds.includes(id)
   );
-  console.log(
-    'Firebase length: ',
-    firebaseUserTrackIds.length,
-    'Spotify length: ',
-    spotifyUserTrackIds.length, 'tracks to remove: ',
-    removedTrackIds.length
-  );
-  // Removes unused tracks
-  axios({
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    url: functions.config().functions.removesunusedtracks,
-    data: {
-      user,
-      trackIds: removedTrackIds,
-    },
-    method: 'POST',
-  });
 
+  if (removedTrackIds.length > 0) {
+    console.log(
+      'Firebase length: ',
+      firebaseUserTrackIds.length,
+      'Spotify length: ',
+      spotifyUserTrackIds.length,
+      'tracks to remove: ',
+      removedTrackIds.length
+    );
+    // Removes unused tracks
+    axios({
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      url: functions.config().functions.removesunusedtracks,
+      data: {
+        user,
+        trackIds: removedTrackIds,
+      },
+      method: 'POST',
+    });
+
+    // Deletes genre collections because of unused tracks
+    playlists.forEach((playlist) =>
+      axios({
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        url: functions.config().functions.deletegenrescollection,
+        data: {
+          playlistId: playlist.id,
+        },
+        method: 'POST',
+      })
+    );
+  }
   // Adds liked tracks to the playlists.
   playlists = playlists.concat(trackCall.likedTrackPlaylist);
 

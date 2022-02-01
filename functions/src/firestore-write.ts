@@ -106,12 +106,10 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   let operationCounter = 0;
   let batchIndex = 0;
 
-  playlists.forEach((playlist) => {
+  playlists.forEach(async (playlist) => {
     const genreCollection = admin
       .firestore()
-      .collection('playlists')
-      .doc(playlist.id!)
-      .collection('genres');
+      .collection(`playlists/${playlist.id}/genres`);
     // Filters tracks that belong to this playlist only.
     const playlistTracks: Partial<FullTrack>[] = tracks.filter((track) =>
       playlist.trackIds!.includes(track.id!)
@@ -121,6 +119,7 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
     playlistTracks.forEach((track) => {
       track.genres!.forEach((genre) => {
         const ref = genreCollection.doc(genre);
+        // Adds the track id to the genre within the current batch.
         batchArray[batchIndex].set(
           ref,
           {
@@ -158,6 +157,56 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   });
   console.log(`Firestore: saved ${batchArray.length} of genres.`);
   return res;
+}
+
+//--------------------------------
+//   DELETES GENRE COLLECTIONS  //
+//--------------------------------
+// TODO: Use recursive logic for other batch functions
+export async function deleteGenresCollection(
+  req: any,
+  res: any
+): Promise<void> {
+  const batchSize = 500;
+  const playlistId: Playlist = req.body.playlistId;
+  const collectionRef = admin
+    .firestore()
+    .collection(`playlists/${playlistId}/genres`);
+  const query = collectionRef.orderBy('id').limit(batchSize);
+
+  await new Promise((resolve, reject) => {
+    deleteQueryBatch(query, resolve).catch(reject);
+  });
+
+  res.json({ result: 'ended' });
+  return res;
+}
+
+async function deleteQueryBatch(
+  query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData>,
+  resolve: any
+) {
+  const snapshot = await query.get();
+
+  const batchSize = snapshot.size;
+  if (batchSize === 0) {
+    // When there are no documents left, we are done
+    resolve();
+    return;
+  }
+
+  // Deletes documents in a batch
+  const batch = admin.firestore().batch();
+  snapshot.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+
+  // Recurses on the next process tick, to avoid
+  // exploding the stack.
+  process.nextTick(() => {
+    deleteQueryBatch(query, resolve);
+  });
 }
 
 //--------------------------------

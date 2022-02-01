@@ -2,11 +2,13 @@ import * as functions from 'firebase-functions';
 import { saveUserTracks } from './save-user-tracks';
 import { getSpotifyToken, saveToken } from './spotify-auth';
 import {
+  deleteGenresCollection,
   extractGenresFromTrackToPlaylist,
   firestoreWrite,
   removesUnusedTracks,
 } from './firestore-write';
 import * as admin from 'firebase-admin';
+
 admin.initializeApp({
   serviceAccountId: functions.config().functions.serviceaccountid,
 });
@@ -58,3 +60,12 @@ exports.extractGenresFromTrackToPlaylist = functions
     timeoutSeconds: 500,
   })
   .https.onRequest(extractGenresFromTrackToPlaylist);
+
+//-----------------------------
+// DELETES GENRES COLLECTION //
+//-----------------------------
+exports.deleteGenresCollection = functions
+  .runWith({
+    timeoutSeconds: 60,
+  })
+  .https.onRequest(deleteGenresCollection);
