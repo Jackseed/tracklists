@@ -10,14 +10,14 @@
     "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "12"
+    "node": "16"
   },
   "main": "lib/index.js",
   "dependencies": {
     "axios": "^0.21.1",
     "cors": "^2.8.5",
-    "firebase-admin": "^9.4.2",
-    "firebase-functions": "^3.13.1",
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^3.18.1",
     "playwright": "^1.8.0",
     "puppeteer": "^7.0.1"
   },

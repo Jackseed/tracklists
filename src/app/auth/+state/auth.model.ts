@@ -11,7 +11,6 @@ export interface User {
     refresh?: string;
   };
   deviceId?: string;
-  trackIds?: string[];
   playlistIds?: string[];
 }
 
@@ -58,6 +57,5 @@ export function createUser(params: Partial<User>): User {
     uid: params.uid,
     email: params.email,
     playlistIds: [],
-    trackIds: [],
   };
 }

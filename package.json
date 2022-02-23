@@ -9,7 +9,9 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "deploy": "firebase use listy-prod && ng build --configuration production  && npm run editngsw && firebase deploy --only hosting",
-    "editngsw": "gsed -i '/onFetch(event) {/,/const req = event.request;/c onFetch(event){const req=event.request;const whitelist=[\"sentry\"];if(whitelist.some(word=>req.url.toLowerCase().includes(word.toLowerCase()))){return}' ./dist/listy/ngsw-worker.js"
+    "editngsw": "gsed -i '/onFetch(event) {/,/const req = event.request;/c onFetch(event){const req=event.request;const whitelist=[\"sentry\"];if(whitelist.some(word=>req.url.toLowerCase().includes(word.toLowerCase()))){return}' ./dist/listy/ngsw-worker.js",
+    "emulators:start": "firebase emulators:start --only functions,auth,firestore",
+    "emulators:stop": "lsof -t -i:5001 -i:5002 -i:8080 -i:9000 -i:9099 -i:9199 -i:9090 | xargs kill -9"
   },
   "private": true,
   "dependencies": {

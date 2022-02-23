@@ -9,6 +9,7 @@ import {
   createTrack,
   SpotifySavedTrack,
   Track,
+  AugmentedPlaylist,
 } from './data';
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
@@ -18,15 +19,9 @@ const axios = require('axios').default;
 //        MAIN FUNCTION         //
 //--------------------------------
 // TODO: replace user with userId
-export async function saveUserTracks(data: any) {
+// TODO: replace Partial<FulLTrack>
+export async function saveUserTracks(data: { user: User }) {
   const user = data.user;
-
-  const userTrackDocs = await admin
-    .firestore()
-    .collection('tracks')
-    .where('userIds', 'array-contains', user.id)
-    .get();
-  const firebaseUserTrackIds = userTrackDocs.docs.map((doc) => doc.data().id);
 
   // Gets user's playlists.
   let playlists: Playlist[] = await getSpotifyObjectsByBatches(
@@ -38,106 +33,198 @@ export async function saveUserTracks(data: any) {
   // Gets user's Spotify tracks.
   const trackCall = await getUserPlaylistFullTracks(user, playlists);
   const uniqueFullTracks = trackCall.tracks;
-  const spotifyUserTrackIds = uniqueFullTracks.map((track) => track.id);
 
-  // Gets tracks saved to Firebase but removed from Spotify
-  const removedTrackIds = firebaseUserTrackIds.filter(
-    (id) => !spotifyUserTrackIds.includes(id)
+  // Adds liked tracks to the playlists.
+  playlists = playlists.concat(trackCall.likedTrackPlaylist);
+
+  // Checks and clears outdated tracks saved to Firestore but removed from Spotify.
+  clearsOutdatedFirestoreTracks(user, uniqueFullTracks, playlists);
+
+  // Writes tracks & playlists to Firestore.
+  firestoreWriteSizedObjects(user, playlists, 'playlists');
+  firestoreWriteSizedObjects(user, uniqueFullTracks, 'tracks');
+
+  // Writes playlist ids in user doc.
+  const userRef = admin.firestore().collection('users').doc(user.uid);
+  const playlistIds = playlists.map((playlist) => playlist.id);
+  await userRef
+    .update({ playlistIds })
+    .then((_: any) => console.log('Firestore: playlist ids saved on user.'))
+    .catch((error: any) => console.log(error));
+
+  // Adds tracks to playlists in order to extract genres.
+  const augmentedPlaylists = buildsAugmentedPlaylists(
+    playlists,
+    uniqueFullTracks
   );
-
-  if (removedTrackIds.length > 0) {
-    console.log(
-      'Firebase length: ',
-      firebaseUserTrackIds.length,
-      'Spotify length: ',
-      spotifyUserTrackIds.length,
-      'tracks to remove: ',
-      removedTrackIds.length
-    );
-    // Removes unused tracks
+  // Writes genres on playlists to enable genre filtering.
+  augmentedPlaylists.forEach((playlist) => {
+    if (!playlist) {
+      console.log('invalid playlist: ', playlist);
+      return;
+    }
     axios({
       headers: {
         'Content-Type': 'application/json',
       },
-      url: functions.config().functions.removesunusedtracks,
+      url: functions.config().functions.extractgenresfromtracktoplaylist,
       data: {
-        user,
-        trackIds: removedTrackIds,
+        playlist,
       },
       method: 'POST',
     });
+  });
 
-    // Deletes genre collections because of unused tracks
-    playlists.forEach((playlist) =>
-      axios({
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        url: functions.config().functions.deletegenrescollection,
-        data: {
-          playlistId: playlist.id,
-        },
-        method: 'POST',
-      })
+  return { tracks: uniqueFullTracks };
+}
+
+function buildsAugmentedPlaylists(
+  playlists: Playlist[],
+  tracks: Partial<FullTrack>[]
+): AugmentedPlaylist[] {
+  const augementedPlaylists: AugmentedPlaylist[] = playlists.map((playlist) => {
+    return {
+      ...playlist,
+      // Filters tracks that belong to this playlist only.
+      fullTracks: tracks.filter((track) =>
+        playlist.trackIds!.includes(track.id!)
+      ),
+    };
+  });
+
+  return augementedPlaylists;
+}
+
+async function clearsOutdatedFirestoreTracks(
+  user: User,
+  uniqueFullTracks: Partial<FullTrack>[],
+  playlists: Playlist[]
+) {
+  const spotifyUserTrackIds = uniqueFullTracks.map((track) => track.id!);
+  // Gets user's Firestore tracks.
+  const userTrackDocs = await admin
+    .firestore()
+    .collection('tracks')
+    .where('userIds', 'array-contains', user.uid)
+    .get();
+  const firestoreUserTrackIds = userTrackDocs.docs.map((doc) => doc.data().id);
+
+  // Gets tracks saved to Firebase but removed from Spotify
+  const removedTrackIds = firestoreUserTrackIds.filter(
+    (id) => !spotifyUserTrackIds.includes(id)
+  );
+
+  // Deletes outdated tracks.
+  if (removedTrackIds.length > 0)
+    deletesOutdatedFirestoreTracks(user, playlists, removedTrackIds);
+}
+
+function deletesOutdatedFirestoreTracks(
+  user: User,
+  playlists: Playlist[],
+  removedTrackIds: string[]
+) {
+  console.log(
+    'Removing ',
+    removedTrackIds.length,
+    ' outdated tracks from Firestore.'
+  );
+  // Removes unused tracks
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    url: functions.config().functions.removesunusedtracks,
+    data: {
+      user,
+      trackIds: removedTrackIds,
+    },
+    method: 'POST',
+  });
+
+  // Deletes genre collections because of unused tracks
+  playlists.forEach((playlist) =>
+    axios({
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      url: functions.config().functions.deletegenrescollection,
+      data: {
+        playlistId: playlist.id,
+      },
+      method: 'POST',
+    })
+  );
+}
+
+function firestoreWriteSizedObjects(
+  user: User,
+  objects: Playlist[] | Partial<FullTrack>[],
+  collection: 'playlists' | 'tracks'
+) {
+  const byteSizeLimit = 10000000;
+
+  const objectRoughSize = roughSizeOfObject(objects);
+
+  console.log(
+    collection,
+    ' size: ',
+    Math.round(objectRoughSize / 1000000),
+    'MB'
+  );
+
+  // Rezises objects if too heavy.
+  if (roughSizeOfObject(objects) > byteSizeLimit) {
+    const half = Math.ceil(objects.length / 2);
+    firestoreWriteSizedObjects(user, objects.slice(0, half), collection);
+    firestoreWriteSizedObjects(
+      user,
+      objects.slice(half, objects.length),
+      collection
     );
+    return;
   }
-  // Adds liked tracks to the playlists.
-  playlists = playlists.concat(trackCall.likedTrackPlaylist);
-
-  // Writes playlists to Firestore.
+  console.log(`Writing ${objects.length} ${collection} to Firestore.`);
+  // Writes to Firestore.
   axios({
     headers: {
       'Content-Type': 'application/json',
     },
     url: functions.config().functions.firestorewrite,
+    maxContentLength: byteSizeLimit,
+    maxBodyLength: byteSizeLimit,
     data: {
       user,
-      collection: 'playlists',
-      objects: playlists,
+      collection,
+      objects,
     },
     method: 'POST',
   });
+}
 
-  // Writes tracks to Firestore.
-  axios({
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    url: functions.config().functions.firestorewrite,
-    data: {
-      user,
-      collection: 'tracks',
-      objects: uniqueFullTracks,
-    },
-    method: 'POST',
-  });
+function roughSizeOfObject(object: any): number {
+  let objectList = [];
+  let stack = [object];
+  let bytes = 0;
 
-  // Writes playlist & track ids in user doc.
-  const userRef = admin.firestore().collection('users').doc(user.uid);
-  const playlistIds = playlists.map((playlist) => playlist.id);
-  const uniqueTrackIds: string[] = uniqueFullTracks.map((track) => track.id!);
+  while (stack.length) {
+    let value = stack.pop();
 
-  await userRef
-    .update({ playlistIds, trackIds: uniqueTrackIds })
-    .then((_: any) =>
-      console.log('Firestore: track & playlist ids saved on user.')
-    )
-    .catch((error: any) => console.log(error));
+    if (typeof value === 'boolean') {
+      bytes += 4;
+    } else if (typeof value === 'string') {
+      bytes += value.length * 2;
+    } else if (typeof value === 'number') {
+      bytes += 8;
+    } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
+      objectList.push(value);
 
-  // Writes genres on playlists to enable genre filtering.
-  axios({
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    url: functions.config().functions.extractgenresfromtracktoplaylist,
-    data: {
-      playlists,
-      tracks: uniqueFullTracks,
-    },
-    method: 'POST',
-  });
-
-  return uniqueFullTracks;
+      for (let i in value) {
+        stack.push(value[i]);
+      }
+    }
+  }
+  return bytes;
 }
 
 //--------------------------------
@@ -321,7 +408,7 @@ async function getSpotifyObjectsByBatches(
     ids
       ? (queryParam = extractIdsAsQueryParam(limit, i, ids))
       : (queryParam = `?limit=${limit}&offset=${offset}`);
-    // Paralelize calls only for playlistTracks to avoid Spotify api rate limit.
+    // Paralelizes calls only for playlistTracks to avoid Spotify api rate limit.
     if (objectType === 'playlistTracks') {
       objectBatch = getPromisedObjects(user, url, queryParam);
       promisedResult = promisedResult.concat(objectBatch);
@@ -388,6 +475,7 @@ function formatObjects(
     | 'playlistTracks'
 ): any[] {
   let formatedObjects: any[] = [];
+  if (object === undefined) return [];
 
   if (objectType === 'playlists') formatedObjects = object.data.items;
 
@@ -409,7 +497,7 @@ function formatObjects(
       );
     });
 
-  if (objectType === 'artists') formatedObjects = object.data.artists;
+  if (objectType === 'artists') formatedObjects = object?.data.artists;
 
   if (objectType === 'playlistTracks')
     object.data.items.forEach((item: SpotifyPlaylistTrack) => {
@@ -456,6 +544,16 @@ async function getPromisedObjects(
     })
     // Retries the call after a delay if it was blocked by api rate limit.
     .catch(async (error: any) => {
+      console.log(
+        'request: ',
+        error.config.url,
+        'error: ',
+        error.response.data
+      );
+      if (error.response.status === 500) {
+        console.log('sorry bro');
+        return {};
+      }
       if (error.response.status === 429) {
         if (!!!attempt || attempt! < 3) {
           attempt ? attempt++ : (attempt = 1);

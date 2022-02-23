@@ -133,11 +133,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
   public async loadPlaylist() {
     this.trackService.updateSpinner(true);
     const user = this.authQuery.getActive();
-    const saveFunction = httpsCallable(this.functions, 'saveUserPlaylists');
+    const saveFunction = httpsCallable(this.functions, 'saveUserPlaylists', {
+      timeout: 540000,
+    });
 
     saveFunction({ user })
-      .then((response: HttpsCallableResult<Track[]>) => {
-        const tracks = response.data;
+      .then((response: HttpsCallableResult<{ tracks: Track[] }>) => {
+        const tracks = response.data.tracks;
         console.log(tracks);
         this.trackService.setStore(tracks);
         this.trackService.updateSpinner(false);

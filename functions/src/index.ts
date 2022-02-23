@@ -17,21 +17,21 @@ admin.initializeApp({
 //    GETS SPOTIFY AUTH TOKEN   //
 //--------------------------------
 exports.getSpotifyToken = functions
-  .runWith({ timeoutSeconds: 500 })
+  .runWith({ timeoutSeconds: 30 })
   .https.onCall(getSpotifyToken);
 
 //--------------------------------
 //   SAVES SPOTIFY AUTH TOKEN   //
 //--------------------------------
 exports.saveToken = functions
-  .runWith({ timeoutSeconds: 60 })
+  .runWith({ timeoutSeconds: 30 })
   .https.onRequest(saveToken);
 
 //--------------------------------
 //     SAVES USER PLAYLISTS     //
 //--------------------------------
 exports.saveUserPlaylists = functions
-  .runWith({ timeoutSeconds: 500, memory: '512MB' })
+  .runWith({ timeoutSeconds: 540, memory: '8GB' })
   .https.onCall(saveUserTracks);
 
 //--------------------------------
@@ -39,7 +39,7 @@ exports.saveUserPlaylists = functions
 //--------------------------------
 exports.firestoreWrite = functions
   .runWith({
-    timeoutSeconds: 500,
+    timeoutSeconds: 150,
   })
   .https.onRequest(firestoreWrite);
 
@@ -48,7 +48,7 @@ exports.firestoreWrite = functions
 //--------------------------------
 exports.removesUnusedTracks = functions
   .runWith({
-    timeoutSeconds: 500,
+    timeoutSeconds: 150,
   })
   .https.onRequest(removesUnusedTracks);
 
@@ -57,7 +57,7 @@ exports.removesUnusedTracks = functions
 //--------------------------------------------
 exports.extractGenresFromTrackToPlaylist = functions
   .runWith({
-    timeoutSeconds: 500,
+    timeoutSeconds: 90,
   })
   .https.onRequest(extractGenresFromTrackToPlaylist);
 

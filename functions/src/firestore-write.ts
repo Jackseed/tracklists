@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { FullTrack, Playlist, User } from './data';
+import { AugmentedPlaylist, Playlist, User } from './data';
 
 //--------------------------------
 //    SAVES DOC TO FIRESTORE    //
@@ -21,8 +21,19 @@ export async function firestoreWrite(req: any, res: any) {
     );
     const batch = admin.firestore().batch();
     // Prepares each batch with the firestore writings
-    for (const object of bactchObjects) {
-      if (!object) return;
+    bactchObjects.forEach((object) => {
+      let containsSpecialChar = /[^\x00-\x7F]/;
+
+      // Checks if object exists and if its id is a string without special characters.
+      if (
+        !object ||
+        !object.id ||
+        typeof object.id !== 'string' ||
+        containsSpecialChar.test(object.id)
+      ) {
+        console.log('incorrect object: ', object);
+        return;
+      }
       const ref = collection.doc(object.id);
       let finalObject: any;
       // Adds userId if it's a track.
@@ -33,19 +44,22 @@ export async function firestoreWrite(req: any, res: any) {
           })
         : (finalObject = object);
       batch.set(ref, finalObject, { merge: true });
-    }
+    });
     completeBatches = completeBatches.concat(batch.commit());
   }
 
   await Promise.all(completeBatches)
     .catch((error: any) => (response = error.response))
     .then((_) => {
-      response = `${objects.length + type} saved correctly to firestore.`;
+      response = `${objects.length + ' ' + type} saved correctly to firestore.`;
     });
   res.json({
     result: response,
   });
-  console.log(`Firestore: saved ${objects.length} ${type}. `);
+  console.log(
+    `Firestore: saved ${objects.length} ${type}. Response: `,
+    response
+  );
   return res;
 }
 
@@ -95,8 +109,7 @@ export async function removesUnusedTracks(req: any, res: any) {
 //--------------------------------------------
 // To enable genre filtering, genres are saved on playlists.
 export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
-  const playlists: Playlist[] = req.body.playlists;
-  const tracks: Partial<FullTrack>[] = req.body.tracks;
+  const augmentedPlaylist: AugmentedPlaylist = req.body.playlist;
   let response: string = '';
 
   const firebaseWriteLimit = 497;
@@ -105,47 +118,45 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   let completeBatches: any[] = [];
   let operationCounter = 0;
   let batchIndex = 0;
+  if (!augmentedPlaylist.id) {
+    console.log('invalid playlist: ', augmentedPlaylist);
+    return;
+  }
+  const genreCollection = admin
+    .firestore()
+    .collection(`playlists/${augmentedPlaylist.id}/genres`);
 
-  playlists.forEach(async (playlist) => {
-    const genreCollection = admin
-      .firestore()
-      .collection(`playlists/${playlist.id}/genres`);
-    // Filters tracks that belong to this playlist only.
-    const playlistTracks: Partial<FullTrack>[] = tracks.filter((track) =>
-      playlist.trackIds!.includes(track.id!)
-    );
+  // Extracts every genres of each track.
+  augmentedPlaylist.fullTracks.forEach((track) => {
+    if (!track.genres) return;
+    track.genres.forEach((genre) => {
+      const ref = genreCollection.doc(genre);
+      // Adds the track id to the genre within the current batch.
+      batchArray[batchIndex].set(
+        ref,
+        {
+          id: genre,
+          trackIds: admin.firestore.FieldValue.arrayUnion(track.id),
+        },
+        { merge: true }
+      );
+      // Counts each db operation to stay below api limit.
+      operationCounter += 2;
 
-    // Extracts every genres of each track.
-    playlistTracks.forEach((track) => {
-      track.genres!.forEach((genre) => {
-        const ref = genreCollection.doc(genre);
-        // Adds the track id to the genre within the current batch.
-        batchArray[batchIndex].set(
-          ref,
-          {
-            id: genre,
-            trackIds: admin.firestore.FieldValue.arrayUnion(track.id),
-          },
-          { merge: true }
+      // If the batch is full, adds to complete ones, creates a new one and resets operation count.
+      if (operationCounter >= firebaseWriteLimit) {
+        completeBatches = completeBatches.concat(
+          batchArray[batchIndex].commit()
         );
-        // Counts each db operation to stay below api limit.
-        operationCounter += 2;
-
-        // If the batch is full, adds to complete ones, creates a new one and resets operation count.
-        if (operationCounter >= firebaseWriteLimit) {
-          completeBatches = completeBatches.concat(
-            batchArray[batchIndex].commit()
-          );
-          batchArray.push(admin.firestore().batch());
-          batchIndex++;
-          operationCounter = 0;
-        }
-      });
+        batchArray.push(admin.firestore().batch());
+        batchIndex++;
+        operationCounter = 0;
+      }
     });
   });
+
   // Pushes the last batch as complete.
   completeBatches = completeBatches.concat(batchArray[batchIndex].commit());
-
   await Promise.all(completeBatches)
     .catch((error: any) => (response = error.response))
     .then((_) => {
@@ -238,7 +249,7 @@ export async function createFirebaseAccount(
       email,
     })
     .catch((error) => {
-      // If user does not exists we create it.
+      // If user does not exist, creates it.
       if (error.code === 'auth/user-not-found') {
         return admin.auth().createUser({
           uid,
