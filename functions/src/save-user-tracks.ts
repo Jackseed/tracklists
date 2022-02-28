@@ -9,7 +9,6 @@ import {
   createTrack,
   SpotifySavedTrack,
   Track,
-  AugmentedPlaylist,
 } from './data';
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
@@ -52,47 +51,20 @@ export async function saveUserTracks(data: { user: User }) {
     .then((_: any) => console.log('Firestore: playlist ids saved on user.'))
     .catch((error: any) => console.log(error));
 
-  // Adds tracks to playlists in order to extract genres.
-  const augmentedPlaylists = buildsAugmentedPlaylists(
-    playlists,
-    uniqueFullTracks
-  );
   // Writes genres on playlists to enable genre filtering.
-  augmentedPlaylists.forEach((playlist) => {
-    if (!playlist) {
-      console.log('invalid playlist: ', playlist);
-      return;
-    }
-    axios({
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      url: functions.config().functions.extractgenresfromtracktoplaylist,
-      data: {
-        playlist,
-      },
-      method: 'POST',
-    });
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    url: functions.config().functions.extractgenresfromtracktoplaylist,
+    data: {
+      user,
+      playlists,
+    },
+    method: 'POST',
   });
 
   return { tracks: uniqueFullTracks };
-}
-
-function buildsAugmentedPlaylists(
-  playlists: Playlist[],
-  tracks: Partial<FullTrack>[]
-): AugmentedPlaylist[] {
-  const augementedPlaylists: AugmentedPlaylist[] = playlists.map((playlist) => {
-    return {
-      ...playlist,
-      // Filters tracks that belong to this playlist only.
-      fullTracks: tracks.filter((track) =>
-        playlist.trackIds!.includes(track.id!)
-      ),
-    };
-  });
-
-  return augementedPlaylists;
 }
 
 async function clearsOutdatedFirestoreTracks(
@@ -176,17 +148,20 @@ function firestoreWriteSizedObjects(
   // Rezises objects if too heavy.
   if (roughSizeOfObject(objects) > byteSizeLimit) {
     const half = Math.ceil(objects.length / 2);
+
     firestoreWriteSizedObjects(user, objects.slice(0, half), collection);
+
     firestoreWriteSizedObjects(
       user,
       objects.slice(half, objects.length),
       collection
     );
+
     return;
   }
   console.log(`Writing ${objects.length} ${collection} to Firestore.`);
   // Writes to Firestore.
-  axios({
+  return axios({
     headers: {
       'Content-Type': 'application/json',
     },
@@ -475,7 +450,7 @@ function formatObjects(
     | 'playlistTracks'
 ): any[] {
   let formatedObjects: any[] = [];
-  if (object === undefined) return [];
+  if (object === undefined || object.data === undefined) return [];
 
   if (objectType === 'playlists') formatedObjects = object.data.items;
 

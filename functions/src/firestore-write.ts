@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { AugmentedPlaylist, Playlist, User } from './data';
+import { FullTrack, Playlist, User } from './data';
 
 //--------------------------------
 //    SAVES DOC TO FIRESTORE    //
@@ -31,7 +31,7 @@ export async function firestoreWrite(req: any, res: any) {
         typeof object.id !== 'string' ||
         containsSpecialChar.test(object.id)
       ) {
-        console.log('incorrect object: ', object);
+        console.log('incorrect object: ', object.name);
         return;
       }
       const ref = collection.doc(object.id);
@@ -109,7 +109,8 @@ export async function removesUnusedTracks(req: any, res: any) {
 //--------------------------------------------
 // To enable genre filtering, genres are saved on playlists.
 export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
-  const augmentedPlaylist: AugmentedPlaylist = req.body.playlist;
+  const playlists: Playlist[] = req.body.playlists;
+  const user: User = req.body.user;
   let response: string = '';
 
   const firebaseWriteLimit = 497;
@@ -118,43 +119,56 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   let completeBatches: any[] = [];
   let operationCounter = 0;
   let batchIndex = 0;
-  if (!augmentedPlaylist.id) {
-    console.log('invalid playlist: ', augmentedPlaylist);
-    return;
-  }
-  const genreCollection = admin
+
+  // Gets user's Firestore tracks.
+  const userTrackDocs = await admin
     .firestore()
-    .collection(`playlists/${augmentedPlaylist.id}/genres`);
+    .collection('tracks')
+    .where('userIds', 'array-contains', user.uid)
+    .get();
+  const userTracks = userTrackDocs.docs.map((doc) => doc.data());
 
-  // Extracts every genres of each track.
-  augmentedPlaylist.fullTracks.forEach((track) => {
-    if (!track.genres) return;
-    track.genres.forEach((genre) => {
-      const ref = genreCollection.doc(genre);
-      // Adds the track id to the genre within the current batch.
-      batchArray[batchIndex].set(
-        ref,
-        {
-          id: genre,
-          trackIds: admin.firestore.FieldValue.arrayUnion(track.id),
-        },
-        { merge: true }
-      );
-      // Counts each db operation to stay below api limit.
-      operationCounter += 2;
-
-      // If the batch is full, adds to complete ones, creates a new one and resets operation count.
-      if (operationCounter >= firebaseWriteLimit) {
-        completeBatches = completeBatches.concat(
-          batchArray[batchIndex].commit()
+  playlists.forEach((playlist) => {
+    if (!playlist.id) {
+      console.log('invalid playlist: ', playlist.name);
+      return;
+    }
+    const genreCollection = admin
+      .firestore()
+      .collection(`playlists/${playlist.id}/genres`);
+    // Keeps only tracks from this playlist.
+    const playlistTracks: Partial<FullTrack>[] = userTracks.filter((track) =>
+      playlist.trackIds!.includes(track.id!)
+    );
+    // Extracts every genres of each track.
+    playlistTracks.forEach((track) => {
+      if (!track.genres) return;
+      track.genres.forEach((genre) => {
+        const ref = genreCollection.doc(genre);
+        // Adds the track id to the genre within the current batch.
+        batchArray[batchIndex].set(
+          ref,
+          {
+            id: genre,
+            trackIds: admin.firestore.FieldValue.arrayUnion(track.id),
+          },
+          { merge: true }
         );
-        batchArray.push(admin.firestore().batch());
-        batchIndex++;
-        operationCounter = 0;
-      }
+        // Counts each db operation to stay below api limit.
+        operationCounter += 2;
+
+        // If the batch is full, adds to complete ones, creates a new one and resets operation count.
+        if (operationCounter >= firebaseWriteLimit) {
+          completeBatches = completeBatches.concat(
+            batchArray[batchIndex].commit()
+          );
+          batchArray.push(admin.firestore().batch());
+          batchIndex++;
+          operationCounter = 0;
+        }
+      });
     });
   });
-
   // Pushes the last batch as complete.
   completeBatches = completeBatches.concat(batchArray[batchIndex].commit());
   await Promise.all(completeBatches)
@@ -166,7 +180,9 @@ export async function extractGenresFromTrackToPlaylist(req: any, res: any) {
   res.json({
     result: response,
   });
-  console.log(`Firestore: saved ${batchArray.length} of genres.`);
+  console.log(
+    `Firestore: saved ${batchArray.length} batches of genres from ${userTracks.length} tracks.`
+  );
   return res;
 }
 

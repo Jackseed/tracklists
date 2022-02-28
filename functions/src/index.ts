@@ -58,6 +58,7 @@ exports.removesUnusedTracks = functions
 exports.extractGenresFromTrackToPlaylist = functions
   .runWith({
     timeoutSeconds: 90,
+    memory: '8GB',
   })
   .https.onRequest(extractGenresFromTrackToPlaylist);
 

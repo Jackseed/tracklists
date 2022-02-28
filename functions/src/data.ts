@@ -53,10 +53,6 @@ export interface Playlist {
   trackIds?: string[];
 }
 
-export interface AugmentedPlaylist extends Playlist {
-  fullTracks: Partial<FullTrack>[];
-}
-
 export interface Track {
   id: string;
   added_at: string;
