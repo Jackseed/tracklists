@@ -30,15 +30,15 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
   sync() {
     return this.authQuery.selectActive().pipe(
       pluck('playlistIds'),
-      // If playlists have already been saved,
-      // spawns spinner the time to load it.
+      // Compare by content so identical arrays don't trigger a re-sync.
+      distinctUntilChanged(
+        (a: string[], b: string[]) => JSON.stringify(a) === JSON.stringify(b)
+      ),
       tap((ids) => {
         if (ids.length > 0) this.trackService.updateSpinner(true);
       }),
       tap((_) => this.store.setActive([])),
-      // Ugly fix to stop blinking on loading.
-      distinctUntilChanged(),
-      debounceTime(2000),
+      debounceTime(300),
       switchMap((ids) => this.service.syncManyDocs(ids)),
       // Stops spinning.
       tap((ids: string[]) => {

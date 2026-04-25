@@ -21,13 +21,30 @@ export class TrackService {
   }
 
   public async setFirestoreTracks() {
-    // If data can be loaded from localStorage, doesn't call Firestore.
     const data: any = await this.localforage.getItem('trackStore');
-    if (data && !data.includes(':{}')) {
+    const hasValidCache = data && !data.includes(':{}');
+
+    if (hasValidCache) {
+      // Show cached tracks immediately, then silently refresh from Firestore.
       this.store.loadFromStorage();
+      this._refreshFromFirebaseInBackground();
     } else {
       this.loadFromFirebase();
     }
+  }
+
+  private _refreshFromFirebaseInBackground() {
+    this.query.selectUserTracks$
+      .pipe(
+        first(),
+        filter((tracks) => tracks?.length > 0),
+        tap((tracks) => this.setStore(tracks)),
+        catchError((error) => {
+          console.warn('[TrackService] background refresh failed:', error);
+          return of([]);
+        })
+      )
+      .subscribe();
   }
 
   public loadFromFirebase() {

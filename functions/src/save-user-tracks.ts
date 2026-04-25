@@ -212,66 +212,49 @@ async function getUserPlaylistFullTracks(
   tracks: Partial<FullTrack>[];
   likedTrackPlaylist: Playlist;
 }> {
-  // Gets liked tracks.
-  const likedTracks: Track[] = (await getSpotifyObjectsByBatches(
-    user,
-    'likedTracks'
-  )) as Track[];
-
-  console.log(`Liked tracks: get ${likedTracks.length} tracks.`);
-  const likedTrackIds: string[] = likedTracks.map((track) => track.id!);
+  // Fetch liked tracks and playlist tracks in parallel — independent calls.
+  const [likedTracks, playlistTracks] = await Promise.all([
+    getSpotifyObjectsByBatches(user, 'likedTracks') as Promise<Track[]>,
+    getPlaylistsTracksAndAddTrackIdsToPlaylists(user, playlists),
+  ]);
+  console.log(
+    `Liked tracks: ${likedTracks.length}, playlist tracks: ${playlistTracks.length}.`
+  );
 
   // Creates liked tracks as a playlist.
   const likedTrackPlaylist: Playlist = {
     id: `${user.uid}LikedTracks`,
     name: `Liked tracks`,
-    trackIds: likedTrackIds,
+    trackIds: likedTracks.map((track) => track.id!),
     type: 'likedTracks',
   };
 
-  // Extracts tracks from playlists and adds trackIds to playlists.
-  const playlistTracks = await getPlaylistsTracksAndAddTrackIdsToPlaylists(
-    user,
-    playlists
-  );
-  console.log(`Playlist tracks: get ${playlistTracks.length} tracks.`);
-
-  // Joins liked tracks to playlists tracks.
-  const tracks = likedTracks.concat(playlistTracks);
-
-  // Removes track duplicates and extracts ids.
-  const uniqueTracks = tracks.filter(
-    (track: Track, index: number, trackArray: Track[]) =>
-      index === trackArray.findIndex((t) => t.id === track.id)
-  );
+  // O(n) deduplication via Set.
+  const seen = new Set<string>();
+  const uniqueTracks = likedTracks.concat(playlistTracks).filter((track) => {
+    if (!track.id || seen.has(track.id)) return false;
+    seen.add(track.id);
+    return true;
+  });
   const trackIds: string[] = uniqueTracks.map((track) => track.id!);
+  console.log(`Unique tracks: ${uniqueTracks.length}.`);
+
+  // Fetch audio features and genres in parallel — independent once we have track ids.
+  const [audioFeatures, genres] = await Promise.all([
+    getSpotifyObjectsByBatches(user, 'audioFeatures', undefined, trackIds),
+    getGenreTracks(user, uniqueTracks),
+  ]);
   console.log(
-    `Total tracks: ${tracks.length} tracks, ${uniqueTracks.length} unique tracks.`
+    `Audio features: ${audioFeatures.length}, genre sets: ${genres.length}.`
   );
 
-  // Gets audio features for each tracks.
-  const audioFeatures = await getSpotifyObjectsByBatches(
-    user,
-    'audioFeatures',
-    undefined,
-    trackIds
-  );
-  console.log(`Audio features: get ${audioFeatures.length} audio features.`);
-
-  // Gets artists for each track and extracts genres from it.
-  const genres = await getGenreTracks(user, uniqueTracks);
-
-  // Concats all items into one track.
   const fullTracks: Partial<FullTrack>[] = uniqueTracks.map((track, i) => ({
     ...track,
     ...audioFeatures[i],
     genres: genres[i],
   }));
 
-  return {
-    tracks: fullTracks,
-    likedTrackPlaylist,
-  };
+  return { tracks: fullTracks, likedTrackPlaylist };
 }
 
 //--------------------------------
@@ -378,13 +361,18 @@ async function getSpotifyObjectsByBatches(
     if (playlist) url = playlist.tracks!.href;
   }
 
+  // Parallelise batch pages for fixed-size collections (audioFeatures, artists,
+  // playlistTracks). For paginated collections where total is fetched first
+  // (likedTracks, playlists), keep sequential to stay within Spotify rate limits.
+  const parallelTypes = ['audioFeatures', 'artists', 'playlistTracks'];
+
   for (let i = 0; i <= Math.floor(total / limit); i++) {
     const offset = i * limit;
     ids
       ? (queryParam = extractIdsAsQueryParam(limit, i, ids))
       : (queryParam = `?limit=${limit}&offset=${offset}`);
-    // Paralelizes calls only for playlistTracks to avoid Spotify api rate limit.
-    if (objectType === 'playlistTracks') {
+
+    if (parallelTypes.includes(objectType)) {
       objectBatch = getPromisedObjects(user, url, queryParam);
       promisedResult = promisedResult.concat(objectBatch);
     } else {
@@ -393,7 +381,7 @@ async function getSpotifyObjectsByBatches(
       result = result.concat(formatedObject);
     }
   }
-  if (objectType === 'playlistTracks') {
+  if (parallelTypes.includes(objectType)) {
     const arrayResult = await Promise.all(promisedResult);
     arrayResult.forEach(
       (arr) => (result = result.concat(formatObjects(arr, objectType)))
