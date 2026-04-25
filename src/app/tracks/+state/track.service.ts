@@ -3,7 +3,8 @@ import { TrackStore, TrackState } from './track.store';
 import { TrackQuery } from './track.query';
 import { Observable } from 'rxjs';
 import { AkitaFiltersPlugin, AkitaFilter } from 'akita-filters-plugin';
-import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { Track } from './track.model';
 import { LocalforageService } from '../../utils/localforage.service';
 
@@ -32,10 +33,15 @@ export class TrackService {
   public loadFromFirebase() {
     this.query.selectUserTracks$
       .pipe(
+        first(),
         tap((tracks) => {
-          tracks ? this.setStore(tracks) : this.store.set({});
+          tracks?.length ? this.setStore(tracks) : this.store.set([]);
           this.store.setActive([]);
-        }, first())
+        }),
+        catchError((error) => {
+          console.error('[TrackService] loadFromFirebase failed:', error);
+          return of([]);
+        })
       )
       .subscribe();
   }

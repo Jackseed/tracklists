@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { CollectionGuard } from 'akita-ng-fire';
 import { PlaylistState, PlaylistService } from '..';
+import { of } from 'rxjs';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   pluck,
@@ -41,6 +43,11 @@ export class SyncPlaylistsGuard extends CollectionGuard<PlaylistState> {
       // Stops spinning.
       tap((ids: string[]) => {
         if (ids.length > 0) this.trackService.updateSpinner(false);
+      }),
+      catchError((error) => {
+        console.error('[SyncPlaylistsGuard] sync failed:', error);
+        this.trackService.updateSpinner(false);
+        return of([]);
       })
     );
   }

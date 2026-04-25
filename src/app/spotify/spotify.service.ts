@@ -328,13 +328,13 @@ export class SpotifyService {
   public async previous() {
     const baseUrl = 'https://api.spotify.com/v1/me/player/previous';
 
-    return this.postRequests(baseUrl, '', null);
+    return this.postRequests(baseUrl, '', null, true);
   }
 
   public async next() {
     const baseUrl = 'https://api.spotify.com/v1/me/player/next';
 
-    return this.postRequests(baseUrl, '', null);
+    return this.postRequests(baseUrl, '', null, true);
   }
 
   public async play(trackUris?: string[], newDeviceId?: string): Promise<void> {
@@ -358,7 +358,7 @@ export class SpotifyService {
     const body = { uris: trackUris };
     const queryParam = `?device_id=${deviceId}`;
 
-    this.putRequests(baseUrl, queryParam, body);
+    this.putRequests(baseUrl, queryParam, body, true);
   }
 
   private limitTrackAmount(trackUris?: string[]): string[] {
@@ -392,7 +392,7 @@ export class SpotifyService {
   public async pause() {
     const baseUrl = 'https://api.spotify.com/v1/me/player/pause';
 
-    return this.putRequests(baseUrl, '', null);
+    return this.putRequests(baseUrl, '', null, true);
   }
 
   public async shuffle(state: boolean) {
@@ -400,21 +400,21 @@ export class SpotifyService {
     const baseUrl = 'https://api.spotify.com/v1/me/player/shuffle';
     const queryParam = `?state=${state}`;
 
-    return this.putRequests(baseUrl, queryParam, null);
+    return this.putRequests(baseUrl, queryParam, null, true);
   }
 
   public async seekPosition(position_ms: number) {
     const baseUrl = 'https://api.spotify.com/v1/me/player/seek';
     const queryParam = `?position_ms=${position_ms}`;
 
-    return this.putRequests(baseUrl, queryParam, null);
+    return this.putRequests(baseUrl, queryParam, null, true);
   }
 
   public async addToLikedTracks(trackId: string) {
     const baseUrl = 'https://api.spotify.com/v1/me/tracks';
     const queryParam = `?ids=${trackId}`;
 
-    return this.putRequests(baseUrl, queryParam, null);
+    return this.putRequests(baseUrl, queryParam, null, true);
   }
 
   public async removeFromLikedTracks(trackId: string) {
@@ -455,11 +455,10 @@ export class SpotifyService {
   ) {
     const limit = 100;
 
-    // add tracks by batches
     for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
-      const bactchTracks = tracks.slice(limit * i, limit * (i + 1));
-      console.log('batch ', i, bactchTracks);
-      this.addTracksToPlaylist(playlistId, bactchTracks);
+      const batchTracks = tracks.slice(limit * i, limit * (i + 1));
+      if (batchTracks.length === 0) continue;
+      await this.addTracksToPlaylist(playlistId, batchTracks);
     }
   }
 
@@ -471,13 +470,19 @@ export class SpotifyService {
     return this.postRequests(baseUrl, '', body);
   }
 
-  private async postRequests(baseUrl: string, queryParam: string, body) {
+  private async postRequests(
+    baseUrl: string,
+    queryParam: string,
+    body,
+    emptyResponse = false
+  ) {
     const headers = await this.getHeaders();
+    const options: any = emptyResponse
+      ? { headers, responseType: 'text' }
+      : { headers };
 
     return this.http
-      .post(`${baseUrl + queryParam}`, body, {
-        headers,
-      })
+      .post(`${baseUrl + queryParam}`, body, options)
       .pipe(first())
       .toPromise();
   }
@@ -577,13 +582,19 @@ export class SpotifyService {
     );
   }
 
-  private async putRequests(baseUrl: string, queryParam: string, body) {
+  private async putRequests(
+    baseUrl: string,
+    queryParam: string,
+    body,
+    emptyResponse = false
+  ) {
     const headers = await this.getHeaders();
+    const options: any = emptyResponse
+      ? { headers, responseType: 'text' }
+      : { headers };
 
     return this.http
-      .put(`${baseUrl + queryParam}`, body, {
-        headers,
-      })
+      .put(`${baseUrl + queryParam}`, body, options)
       .pipe(first())
       .toPromise();
   }

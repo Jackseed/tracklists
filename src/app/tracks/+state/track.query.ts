@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
 import { TrackStore, TrackState } from './track.store';
-import { Observable, of } from 'rxjs';
-import { debounceTime, map, switchMap } from 'rxjs/operators';
+import { Observable, of, throwError, timer } from 'rxjs';
+import { catchError, debounceTime, map, mergeMap, retryWhen, switchMap } from 'rxjs/operators';
 import { MinMax, Track } from './track.model';
 import { AuthQuery } from '../../auth/+state';
 import { PlaylistQuery } from '../../playlists/+state';
@@ -55,7 +55,24 @@ export class TrackQuery extends QueryEntity<TrackState, Track> {
           trackCollection,
           where('userIds', 'array-contains', userId)
         );
-        return collectionData(userQuery) as Observable<Track[]>;
+        return (collectionData(userQuery) as Observable<Track[]>).pipe(
+          retryWhen((errors) =>
+            errors.pipe(
+              mergeMap((error, attempt) => {
+                // deadline-exceeded / unavailable → retry up to 3 times with backoff
+                const retryable =
+                  error?.code === 'deadline-exceeded' ||
+                  error?.code === 'unavailable';
+                if (!retryable || attempt >= 3) return throwError(() => error);
+                return timer((attempt + 1) * 2000);
+              })
+            )
+          ),
+          catchError((error) => {
+            console.error('[TrackQuery] Firestore load failed:', error);
+            return of([]);
+          })
+        );
       })
     );
     return tracks$;

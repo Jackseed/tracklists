@@ -31,8 +31,13 @@ export class TrackStore extends EntityStore<TrackState, Track> {
     const data: any = await this.localforage.getItem('trackStore');
     if (!data || data.includes(':{}')) return;
 
-    this._setState((_) => JSON.parse(data));
-    this.setActive([]);
-    this.setLoading(false);
+    try {
+      this._setState((_) => JSON.parse(data));
+      this.setActive([]);
+      this.setLoading(false);
+    } catch (e) {
+      console.warn('[TrackStore] Corrupted cache, clearing:', e);
+      await this.localforage.removeItem('trackStore');
+    }
   }
 }
