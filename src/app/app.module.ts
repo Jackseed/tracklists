@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { ServiceWorkerModule } from '@angular/service-worker';
 // Env
 import { environment } from '../environments/environment';
+import { isNativeApp } from './core/native';
 // Modules
 import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './auth/auth.module';
@@ -41,7 +42,8 @@ import { LoopWhileDirective } from './utils/loop-while.directive';
     BrowserModule,
     CommonModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: environment.production,
+      // Not in the iOS / Android app: its files ship with it, and iOS has no service worker there.
+      enabled: environment.production && !isNativeApp,
       // Register the ServiceWorker as soon as the app is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',

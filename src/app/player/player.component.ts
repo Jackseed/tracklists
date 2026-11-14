@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom, Observable } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 import { PlaylistQuery, PlaylistService } from '../playlists/+state';
-import { SpotifyService } from '../spotify/spotify.service';
+import { playbackErrorMessage, SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery } from '../tracks/+state';
 import { PlayerQuery } from './+state';
 
@@ -71,7 +71,7 @@ export class PlayerComponent implements OnInit {
   }
 
   public play() {
-    return this.spotifyService.play().catch((error) => this.fail('Spotify could not start the playback.', error));
+    return this.spotifyService.play().catch((error) => this.fail(playbackErrorMessage(error, 'Spotify could not start the playback.'), error));
   }
 
   public pause() {

@@ -9,11 +9,12 @@ import { distinctUntilChanged, filter, map, pairwise, take, tap } from 'rxjs/ope
 import { AuthQuery, AuthService, User } from '../auth/+state';
 import { SessionService } from '../auth/session.service';
 import { LibraryImportService } from '../library/library-import.service';
-import { SpotifyService } from '../spotify/spotify.service';
+import { playbackErrorMessage, SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery, TrackService } from '../tracks/+state';
 import { Playlist, PlaylistQuery } from '../playlists/+state';
 import { PlayerQuery, PlayerTrack } from '../player/+state';
 import { HomeView, toHomeView } from './home-view';
+import { NativeAppService } from '../core/native-app.service';
 // Components
 import { PlaylistFormComponent } from '../playlists/playlist-form/playlist-form.component';
 // Flex layout
@@ -54,6 +55,7 @@ export class HomepageComponent implements OnInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private destroyRef = inject(DestroyRef);
+  private nativeApp = inject(NativeAppService);
   public media = inject(MediaObserver);
 
   public user$: Observable<User>;
@@ -64,6 +66,8 @@ export class HomepageComponent implements OnInit {
   public playingTrack$: Observable<PlayerTrack>;
   public userTopTrack$: Observable<Track | false> = of(false);
   private topTracksRequested = false;
+  /** Selected tab of the phone layout (0: tracks). */
+  public mobileTab = 0;
 
   constructor() {
     const registry = inject(MatIconRegistry);
@@ -73,6 +77,13 @@ export class HomepageComponent implements OnInit {
 
   ngOnInit() {
     this.spotifyService.initializePlayer();
+    // Android back button: from the Playlists or Filters tab, back to the tracks first.
+    const stopBack = this.nativeApp.onBack(() => {
+      if (this.mobileTab === 0) return false;
+      this.mobileTab = 0;
+      return true;
+    });
+    this.destroyRef.onDestroy(stopBack);
 
     this.view$ = combineLatest([
       this.importService.view$,
@@ -181,7 +192,7 @@ export class HomepageComponent implements OnInit {
 
   private playbackError(error: unknown) {
     console.error('[Homepage] playback failed:', error);
-    this.openSnackBar('Spotify could not start the playback.', 5000);
+    this.openSnackBar(playbackErrorMessage(error, 'Spotify could not start the playback.'), 5000);
   }
 
   private openSnackBar(message: string, duration = 2000) {

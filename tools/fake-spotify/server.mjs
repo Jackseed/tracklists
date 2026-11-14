@@ -308,6 +308,10 @@ export function createFakeSpotify(initial = {}) {
     return { ...meta, href: `${origin}/v1/playlists/${p.id}`, tracks: { href: `${origin}/v1/playlists/${p.id}/tracks`, total }, items: { href: `${origin}/v1/playlists/${p.id}/items`, total } };
   };
 
+  const FAKE_DEVICE = { id: 'fake-phone', is_private_session: false, is_restricted: false, name: 'Fake phone', type: 'Smartphone', volume_percent: 80 };
+  const connect = { uris: [], index: 0, playing: false, startedAt: 0, offset: 0, shuffle: false };
+  const connectPosition = () => connect.offset + (connect.playing ? Date.now() - connect.startedAt : 0);
+
   async function handleApi(req, res, url, route) {
     stats.api++;
     stats.byRoute[route] = (stats.byRoute[route] ?? 0) + 1;
@@ -388,9 +392,40 @@ export function createFakeSpotify(initial = {}) {
       const artist = library.artistsById.get(match[1]);
       return artist ? send(res, 200, artist) : error(res, 404, 'Resource not found');
     }
-    if (method === 'GET' && path === '/me/player/devices') return send(res, 200, { devices: [] });
-    if (method === 'GET' && path === '/me/player') return send(res, 204);
-    if ((method === 'PUT' || method === 'POST') && path.startsWith('/me/player')) return send(res, 204);
+    // Spotify Connect, used by the iOS / Android app: one fake phone that plays what it is told.
+    if (method === 'GET' && path === '/me/player/devices') return send(res, 200, { devices: [{ ...FAKE_DEVICE, is_active: connect.uris.length > 0 }] });
+    if (method === 'GET' && path === '/me/player') {
+      const uri = connect.uris[connect.index];
+      const track = uri && library.tracksById.get(uri.split(':').pop());
+      if (!track) return send(res, 204);
+      return send(res, 200, {
+        device: { ...FAKE_DEVICE, is_active: true },
+        is_playing: connect.playing,
+        progress_ms: Math.min(connectPosition(), track.duration_ms),
+        shuffle_state: connect.shuffle,
+        item: track,
+      });
+    }
+    if ((method === 'PUT' || method === 'POST') && path.startsWith('/me/player')) {
+      const body = JSON.parse((await readBody(req)).toString() || 'null');
+      const now = Date.now();
+      if (path === '/me/player/play') {
+        if (body?.uris?.length) Object.assign(connect, { uris: body.uris, index: 0, offset: 0 });
+        Object.assign(connect, { playing: connect.uris.length > 0, startedAt: now });
+      } else if (path === '/me/player/pause') {
+        Object.assign(connect, { offset: connectPosition(), playing: false });
+      } else if (path === '/me/player/next' || path === '/me/player/previous') {
+        const step = path.endsWith('next') ? 1 : -1;
+        Object.assign(connect, { index: Math.max(0, Math.min(connect.uris.length - 1, connect.index + step)), offset: 0, startedAt: now });
+      } else if (path === '/me/player/seek') {
+        Object.assign(connect, { offset: Number(url.searchParams.get('position_ms')) || 0, startedAt: now });
+      } else if (path === '/me/player/shuffle') {
+        connect.shuffle = url.searchParams.get('state') === 'true';
+      } else if (path === '/me/player/queue') {
+        connect.uris.splice(connect.index + 1, 0, url.searchParams.get('uri'));
+      }
+      return send(res, 204);
+    }
     if (method === 'POST' && (path === '/me/playlists' || /^\/users\/[^/]+\/playlists$/.test(path))) {
       const body = JSON.parse((await readBody(req)).toString() || '{}');
       const id = b62(`created:${Date.now()}:${Math.random()}`);

@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 // States
 import { Track, TrackQuery, TrackService } from '../+state';
 import { PlaylistQuery, PlaylistService } from '../../playlists/+state';
-import { SpotifyService } from '../../spotify/spotify.service';
+import { playbackErrorMessage, SpotifyService } from '../../spotify/spotify.service';
 import { PlayerQuery } from '../../player/+state';
 // Flex layout
 import { MediaObserver } from '@ngbracket/ngx-layout';
@@ -52,7 +52,7 @@ export class TrackViewComponent implements OnInit {
       // remove the tracks before the selected one
       await this.spotifyService.play(uris.slice(Math.max(0, uris.indexOf(this.track.uri))));
     } catch (error) {
-      this.fail('Spotify could not start the playback.', error);
+      this.fail(playbackErrorMessage(error, 'Spotify could not start the playback.'), error);
     }
   }
 

@@ -60,6 +60,17 @@ body {
   background-color: var(--tl-bg);
   color: var(--tl-text);
 }
+/* Keep the app out of the notch, status bar and home indicator: the iOS / Android
+   app draws edge to edge (viewport-fit=cover); elsewhere the insets are 0. */
+app-root {
+  display: block;
+  box-sizing: border-box;
+  height: 100%;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+.cdk-overlay-container .mat-mdc-snack-bar-container {
+  margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+}
 body {
   margin: 0;
   font-family: var(--tl-font-body);

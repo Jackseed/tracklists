@@ -16,6 +16,7 @@ import { LocalforageService } from '../../utils/localforage.service';
 import { AuthStore } from './auth.store';
 import { AuthQuery } from './auth.query';
 import { Tokens, User } from './auth.model';
+import { APP_LOGIN_STATE_PREFIX, isNativeApp } from '../../core/native';
 
 const SCOPES = [
   'user-read-email',
@@ -32,6 +33,13 @@ const SCOPES = [
   'playlist-modify-private',
   'user-library-modify',
 ];
+
+/** Where the app keeps the `state` of the Spotify login it started. */
+const APP_LOGIN_STATE_KEY = 'tracklists.appLoginState';
+
+function randomToken(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 /** A Spotify access token lives one hour: ask for a new one a bit before. */
 const MAX_TOKEN_AGE_MS = 50 * 60 * 1000;
@@ -51,15 +59,35 @@ export class AuthService {
   //--------------------------------
   //         SPOTIFY LOGIN        //
   //--------------------------------
-  /** Sends the browser to Spotify's consent page; Spotify comes back to /login?code=... */
-  public authSpotify() {
+  /**
+   * Sends the browser to Spotify's consent page; Spotify comes back to /login?code=...
+   * In the app, the page opens in an in-app browser and the code comes back
+   * through tracklists://login (see core/native.ts and NativeAppService).
+   */
+  public async authSpotify() {
     const params = new URLSearchParams({
       client_id: environment.spotify.clientId,
       response_type: 'code',
       redirect_uri: environment.spotify.redirectURI,
       scope: SCOPES.join(' '),
     });
-    window.location.href = `${environment.spotify.accountsUrl}/authorize?${params}`;
+    const url = () => `${environment.spotify.accountsUrl}/authorize?${params}`;
+    if (!isNativeApp) {
+      window.location.href = url();
+      return;
+    }
+    const state = APP_LOGIN_STATE_PREFIX + randomToken();
+    localStorage.setItem(APP_LOGIN_STATE_KEY, state);
+    params.set('state', state);
+    const { Browser } = await import('@capacitor/browser');
+    await Browser.open({ url: url(), presentationStyle: 'popover' });
+  }
+
+  /** The `state` Spotify sent back is the one of the login this app started. */
+  public isPendingAppLogin(state: string | null): boolean {
+    const expected = localStorage.getItem(APP_LOGIN_STATE_KEY);
+    localStorage.removeItem(APP_LOGIN_STATE_KEY);
+    return !!state && state === expected;
   }
 
   /** Completes the login with the code Spotify appended to the redirect URI. */

@@ -120,6 +120,40 @@ The functions moved to 2nd gen, to `europe-west1` and to new names (`spotifyLogi
 The functions run as `<project id>@appspot.gserviceaccount.com`, like the former ones, so that the
 existing IAM grants (signing custom tokens) keep working; `FUNCTIONS_SERVICE_ACCOUNT` overrides it.
 
+## Mobile app (iOS, Android)
+
+`ios/` and `android/` are [Capacitor](https://capacitorjs.com) shells around the web build
+(`capacitor.config.ts`, app id `io.tracklists.app`). Needs Xcode for iOS, the Android SDK and a
+JDK 21 for Android.
+
+```bash
+npm run mobile:fake      # web build against the local stack + `cap sync` (then npm run emulators:fake and start:fake)
+npm run mobile:staging   # same with the staging configuration
+npm run mobile:prod
+npm run mobile:ios       # opens Xcode; run on a simulator or device from there
+npm run mobile:android   # opens Android Studio
+npm run mobile:assets    # icons and splash screens, from resources/ (python3 resources/make-sources.py rebuilds those)
+```
+
+With the local stack on the Android emulator, forward the ports first:
+`for p in 8080 9099 5001 8888 4200; do adb reverse tcp:$p tcp:$p; done`.
+
+How it differs from the web app (see `src/app/core/native*.ts`):
+
+- **Spotify login.** The app opens Spotify's consent page in an in-app browser (SFSafariViewController,
+  Chrome Custom Tab) with the web redirect URI and a `state` starting with `app-`. The web `/login`
+  page sees that prefix and forwards the code to `tracklists://login`, which the app handles. So the
+  Spotify dashboard needs no new redirect URI, but the web app must be deployed with this `/login`
+  page on the environment the app uses.
+- **Playback.** The Web Playback SDK does not run in mobile WebViews. The app plays on a Spotify
+  Connect device instead (the phone's Spotify app, opened through `spotify:` when no device is
+  active, or any speaker or computer), and reads the playback every 5 s. Spotify Premium is still
+  required.
+- **Firebase.** Auth uses `initializeAuth` with IndexedDB persistence (`getAuth` can hang in a
+  WebView). No service worker. The origins are `capacitor://localhost` (iOS) and
+  `https://localhost` (Android): if the Firebase API key is restricted by HTTP referrer in the Google
+  Cloud console, allow them.
+
 ## Spotify API notes
 
 - The app relies on the audio-features and "several artists" endpoints, which Spotify only serves

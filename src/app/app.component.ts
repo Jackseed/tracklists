@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
+import { NativeAppService } from './core/native-app.service';
 
 @Component({
   selector: 'app-root',
@@ -14,5 +15,6 @@ export class AppComponent {
   constructor() {
     // <mat-icon>name</mat-icon> uses Material Symbols Rounded (see index.html for the loaded glyphs).
     inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-rounded');
+    inject(NativeAppService).init();
   }
 }

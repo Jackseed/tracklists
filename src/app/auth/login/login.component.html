@@ -3,27 +3,35 @@
     <div id="logo">
       <h1><a id="logo-text" class="white" href="">Tracklists</a></h1>
     </div>
-    <div fxFlex class="text-centered text">
-      <h1>Log in to Spotify</h1>
-      <p class="bigger">You need to be connected to load your songs.</p>
-      @if (error) {
-        <p class="bigger error" id="login-error">{{ error }}</p>
-      }
-      <div>
-        <button
-          class="tl-btn tl-btn--primary"
-          id="login-button"
-          (click)="loginToSpotify()"
-          [disabled]="loggingIn"
-        >
-          @if (!loggingIn) {
-            Log in
-          } @else {
-            Logging in…
-            <mat-spinner diameter="16"></mat-spinner>
-          }
-        </button>
+    @if (appReturnUrl) {
+      <div fxFlex class="text-centered text" id="app-return">
+        <h1>Back to the app</h1>
+        <p class="bigger">Tracklists should open by itself. If it does not, tap the button.</p>
+        <a class="tl-btn tl-btn--primary" [href]="appReturnHref">Open Tracklists</a>
       </div>
-    </div>
+    } @else {
+      <div fxFlex class="text-centered text">
+        <h1>Log in to Spotify</h1>
+        <p class="bigger">You need to be connected to load your songs.</p>
+        @if (error) {
+          <p class="bigger error" id="login-error">{{ error }}</p>
+        }
+        <div>
+          <button
+            class="tl-btn tl-btn--primary"
+            id="login-button"
+            (click)="loginToSpotify()"
+            [disabled]="loggingIn"
+          >
+            @if (!loggingIn) {
+              Log in
+            } @else {
+              Logging in…
+              <mat-spinner diameter="16"></mat-spinner>
+            }
+          </button>
+        </div>
+      </div>
+    }
   </div>
 </div>

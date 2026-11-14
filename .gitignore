@@ -65,3 +65,7 @@ functions/.secret.local
 # Tooling
 .claude/
 functions/.test-build/
+
+# Native builds (Capacitor)
+/.build-ios
+/.build-android
