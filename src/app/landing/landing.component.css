@@ -81,7 +81,9 @@ img {
 .layer3 {
   background-image: url("../../assets/layers/layer3.svg");
   position: absolute;
-  top: 0;
+  /* Overlaps the shape of the first section by 2px: two images that only touch
+     leave a hairline at some zoom levels / screen densities (and in Safari). */
+  top: -2px;
   left: 0;
   width: 45%;
   aspect-ratio: 1;
