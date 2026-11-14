@@ -2,10 +2,7 @@
   @switch (view.kind) {
     @case ('ready') {
       <div fxFlexFill fxLayout="column" fxLayoutAlign="start center" animate.enter="screen-in">
-        <div
-          [fxFlex]="(playingTrack$ | async) && !this.media.isActive('xs') ? 85 : 100"
-          fxFlexFill
-        >
+        <div fxFlex class="main-area">
           <div fxFlexFill>
             @if (!this.media.isActive('xs')) {
               <div fxFlexFill fxLayout="row">
@@ -46,36 +43,17 @@
                 <!----------------- RIGHT BAR ----------------->
                 <div fxFlex.lt-lg="55" fxFlex="40" fxFlexOffset="5" fxFlexFill>
                   <div fxLayout="column" fxFlexFill>
-                    <div
-                      fxFlexOffset="5"
-                      fxLayout="column"
-                      fxFlexFill
-                      fxFlex.lt-md="10"
-                      fxFlex="15"
-                    >
-                      <div fxFlex="nogrow" fxAlign="row">
+                    <div fxFlexOffset="5" fxFlex="none" class="home-top">
+                      <div class="home-header">
                         <h1>Tracklists</h1>
-                        <div fxFlex></div>
-                        <div fxFlex="nogrow">
-                          <button
-                            mat-icon-button
-                            (click)="savePlaylist()"
-                            matTooltip="Save as playlist"
-                          >
+                        <div class="header-actions">
+                          <button class="tl-icon-btn" (click)="savePlaylist()" matTooltip="Save as playlist" aria-label="Save as playlist">
                             <mat-icon>save</mat-icon>
                           </button>
-                          <button
-                            mat-icon-button
-                            (click)="loadPlaylist()"
-                            matTooltip="Reload Spotify tracks"
-                          >
+                          <button class="tl-icon-btn" (click)="loadPlaylist()" matTooltip="Reload Spotify tracks" aria-label="Reload Spotify tracks">
                             <mat-icon>refresh</mat-icon>
                           </button>
-                          <button
-                            mat-icon-button
-                            (click)="signOut()"
-                            matTooltip="Log out"
-                          >
+                          <button class="tl-icon-btn" (click)="signOut()" matTooltip="Log out" aria-label="Log out">
                             <mat-icon>power_settings_new</mat-icon>
                           </button>
                         </div>
@@ -83,32 +61,26 @@
 
                       @if (librarySummary$ | async; as summary) {
                         <p class="library-summary">
-                        {{ summary.text }}
-                        @if (summary.skipped > 0) {
-                          <span class="skipped" [matTooltip]="summary.warnings">
-                            · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
-                          </span>
-                        }
-                      </p>
+                          {{ summary.text }}
+                          @if (summary.skipped > 0) {
+                            <span class="skipped" [matTooltip]="summary.warnings">
+                              · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
+                            </span>
+                          }
+                        </p>
                       }
                       <mat-divider></mat-divider>
-                      <div
-                        fxFlex="nogrow"
-                        fxAlign="row"
-                        fxLayoutAlign="start center"
-                      >
+                      <div class="play-row">
                         <button
-                          mat-raised-button
-                          color="accent"
-                          class="play"
+                          class="tl-btn tl-btn--primary"
                           (click)="playAll()"
                           [disabled]="(trackNumber$ | async) === 0"
                         >
-                          <mat-icon>play_circle_outline</mat-icon>
+                          <mat-icon class="tl-filled">play_arrow</mat-icon>
                           Play tracklist
                         </button>
                         <div fxFlex></div>
-                        <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
+                        <p class="track-count">{{ trackNumber$ | async }} tracks</p>
                       </div>
                     </div>
                     <!----------------- TRACK LIST ----------------->
@@ -125,76 +97,45 @@
             } @else {
               <!----------------- MOBILE VERSION ----------------->
               <div fxFlexFill fxLayout="column" class="container">
-                <div
-                  fxFlexOffset="5"
-                  fxFlex="5"
-                  class="text-centered margin-bottom-4"
-                >
-                  <div
-                    fxFlexFill
-                    fxLayout="row"
-                    class="padding-left"
-                    fxLayoutAlign="start center"
-                  >
-                    <h1 class="padding-top-4">Tracklists</h1>
-                    <div fxFlex></div>
-                    <div fxFlex="nogrow">
-                      <button
-                        mat-icon-button
-                        (click)="savePlaylist()"
-                        matTooltip="Save as playlist"
-                      >
-                        <mat-icon>save</mat-icon>
-                      </button>
-                      <button
-                        mat-icon-button
-                        (click)="loadPlaylist()"
-                        matTooltip="Reload Spotify tracks"
-                      >
-                        <mat-icon>refresh</mat-icon>
-                      </button>
-                      <button
-                        mat-icon-button
-                        (click)="signOut()"
-                        matTooltip="Log out"
-                      >
-                        <mat-icon>power_settings_new</mat-icon>
-                      </button>
-                    </div>
+                <div class="home-header mobile-header">
+                  <h1>Tracklists</h1>
+                  <div class="header-actions">
+                    <button class="tl-icon-btn" (click)="savePlaylist()" matTooltip="Save as playlist" aria-label="Save as playlist">
+                      <mat-icon>save</mat-icon>
+                    </button>
+                    <button class="tl-icon-btn" (click)="loadPlaylist()" matTooltip="Reload Spotify tracks" aria-label="Reload Spotify tracks">
+                      <mat-icon>refresh</mat-icon>
+                    </button>
+                    <button class="tl-icon-btn" (click)="signOut()" matTooltip="Log out" aria-label="Log out">
+                      <mat-icon>power_settings_new</mat-icon>
+                    </button>
                   </div>
                 </div>
                 @if (librarySummary$ | async; as summary) {
-      <p class="library-summary padding-left">
-        {{ summary.text }}
-        @if (summary.skipped > 0) {
-          <span class="skipped" [matTooltip]="summary.warnings">
-            · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
-          </span>
-        }
-      </p>
-    }
-    <mat-divider></mat-divider>
-                <div
-                  fxFlex="5"
-                  fxAlign="row"
-                  fxLayoutAlign="start center"
-                  class="margins"
-                >
+                  <p class="library-summary padding-left">
+                    {{ summary.text }}
+                    @if (summary.skipped > 0) {
+                      <span class="skipped" [matTooltip]="summary.warnings">
+                        · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
+                      </span>
+                    }
+                  </p>
+                }
+                <mat-divider></mat-divider>
+                <div class="play-row margins">
                   <button
-                    mat-raised-button
-                    color="accent"
-                    class="play"
+                    class="tl-btn tl-btn--primary"
                     (click)="playAll()"
                     [disabled]="(trackNumber$ | async) === 0"
                   >
-                    <mat-icon>play_circle_outline</mat-icon>
+                    <mat-icon class="tl-filled">play_arrow</mat-icon>
                     Play tracklist
                   </button>
                   <div fxFlex></div>
-                  <p class="no-marign">{{ trackNumber$ | async }} tracks</p>
+                  <p class="track-count">{{ trackNumber$ | async }} tracks</p>
                 </div>
 
-                <div fxFlex="85">
+                <div fxFlex class="mobile-tabs">
                   <mat-tab-group
                     fxFlexFill
                     fxFill
@@ -284,7 +225,7 @@
         </div>
         <!----------------- PLAYER ----------------->
         @if ((playingTrack$ | async) && !this.media.isActive('xs')) {
-          <div fxFlexFill fxFlex="15" fxLayout="row">
+          <div fxFlex="none" fxLayout="row" class="player-dock">
             <div fxFlexOffset="10" fxFlex="70">
               <app-player [track$]="playingTrack$"></app-player>
             </div>
@@ -301,7 +242,7 @@
           <p class="bigger">
             We need to load your songs from Spotify, it may take a few minutes.
           </p>
-          <button mat-raised-button color="accent" (click)="loadPlaylist()">
+          <button class="tl-btn tl-btn--primary" (click)="loadPlaylist()">
             Load music
           </button>
         </div>
@@ -314,12 +255,14 @@
         <div fxFlex="nogrow" class="text-centered text">
           <h1>That didn't work</h1>
           <p class="bigger" id="error-message">{{ view.message }}</p>
-          <button mat-raised-button color="accent" (click)="retry(view)">
-            {{ view.needsLogin ? 'Log in to Spotify' : 'Try again' }}
-          </button>
-          <button mat-button class="secondary" (click)="signOut()">
-            Log out
-          </button>
+          <div class="button-row">
+            <button class="tl-btn tl-btn--primary" (click)="retry(view)">
+              {{ view.needsLogin ? 'Log in to Spotify' : 'Try again' }}
+            </button>
+            <button class="tl-btn tl-btn--secondary" (click)="signOut()">
+              Log out
+            </button>
+          </div>
         </div>
       </div>
     }
@@ -340,33 +283,39 @@
         </p>
 
         @if (userTopTrack$ | async; as track) {
-          <p class="text-centered">Including</p>
+          <p class="text-centered including">Including</p>
           <!-- The card stays; its content cross-fades from one track to the next. -->
-          <mat-card class="top-track">
+          <div class="top-track tl-panel">
             @for (current of [track]; track current.id) {
-              <mat-card-header animate.enter="top-track-in" animate.leave="top-track-out">
+              <div class="top-track-item" animate.enter="top-track-in" animate.leave="top-track-out">
                 <div
-                  mat-card-avatar
+                  class="cover"
                   [style.background-image]="current.album?.images?.[0]?.url ? 'url(' + current.album.images[0].url + ')' : null"
-                  [style.background-size]="'cover'"
                 ></div>
-                <mat-card-title>{{ current.name }}</mat-card-title>
-                <mat-card-subtitle>{{ current.artists?.[0]?.name }}</mat-card-subtitle>
-              </mat-card-header>
+                <div class="text">
+                  <p class="title">{{ current.name }}</p>
+                  <p class="artist">{{ current.artists?.[0]?.name }}</p>
+                </div>
+              </div>
             }
-          </mat-card>
+          </div>
         } @else if (view.kind !== 'importing') {
-          <mat-spinner color="accent" mode="indeterminate"></mat-spinner>
+          <mat-spinner diameter="48" mode="indeterminate"></mat-spinner>
         }
 
         @if (view.kind === 'importing') {
           <div id="progress-bar">
-            <mat-progress-bar
-              color="accent"
-              mode="determinate"
-              [value]="view.percent"
-            ></mat-progress-bar>
-            <p class="text-centered percent">{{ view.percent }} %</p>
+            <div
+              class="tl-progress"
+              role="progressbar"
+              aria-label="Import progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="view.percent"
+            >
+              <div class="tl-progress__fill" [style.width.%]="view.percent"></div>
+            </div>
+            <p class="text-centered percent">{{ view.percent }}%</p>
           </div>
         }
       </div>

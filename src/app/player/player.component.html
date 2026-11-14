@@ -1,48 +1,48 @@
 @if (track$ | async; as track) {
-  <mat-card class="player">
+  <div class="player tl-panel">
     <!-- Now playing -->
     <div class="now-playing">
       <div class="cover" [style.background-image]="cover(track)"></div>
       <div class="text">
-        <mat-card-title class="title" [title]="track.name">{{ track.name }}</mat-card-title>
-        <mat-card-subtitle class="artist">{{ track.artists?.[0]?.name }}</mat-card-subtitle>
+        <p class="title" [title]="track.name">{{ track.name }}</p>
+        <p class="artist">{{ track.artists?.[0]?.name }}</p>
       </div>
     </div>
 
     <!-- Controls and position -->
     <div class="center">
       <div class="controls">
-        <button mat-icon-button class="secondary hide-xs" (click)="shuffle()" [class.on]="shuffle$ | async" aria-label="Shuffle">
-          <mat-icon svgIcon="shuffle"></mat-icon>
+        <button class="tl-icon-btn hide-xs" (click)="shuffle()" [class.is-on]="shuffle$ | async" aria-label="Shuffle">
+          <mat-icon>shuffle</mat-icon>
         </button>
-        <button mat-icon-button class="secondary hide-xs" (click)="previous()" aria-label="Previous">
-          <mat-icon>skip_previous</mat-icon>
+        <button class="tl-icon-btn hide-xs" (click)="previous()" aria-label="Previous">
+          <mat-icon class="tl-filled">skip_previous</mat-icon>
         </button>
         @if (paused$ | async) {
-          <button mat-icon-button class="main" (click)="play()" aria-label="Play">
-            <mat-icon>play_circle</mat-icon>
+          <button class="play-pause" (click)="play()" aria-label="Play">
+            <mat-icon class="tl-filled">play_arrow</mat-icon>
           </button>
         } @else {
-          <button mat-icon-button class="main" (click)="pause()" aria-label="Pause">
-            <mat-icon>pause_circle</mat-icon>
+          <button class="play-pause" (click)="pause()" aria-label="Pause">
+            <mat-icon class="tl-filled">pause</mat-icon>
           </button>
         }
-        <button mat-icon-button class="secondary" (click)="next()" aria-label="Next">
-          <mat-icon>skip_next</mat-icon>
+        <button class="tl-icon-btn" (click)="next()" aria-label="Next">
+          <mat-icon class="tl-filled">skip_next</mat-icon>
         </button>
         @if (isLiked$ | async) {
-          <button mat-icon-button class="secondary" (click)="like(false)" matTooltip="Unlike" aria-label="Unlike">
-            <mat-icon>favorite</mat-icon>
+          <button class="tl-icon-btn is-on" (click)="like(false)" matTooltip="Unlike" aria-label="Unlike">
+            <mat-icon class="tl-filled">favorite</mat-icon>
           </button>
         } @else {
-          <button mat-icon-button class="secondary" (click)="like(true)" matTooltip="Like" aria-label="Like">
-            <mat-icon>favorite_border</mat-icon>
+          <button class="tl-icon-btn" (click)="like(true)" matTooltip="Like" aria-label="Like">
+            <mat-icon>favorite</mat-icon>
           </button>
         }
       </div>
       <div class="position hide-xs">
         <span class="time">{{ value | secToMin }}</span>
-        <mat-slider class="slider" color="accent" min="0" [max]="track.duration_ms / 1000">
+        <mat-slider class="slider" min="0" [max]="track.duration_ms / 1000">
           <input
             matSliderThumb
             aria-label="Position in the track"
@@ -56,5 +56,5 @@
 
     <!-- Balances the layout so that the controls stay centred. -->
     <div class="spacer hide-xs"></div>
-  </mat-card>
+  </div>
 }

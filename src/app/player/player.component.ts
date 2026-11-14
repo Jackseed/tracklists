@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatIconRegistry } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DomSanitizer } from '@angular/platform-browser';
 import { firstValueFrom, Observable } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 import { PlaylistQuery, PlaylistService } from '../playlists/+state';
@@ -23,8 +21,6 @@ export class PlayerComponent implements OnInit {
   private playlistQuery = inject(PlaylistQuery);
   private playlistService = inject(PlaylistService);
   private spotifyService = inject(SpotifyService);
-  private matIconRegistry = inject(MatIconRegistry);
-  private domSanitizer = inject(DomSanitizer);
   private snackBar = inject(MatSnackBar);
   private destroyRef = inject(DestroyRef);
 
@@ -39,7 +35,6 @@ export class PlayerComponent implements OnInit {
   ngOnInit(): void {
     const currentTrack$ = this.track$.pipe(filter((track) => !!track));
     this.isLiked$ = currentTrack$.pipe(switchMap((track) => this.trackQuery.isLiked$(track.id)));
-    this.matIconRegistry.addSvgIcon('shuffle', this.domSanitizer.bypassSecurityTrustResourceUrl('assets/buttons/shuffle.svg'));
 
     // get track position
     currentTrack$

@@ -1,17 +1,12 @@
 .margin-top {
-  margin-top: 8px;
+  margin-top: var(--tl-space-3);
 }
 
-:host ::ng-deep .ant-slider-track {
-  border-color: black !important;
-  background-color: #69f0ae !important;
-
-  --antd-wave-shadow-color: black !important;
+h4 {
+  color: var(--tl-text);
 }
 
-:host ::ng-deep .ant-slider-handle {
-  border-color: #69f0ae !important;
-  background-color: #69f0ae !important;
-
-  --antd-wave-shadow-color: black !important;
+.mat-icon {
+  width: 24px;
+  height: 24px;
 }

@@ -1,7 +1,3 @@
-<mat-checkbox
-  color="accent"
-  (change)="setActive($event)"
-  [checked]="isActive$ | async"
->
-  <p id="title">{{ playlist.name }}</p>
+<mat-checkbox (change)="setActive($event)" [checked]="isActive$ | async">
+  <span class="name">{{ playlist.name }}</span>
 </mat-checkbox>

@@ -21,7 +21,6 @@ import { PlayerComponent } from './player/player.component';
 import { LandingComponent } from './landing/landing.component';
 // Material
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
@@ -29,7 +28,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 // Flex layout
 import { FlexLayoutModule } from '@ngbracket/ngx-layout';
@@ -55,7 +53,6 @@ import { LoopWhileDirective } from './utils/loop-while.directive';
     FiltersModule,
     PlaylistsModule,
     MatButtonModule,
-    MatCardModule,
     MatDialogModule,
     MatIconModule,
     MatSnackBarModule,
@@ -65,7 +62,6 @@ import { LoopWhileDirective } from './utils/loop-while.directive';
     MatTabsModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    MatProgressBarModule,
     MatTooltipModule,
   ],
   providers: [

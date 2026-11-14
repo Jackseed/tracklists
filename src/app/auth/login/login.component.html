@@ -11,23 +11,16 @@
       }
       <div>
         <button
-          mat-raised-button
-          color="accent"
+          class="tl-btn tl-btn--primary"
           id="login-button"
           (click)="loginToSpotify()"
           [disabled]="loggingIn"
         >
           @if (!loggingIn) {
-            <span>Login</span>
+            Log in
           } @else {
-            <div fxLayout="row" fxLayoutAlign="center center">
-              Logging in...
-              <mat-spinner
-                diameter="16"
-                class="margin-left"
-                color="accent"
-              ></mat-spinner>
-            </div>
+            Logging in…
+            <mat-spinner diameter="16"></mat-spinner>
           }
         </button>
       </div>

@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlaylistListComponent } from './playlist-list/playlist-list.component';
 import { PlaylistViewComponent } from './playlist-view/playlist-view.component';
-import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { PlaylistFormComponent } from './playlist-form/playlist-form.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,7 +17,6 @@ import { FlexLayoutModule } from '@ngbracket/ngx-layout';
   imports: [
     CommonModule,
     FlexLayoutModule,
-    MatCardModule,
     MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,

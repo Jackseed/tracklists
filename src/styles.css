@@ -1,11 +1,74 @@
+/* ==========================================================================
+   Tracklists — "contour franc": black background, 2px white outlines,
+   offset shadows in green and purple, Yantramanav for titles and controls,
+   Raleway for reading text.
+   ========================================================================== */
+
+:root {
+  /* Colours */
+  --tl-bg: #000;
+  --tl-surface: #131313;
+  --tl-surface-raised: #1a1a1a;
+  --tl-line: #2a2a2a;
+  --tl-line-strong: #3a3a3a;
+  --tl-text: #fff;
+  --tl-text-muted: #b3b3b3;
+  --tl-text-faint: #9e9e9e;
+  --tl-green: #69f0ae;
+  --tl-green-dark: #4fd897;
+  --tl-green-ink: #00331a;
+  --tl-purple: #7b1fa2;
+  --tl-warning: #ffb74d;
+  --tl-error: #ff8a80;
+
+  /* Shapes */
+  --tl-border: 2px;
+  --tl-radius-s: 8px;
+  --tl-radius: 10px;
+  --tl-radius-m: 12px;
+  --tl-radius-l: 16px;
+  --tl-shadow-green: 4px 4px 0 var(--tl-green);
+  --tl-shadow-purple: 4px 4px 0 var(--tl-purple);
+
+  /* Spacing: 4px steps */
+  --tl-space-1: 4px;
+  --tl-space-2: 8px;
+  --tl-space-3: 12px;
+  --tl-space-4: 16px;
+  --tl-space-5: 24px;
+  --tl-space-6: 32px;
+
+  /* Type: one scale (ratio ~1.25), fluid only for the big titles. */
+  --tl-font-display: "Yantramanav", "Helvetica Neue", sans-serif;
+  --tl-font-body: "Raleway", "Helvetica Neue", sans-serif;
+  --tl-fs-hero: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem); /* 36 → 56 */
+  --tl-fs-h1: clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem); /* 28 → 40 */
+  --tl-fs-h2: clamp(1.375rem, 1.25rem + 0.6vw, 1.75rem); /* 22 → 28 */
+  --tl-fs-h3: 1.25rem; /* 20 */
+  --tl-fs-h4: 1rem; /* 16 */
+  --tl-fs-lead: clamp(1rem, 0.95rem + 0.3vw, 1.125rem); /* 16 → 18 */
+  --tl-fs-body: 0.9375rem; /* 15 */
+  --tl-fs-small: 0.8125rem; /* 13 */
+  --tl-fs-caption: 0.75rem; /* 12 */
+
+  --tl-ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 html,
 body {
   height: 100%;
-  background-color: black;
-  color: white;
+  background-color: var(--tl-bg);
+  color: var(--tl-text);
 }
 body {
   margin: 0;
+  font-family: var(--tl-font-body);
+  font-size: var(--tl-fs-body);
+}
+/* Raleway draws old-style figures by default: "3,200 tracks" reads better lined up.
+   Set on every element because Material's `font:` shorthands reset it. */
+body.mat-typography :not(.mat-icon) {
+  font-variant-numeric: lining-nums;
 }
 
 /* width of the entire scrollbar */
@@ -23,146 +86,511 @@ html::-webkit-scrollbar-thumb {
   box-shadow: inset 2px 2px 2px hsl(0deg 0% 100% / 25%),
     inset -2px -2px 2px rgb(0 0 0 / 25%);
 }
-/* Angular Material design tokens: keep the look the app had before Material's redesign. */
-html {
-  /* Cards blend into the app's near-black panels. */
-  --mat-card-elevated-container-color: #1f1f1f;
-  /* Compact playlist list. */
-  --mat-checkbox-state-layer-size: 30px;
-  /* Track rows: light titles in the app's fonts, as before. */
-  --mat-card-title-text-font: "Yantramanav", "Helvetica Neue", sans-serif;
-  --mat-card-title-text-size: calc(0.8rem + 0.5vmin);
-  --mat-card-title-text-weight: 400;
-  --mat-card-title-text-line-height: 1.4;
-  --mat-card-title-text-tracking: normal;
-  --mat-card-subtitle-text-font: "Raleway", "Helvetica Neue", sans-serif;
-  --mat-card-subtitle-text-size: calc(0.7rem + 0.5vmin);
-  --mat-card-subtitle-text-weight: 400;
-  --mat-card-subtitle-text-line-height: 1.4;
-  --mat-card-subtitle-text-tracking: normal;
-  /* No letter-spacing on buttons (and on tabs, below). */
-  --mat-button-protected-label-text-tracking: normal;
-  --mat-button-filled-label-text-tracking: normal;
-  --mat-button-text-label-text-tracking: normal;
-}
-/* The prebuilt theme pads every icon button by 12px, which only centres the icon in a
-   48px button: derive the padding from the button and icon sizes instead. */
-.mat-mdc-icon-button.mat-mdc-button-base {
-  padding: calc((var(--mat-icon-button-state-layer-size, 48px) - var(--mat-icon-button-icon-size, 24px)) / 2);
-}
 
-html .mat-mdc-tab-header {
-  --mat-tab-label-text-tracking: normal;
+/* --- Typography -------------------------------------------------------------
+   `body.mat-typography` beats Material's own `.mat-typography h1` rules. */
+body.mat-typography h1,
+body.mat-typography h2,
+body.mat-typography h3,
+body.mat-typography h4 {
+  margin: 0;
+  font-family: var(--tl-font-display);
+  letter-spacing: normal;
+  line-height: 1.1;
 }
-/* Tabs: white labels, the purple line marks the selected one. */
-html .mat-mdc-tab-group {
-  --mat-tab-active-label-text-color: #fff;
-  --mat-tab-active-focus-label-text-color: #fff;
-  --mat-tab-active-hover-label-text-color: #fff;
-  --mat-tab-inactive-label-text-color: rgba(255, 255, 255, 0.6);
-  --mat-tab-inactive-focus-label-text-color: rgba(255, 255, 255, 0.6);
-  --mat-tab-inactive-hover-label-text-color: rgba(255, 255, 255, 0.8);
+body.mat-typography h1 {
+  font-size: var(--tl-fs-h1);
+  font-weight: 900;
 }
-.mat-mdc-card {
-  color: rgb(230, 230, 230);
+body.mat-typography h2 {
+  font-size: var(--tl-fs-h2);
+  font-weight: 900;
+}
+body.mat-typography h3 {
+  margin: var(--tl-space-2) 0;
+  font-size: var(--tl-fs-h3);
+  font-weight: 700;
+}
+body.mat-typography h4 {
+  font-size: var(--tl-fs-h4);
+  font-weight: 700;
+}
+body.mat-typography p {
+  margin: 0;
+  font-family: var(--tl-font-body);
+  font-size: var(--tl-fs-body);
+  line-height: 1.5;
 }
 
 a {
   text-decoration: none;
 }
 
-h1 {
-  margin: 0 !important;
-  font-size: calc(1.2rem + 3vmin) !important;
-  font-weight: bold !important;
-  font-family: "Yantramanav", sans-serif !important;
-}
-
-h2 {
-  margin: 0;
-  font-size: calc(0.8rem + 2vmin) !important;
-  font-weight: bold !important;
-  font-family: "Yantramanav", sans-serif !important;
-}
-h3 {
-  margin: 10px !important;
-  font-size: calc(1.1rem + 1.5vmin) !important;
-  font-weight: bold !important;
-  font-family: "Yantramanav", sans-serif !important;
-}
-h4 {
-  margin: 0 !important;
-  font-size: calc(0.7rem + 1vmin) !important;
-  font-weight: normal;
-  font-family: "Yantramanav", sans-serif !important;
-}
-p {
-  margin: 0;
-  font-size: calc(0.8rem + 0.5vmin);
-  font-weight: normal;
-  font-family: "Raleway", "Helvetica Neue", sans-serif;
-}
-span {
-  margin: 0;
-  font-size: calc(0.7rem + 0.5vmin);
-  font-family: "Raleway", "Helvetica Neue", sans-serif;
-}
-
-.mat-mdc-tab .mdc-tab__text-label {
-  margin: 0;
-  font-size: calc(0.8rem + 2vmin) !important;
-  font-weight: bold !important;
-  font-family: "Yantramanav", sans-serif !important;
-}
-
-.mat-mdc-card-title,
-.mat-mdc-card-subtitle {
-  margin: 0;
-}
-
-.mat-mdc-checkbox .mdc-checkbox__native-control:not(:checked) ~ .mdc-checkbox__background {
-  background-color: rgb(204, 204, 204);
-}
-
 .text-centered {
   text-align: center;
+}
+
+.white {
+  color: var(--tl-text);
+}
+
+/* Short intro sentence under a title. */
+body.mat-typography .bigger {
+  margin: var(--tl-space-3) 0 var(--tl-space-5);
+  font-size: var(--tl-fs-lead);
+  line-height: 1.5;
+  color: var(--tl-text-muted);
 }
 
 #logo {
   position: absolute;
   top: 0;
   left: 0;
-  padding: calc(1rem + 2vmin);
+  padding: clamp(16px, 2vw + 8px, 32px);
 }
 
+body.mat-typography #logo h1,
 #logo-text {
-  font-size: calc(2rem + 3vmin) !important;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  font-weight: 900;
 }
 
-.white {
-  color: white;
+/* --- Icons: Material Symbols Rounded (only the glyphs the app uses are loaded) --- */
+.material-symbols-rounded {
+  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+}
+.material-symbols-rounded.tl-filled,
+.tl-filled .material-symbols-rounded {
+  font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24;
 }
 
-.bigger {
-  padding-top: 12px;
-  line-height: calc(0.5rem + 3vmin);
-  font-size: calc(1rem + 0.5vmin);
+/* --- Buttons --------------------------------------------------------------- */
+.tl-btn {
+  --tl-btn-bg: var(--tl-bg);
+  --tl-btn-fg: var(--tl-text);
+  --tl-btn-shadow: var(--tl-green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tl-space-2);
+  min-height: 46px;
+  padding: 0 20px;
+  border: var(--tl-border) solid var(--tl-text);
+  border-radius: var(--tl-radius);
+  background: var(--tl-btn-bg);
+  color: var(--tl-btn-fg);
+  box-shadow: 4px 4px 0 var(--tl-btn-shadow);
+  font-family: var(--tl-font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tl-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--tl-btn-shadow);
+}
+.tl-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--tl-btn-shadow);
+}
+.tl-btn:focus-visible {
+  outline: 3px solid var(--tl-green);
+  outline-offset: 4px;
+}
+.tl-btn:disabled {
+  border-color: var(--tl-line-strong);
+  background: #1c1c1c;
+  color: #8a8a8a;
+  box-shadow: none;
+  cursor: default;
+}
+.tl-btn .mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+.tl-btn--primary {
+  --tl-btn-bg: var(--tl-green);
+  --tl-btn-fg: var(--tl-green-ink);
+  --tl-btn-shadow: var(--tl-purple);
+}
+.tl-btn--purple {
+  --tl-btn-bg: var(--tl-purple);
+  --tl-btn-fg: var(--tl-text);
+  --tl-btn-shadow: var(--tl-green);
+}
+.tl-btn--secondary {
+  --tl-btn-bg: var(--tl-bg);
+  --tl-btn-fg: var(--tl-text);
+  --tl-btn-shadow: var(--tl-green);
+}
+.tl-btn--large {
+  min-height: 54px;
+  padding: 0 28px;
+  font-size: 1.125rem;
+}
+.tl-btn--large .mat-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}
+.tl-btn--small {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.9375rem;
 }
 
-/* gt-xs */
+/* Square icon buttons with a quiet outline that lights up green. */
+.tl-icon-btn {
+  --tl-icon-btn-size: 44px;
+  --tl-icon-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--tl-icon-btn-size);
+  height: var(--tl-icon-btn-size);
+  padding: 0;
+  border: var(--tl-border) solid var(--tl-line-strong);
+  border-radius: var(--tl-radius);
+  background: transparent;
+  color: var(--tl-text);
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, transform 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tl-icon-btn:hover {
+  border-color: var(--tl-green);
+  color: var(--tl-green);
+}
+.tl-icon-btn:active {
+  transform: scale(0.94);
+}
+.tl-icon-btn:focus-visible {
+  outline: 3px solid var(--tl-green);
+  outline-offset: 2px;
+}
+.tl-icon-btn.is-on {
+  border-color: var(--tl-green);
+  color: var(--tl-green);
+}
+.tl-icon-btn .mat-icon {
+  width: var(--tl-icon-size);
+  height: var(--tl-icon-size);
+  font-size: var(--tl-icon-size);
+  line-height: var(--tl-icon-size);
+}
+.tl-icon-btn--small {
+  --tl-icon-btn-size: 38px;
+  --tl-icon-size: 20px;
+  border-radius: 9px;
+}
+
+/* --- Panels and loading bar ------------------------------------------------ */
+.tl-panel {
+  background: var(--tl-surface);
+  border: var(--tl-border) solid var(--tl-line);
+  border-radius: var(--tl-radius-l);
+}
+
+.tl-progress {
+  height: 18px;
+  box-sizing: border-box;
+  border: var(--tl-border) solid var(--tl-text);
+  border-radius: 6px;
+  background: var(--tl-bg);
+  overflow: hidden;
+}
+.tl-progress__fill {
+  height: 100%;
+  background: repeating-linear-gradient(-45deg, var(--tl-green) 0 8px, var(--tl-green-dark) 8px 16px);
+  background-size: 22.63px 22.63px;
+  /* Glides between two updates of the import instead of jumping. */
+  transition: width 1200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  animation: tl-stripes 900ms linear infinite;
+}
+@keyframes tl-stripes {
+  to {
+    background-position: 22.63px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-progress__fill {
+    animation: none;
+  }
+}
+
+/* --- Angular Material, restyled through its design tokens ------------------ */
+html {
+  --mat-card-elevated-container-color: var(--tl-surface);
+  --mat-divider-color: var(--tl-line);
+  --mat-divider-width: 2px;
+  --mat-progress-spinner-active-indicator-color: var(--tl-green);
+
+  /* Tooltips: white label, black text. */
+  --mat-tooltip-container-color: var(--tl-text);
+  --mat-tooltip-container-shape: 6px;
+  --mat-tooltip-supporting-text-color: #000;
+  --mat-tooltip-supporting-text-font: var(--tl-font-display);
+  --mat-tooltip-supporting-text-size: 13px;
+  --mat-tooltip-supporting-text-weight: 700;
+  --mat-tooltip-supporting-text-tracking: normal;
+
+  /* Snack bar */
+  --mat-snack-bar-container-color: var(--tl-bg);
+  --mat-snack-bar-container-shape: var(--tl-radius);
+  --mat-snack-bar-supporting-text-color: var(--tl-text);
+  --mat-snack-bar-supporting-text-font: var(--tl-font-display);
+  --mat-snack-bar-supporting-text-size: 15px;
+  --mat-snack-bar-supporting-text-weight: 700;
+  --mat-snack-bar-button-color: var(--tl-green);
+
+  /* Dialog */
+  --mat-dialog-container-color: var(--tl-bg);
+  --mat-dialog-container-shape: var(--tl-radius-l);
+  --mat-dialog-container-elevation-shadow: 8px 8px 0 var(--tl-purple);
+  --mat-dialog-subhead-color: var(--tl-text);
+  --mat-dialog-subhead-font: var(--tl-font-display);
+  --mat-dialog-subhead-size: 24px;
+  --mat-dialog-subhead-weight: 900;
+  --mat-dialog-subhead-line-height: 1.2;
+  --mat-dialog-subhead-tracking: normal;
+  --mat-dialog-supporting-text-color: var(--tl-text);
+  --mat-dialog-actions-padding: 8px 24px 24px;
+
+  /* Autocomplete panel */
+  --mat-autocomplete-background-color: var(--tl-surface);
+  --mat-autocomplete-container-shape: var(--tl-radius);
+  --mat-option-label-text-font: var(--tl-font-display);
+  --mat-option-label-text-size: 15px;
+  --mat-option-label-text-color: var(--tl-text);
+  --mat-option-selected-state-label-text-color: var(--tl-green);
+}
+
+.mat-mdc-snackbar-surface {
+  border: var(--tl-border) solid var(--tl-text);
+  box-shadow: var(--tl-shadow-green) !important;
+}
+.mat-mdc-dialog-surface {
+  border: var(--tl-border) solid var(--tl-text);
+}
+div.mat-mdc-autocomplete-panel {
+  border: var(--tl-border) solid var(--tl-text);
+  box-shadow: var(--tl-shadow-green);
+}
+
+/* Tabs: bold labels, a thick green line under the selected one. */
+html .mat-mdc-tab-group {
+  --mat-tab-active-indicator-color: var(--tl-green);
+  --mat-tab-active-focus-indicator-color: var(--tl-green);
+  --mat-tab-active-hover-indicator-color: var(--tl-green);
+  --mat-tab-active-indicator-height: 4px;
+  --mat-tab-active-indicator-shape: 2px;
+  --mat-tab-active-label-text-color: var(--tl-text);
+  --mat-tab-active-focus-label-text-color: var(--tl-text);
+  --mat-tab-active-hover-label-text-color: var(--tl-text);
+  --mat-tab-inactive-label-text-color: var(--tl-text-faint);
+  --mat-tab-inactive-focus-label-text-color: var(--tl-text-faint);
+  --mat-tab-inactive-hover-label-text-color: var(--tl-text);
+  --mat-tab-divider-color: var(--tl-line);
+  --mat-tab-divider-height: 2px;
+}
+html .mat-mdc-tab-header {
+  --mat-tab-label-text-font: var(--tl-font-display);
+  --mat-tab-label-text-size: 20px;
+  --mat-tab-label-text-weight: 900;
+  --mat-tab-label-text-tracking: normal;
+}
+.mat-mdc-tab-body-wrapper {
+  height: 100%;
+}
 @media screen and (min-width: 600px) {
   .mat-mdc-tab {
     min-width: 128px !important;
   }
 }
-/* xs */
 @media screen and (max-width: 599px) {
   .mat-mdc-tab {
-    padding: 0px 12px !important;
+    padding: 0 12px !important;
     width: 33% !important;
   }
 }
 
-.mat-mdc-tab-body-wrapper {
-  height: 100%;
+/* "Select all" toggle: a square switch with a white outline. */
+/* Doubled class: beats the theme's `.mat-mdc-slide-toggle.mat-accent` colours. */
+html body .mat-mdc-slide-toggle.mat-mdc-slide-toggle {
+  --mat-slide-toggle-label-text-font: var(--tl-font-display);
+  --mat-slide-toggle-label-text-size: 15px;
+  --mat-slide-toggle-label-text-weight: 700;
+  --mat-slide-toggle-label-text-tracking: normal;
+  --mat-slide-toggle-label-text-color: var(--tl-text);
+  --mat-slide-toggle-track-width: 46px;
+  --mat-slide-toggle-track-height: 26px;
+  --mat-slide-toggle-track-shape: 8px;
+  --mat-slide-toggle-track-outline-width: 2px;
+  --mat-slide-toggle-track-outline-color: var(--tl-text-faint);
+  --mat-slide-toggle-selected-track-outline-width: 2px;
+  --mat-slide-toggle-selected-track-outline-color: var(--tl-text);
+  --mat-slide-toggle-handle-shape: 5px;
+  --mat-slide-toggle-unselected-handle-size: 14px;
+  --mat-slide-toggle-unselected-handle-horizontal-margin: 0 5px;
+  --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0 4px;
+  --mat-slide-toggle-selected-handle-size: 18px;
+  --mat-slide-toggle-pressed-handle-size: 20px;
+  --mat-slide-toggle-handle-elevation-shadow: none;
+  --mat-slide-toggle-unselected-track-color: var(--tl-bg);
+  --mat-slide-toggle-unselected-hover-track-color: var(--tl-bg);
+  --mat-slide-toggle-unselected-focus-track-color: var(--tl-bg);
+  --mat-slide-toggle-unselected-pressed-track-color: var(--tl-bg);
+  --mat-slide-toggle-unselected-handle-color: var(--tl-text-faint);
+  --mat-slide-toggle-unselected-hover-handle-color: var(--tl-text);
+  --mat-slide-toggle-unselected-focus-handle-color: var(--tl-text);
+  --mat-slide-toggle-unselected-pressed-handle-color: var(--tl-text);
+  --mat-slide-toggle-selected-track-color: var(--tl-green);
+  --mat-slide-toggle-selected-hover-track-color: var(--tl-green);
+  --mat-slide-toggle-selected-focus-track-color: var(--tl-green);
+  --mat-slide-toggle-selected-pressed-track-color: var(--tl-green);
+  --mat-slide-toggle-selected-handle-color: #000;
+  --mat-slide-toggle-selected-hover-handle-color: #000;
+  --mat-slide-toggle-selected-focus-handle-color: #000;
+  --mat-slide-toggle-selected-pressed-handle-color: #000;
+  --mat-slide-toggle-state-layer-size: 32px;
+}
+
+/* Playlist checkboxes: rounded squares, green when ticked. */
+html .mat-mdc-checkbox {
+  --mat-checkbox-state-layer-size: 30px;
+  --mat-checkbox-selected-icon-color: var(--tl-green);
+  --mat-checkbox-selected-hover-icon-color: var(--tl-green);
+  --mat-checkbox-selected-focus-icon-color: var(--tl-green);
+  --mat-checkbox-selected-pressed-icon-color: var(--tl-green);
+  --mat-checkbox-selected-checkmark-color: var(--tl-green-ink);
+  --mat-checkbox-unselected-icon-color: #5a5a5a;
+  --mat-checkbox-unselected-hover-icon-color: var(--tl-text);
+  --mat-checkbox-unselected-focus-icon-color: var(--tl-text);
+  --mat-checkbox-unselected-pressed-icon-color: var(--tl-text);
+  --mat-checkbox-selected-hover-state-layer-color: var(--tl-green);
+  --mat-checkbox-selected-focus-state-layer-color: var(--tl-green);
+  --mat-checkbox-unselected-hover-state-layer-color: var(--tl-text);
+  --mat-checkbox-label-text-color: var(--tl-text);
+}
+.mat-mdc-checkbox .mdc-checkbox__background {
+  border-radius: 5px;
+}
+.mat-mdc-checkbox .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+  border-color: var(--tl-text) !important;
+}
+
+/* Genre chips: green outline, green bold label. */
+html .mat-mdc-standard-chip.mat-mdc-chip {
+  --mat-chip-container-height: 32px;
+  --mat-chip-container-shape-radius: var(--tl-radius-s);
+  --mat-chip-outline-width: 2px;
+  --mat-chip-outline-color: var(--tl-green);
+  --mat-chip-elevated-container-color: transparent;
+  --mat-chip-label-text-color: var(--tl-green);
+  --mat-chip-label-text-font: var(--tl-font-display);
+  --mat-chip-label-text-size: 14px;
+  --mat-chip-label-text-weight: 700;
+  --mat-chip-label-text-tracking: normal;
+  --mat-chip-with-trailing-icon-trailing-icon-color: var(--tl-green);
+  --mat-chip-trailing-action-opacity: 1;
+}
+.mat-mdc-chip .mat-mdc-chip-remove .mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+/* Text fields: outlined, white and square-ish, green when focused. */
+html .mat-mdc-form-field {
+  --mat-form-field-outlined-outline-width: 2px;
+  --mat-form-field-outlined-focus-outline-width: 2px;
+  --mat-form-field-outlined-outline-color: var(--tl-text);
+  --mat-form-field-outlined-hover-outline-color: var(--tl-text);
+  --mat-form-field-outlined-focus-outline-color: var(--tl-green);
+  --mat-form-field-outlined-container-shape: var(--tl-radius);
+  --mat-form-field-outlined-label-text-color: var(--tl-text-faint);
+  --mat-form-field-outlined-hover-label-text-color: var(--tl-text-muted);
+  --mat-form-field-outlined-focus-label-text-color: var(--tl-green);
+  --mat-form-field-outlined-label-text-font: var(--tl-font-display);
+  --mat-form-field-outlined-label-text-weight: 700;
+  --mat-form-field-outlined-input-text-color: var(--tl-text);
+  --mat-form-field-outlined-caret-color: var(--tl-green);
+  --mat-form-field-container-text-font: var(--tl-font-display);
+  --mat-form-field-container-text-size: 16px;
+  --mat-form-field-container-text-weight: 700;
+  --mat-form-field-container-text-tracking: normal;
+}
+.mat-mdc-form-field.tl-field .mdc-text-field--outlined {
+  background: var(--tl-bg);
+  border-radius: var(--tl-radius);
+  box-shadow: 4px 4px 0 var(--tl-line);
+}
+
+/* Position slider in the player: thick rail, square white thumb. */
+html .mat-mdc-slider {
+  --mat-slider-active-track-color: var(--tl-green);
+  --mat-slider-inactive-track-color: var(--tl-line-strong);
+  --mat-slider-active-track-height: 6px;
+  --mat-slider-inactive-track-height: 6px;
+  --mat-slider-active-track-shape: 3px;
+  --mat-slider-inactive-track-shape: 3px;
+  --mat-slider-handle-color: var(--tl-text);
+  --mat-slider-hover-handle-color: var(--tl-text);
+  --mat-slider-focus-handle-color: var(--tl-text);
+  --mat-slider-handle-width: 16px;
+  --mat-slider-handle-height: 16px;
+  --mat-slider-handle-shape: 5px;
+  --mat-slider-handle-elevation: 2px 2px 0 var(--tl-purple);
+  --mat-slider-ripple-color: var(--tl-green);
+  --mat-slider-hover-state-layer-color: rgb(105 240 174 / 12%);
+  --mat-slider-focus-state-layer-color: rgb(105 240 174 / 20%);
+}
+
+/* Range sliders of the filters (ng-zorro). */
+.ant-slider {
+  box-sizing: border-box;
+  height: 24px;
+  margin: 0 12px;
+  padding: 7px 0;
+}
+.ant-slider .ant-slider-rail,
+.ant-slider .ant-slider-track,
+.ant-slider .ant-slider-step {
+  box-sizing: border-box;
+  height: 10px;
+  border-radius: 6px;
+}
+.ant-slider .ant-slider-rail,
+.ant-slider:hover .ant-slider-rail {
+  border: 2px solid var(--tl-line-strong);
+  background: var(--tl-bg);
+}
+.ant-slider .ant-slider-track,
+.ant-slider:hover .ant-slider-track {
+  border: 2px solid var(--tl-text);
+  background: var(--tl-green);
+}
+.ant-slider .ant-slider-handle,
+.ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open),
+.ant-slider .ant-slider-handle:focus,
+.ant-slider .ant-slider-handle.ant-tooltip-open {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  margin-top: -7px;
+  border: 2px solid var(--tl-text);
+  border-radius: 7px;
+  background: var(--tl-bg);
+  box-shadow: 3px 3px 0 var(--tl-purple);
+  outline: none;
+}
+.ant-slider .ant-slider-handle:focus-visible {
+  border-color: var(--tl-green);
 }

@@ -1,25 +1,17 @@
 @if (playlists$ | async; as playlists) {
   @if (!this.media.isActive('xs')) {
-    <mat-card>
-      <mat-card-content>
-        <div>
-          <mat-slide-toggle color="primary" hideIcon (change)="setAllActive($event)">
-            Select all
-          </mat-slide-toggle>
-        </div>
-        @for (playlist of playlists; track playlist.id) {
-          <div>
-            <app-playlist-view [playlist]="playlist"></app-playlist-view>
-          </div>
-        }
-      </mat-card-content>
-    </mat-card>
+    <div class="list">
+      <div class="select-all">
+        <mat-slide-toggle hideIcon (change)="setAllActive($event)">Select all</mat-slide-toggle>
+      </div>
+      @for (playlist of playlists; track playlist.id) {
+        <app-playlist-view [playlist]="playlist"></app-playlist-view>
+      }
+    </div>
   } @else {
     <div fxFlexFill id="playlists">
-      <div class="margins">
-        <mat-slide-toggle color="primary" hideIcon (change)="setAllActive($event)">
-          Select all
-        </mat-slide-toggle>
+      <div class="select-all">
+        <mat-slide-toggle hideIcon (change)="setAllActive($event)">Select all</mat-slide-toggle>
       </div>
       @for (playlist of playlists; track playlist.id) {
         <div class="playlist">

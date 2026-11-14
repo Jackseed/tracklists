@@ -3,13 +3,66 @@
 }
 
 .left-bar {
-  background-color: #1f1f1f;
-  padding: 20px;
-  border-radius: 2%;
+  box-sizing: border-box;
+  padding: var(--tl-space-4) var(--tl-space-5) var(--tl-space-5);
+  background: var(--tl-surface);
+  border: var(--tl-border) solid var(--tl-line);
+  border-radius: var(--tl-radius-l);
 }
 
-.play {
-  font-weight: 600;
+/* Title and actions, library summary, then "Play tracklist" and the count. */
+.home-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-space-3);
+  padding-bottom: var(--tl-space-4);
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  gap: var(--tl-space-4);
+}
+
+.home-header h1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--tl-space-2);
+}
+
+.mobile-header {
+  padding: var(--tl-space-4) var(--tl-space-4) var(--tl-space-2);
+}
+
+.mobile-header .tl-icon-btn {
+  --tl-icon-btn-size: 40px;
+  --tl-icon-size: 22px;
+}
+
+.play-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tl-space-4);
+  padding-top: var(--tl-space-2);
+}
+
+.track-count {
+  font-family: var(--tl-font-display);
+  font-size: var(--tl-fs-body);
+  font-weight: 700;
+  color: var(--tl-text-muted);
+  white-space: nowrap;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tl-space-4);
 }
 
 .margin-top {
@@ -31,34 +84,77 @@
 
 .mat-divider {
   width: 100%;
-  height: 10px;
 }
 
 .no-margin {
   margin: 0;
 }
 
-.mat-mdc-card-avatar {
-  border-radius: 6px;
-  height: 60px;
-  width: 60px;
+#progress-bar {
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  margin-top: var(--tl-space-5);
 }
 
-#progress-bar {
-  width: 284.11px;
-  margin-top: 16px;
+.including {
+  margin: var(--tl-space-2) 0;
+  font-size: var(--tl-fs-small);
+  color: var(--tl-text-faint);
 }
 
 /* The outgoing and incoming tracks share the same cell during the cross-fade. */
 .top-track {
   display: grid;
   align-items: center;
-  height: 100px;
-  width: 284.11px;
+  box-sizing: border-box;
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  height: 88px;
+  padding: 0 var(--tl-space-4);
+  overflow: hidden;
 }
 
-.top-track > mat-card-header {
+.top-track-item {
   grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  gap: var(--tl-space-4);
+  min-width: 0;
+}
+
+.top-track .cover {
+  flex: none;
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  border: var(--tl-border) solid var(--tl-text);
+  border-radius: var(--tl-radius-s);
+  background-color: var(--tl-line);
+  background-size: cover;
+  background-position: center;
+}
+
+.top-track .text {
+  min-width: 0;
+}
+
+.top-track .title,
+.top-track .artist {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.top-track .title {
+  font-family: var(--tl-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.top-track .artist {
+  font-size: var(--tl-fs-small);
+  color: var(--tl-text-muted);
 }
 
 /* The next track comes in once the previous one has mostly faded out. */
@@ -94,12 +190,6 @@
   }
 }
 
-/* The progress bar glides between two updates of the import instead of jumping. */
-#progress-bar ::ng-deep .mdc-linear-progress__primary-bar {
-  transition-duration: 1200ms;
-  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .top-track-in,
   .top-track-out,
@@ -108,27 +198,24 @@
   }
 }
 
-.mat-mdc-card-subtitle {
-  margin-bottom: 0;
-}
-
 .status {
-  min-height: 1.6em;
-  margin: 8px 0 16px;
-  opacity: 0.8;
+  min-height: 1.5em;
+  margin: var(--tl-space-2) 0 var(--tl-space-5);
+  color: var(--tl-text-muted);
 }
 
 .percent {
-  margin-top: 8px;
-  opacity: 0.8;
-}
-
-.secondary {
-  margin-left: 8px;
+  margin-top: var(--tl-space-2);
+  font-family: var(--tl-font-display);
+  font-size: var(--tl-fs-h3);
+  font-weight: 900;
+  color: var(--tl-green);
 }
 
 .nav-titles {
-  font-size: 10px;
+  font-family: var(--tl-font-display);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .playlists {
@@ -143,16 +230,8 @@
   transform: rotate(290deg) scale(5);
 }
 
-.margin-bottom-4 {
-  margin-bottom: 4px;
-}
-
-.padding-top-4 {
-  padding-top: 4px;
-}
-
 .margins {
-  margin: 0px 16px;
+  margin: var(--tl-space-2) var(--tl-space-4) var(--tl-space-3);
 }
 
 .container {
@@ -166,12 +245,28 @@
 }
 
 .library-summary {
-  margin: 0 0 8px;
-  font-size: 13px;
-  opacity: 0.6;
+  margin: 0 0 var(--tl-space-1);
+  font-size: var(--tl-fs-small);
+  color: var(--tl-text-faint);
 }
 
 .library-summary .skipped {
-  color: #ffb74d;
+  color: var(--tl-warning);
   cursor: help;
+}
+
+.mobile-tabs,
+.main-area {
+  min-height: 0;
+}
+
+.main-area {
+  width: 100%;
+}
+
+/* Keeps the player's outline off the bottom edge of the window. */
+.player-dock {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--tl-space-3) 0 var(--tl-space-4);
 }

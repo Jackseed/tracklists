@@ -1,11 +1,11 @@
 <h2 mat-dialog-title>Save tracks in a playlist</h2>
 <div mat-dialog-content>
-  <mat-form-field color="accent">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="name-field">
     <mat-label>Playlist name</mat-label>
     <input matInput [(ngModel)]="name" (keydown.enter)="name && dialogRef.close(name)" />
   </mat-form-field>
 </div>
-<div mat-dialog-actions align="end">
-  <button mat-button (click)="dialogRef.close()">Cancel</button>
-  <button mat-button [mat-dialog-close]="name" [disabled]="!name">Save</button>
+<div mat-dialog-actions align="end" class="actions">
+  <button class="tl-btn tl-btn--secondary tl-btn--small" (click)="dialogRef.close()">Cancel</button>
+  <button class="tl-btn tl-btn--primary tl-btn--small" [mat-dialog-close]="name" [disabled]="!name">Save</button>
 </div>

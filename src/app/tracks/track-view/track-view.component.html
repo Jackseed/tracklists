@@ -1,31 +1,31 @@
 @if (!this.media.isActive('xs')) {
-  <mat-card class="track" [class.playing]="isPlaying$ | async">
+  <div class="track" [class.playing]="isPlaying$ | async">
     <div class="cover" [style.background-image]="cover"></div>
     <div class="text">
-      <mat-card-title class="title" [title]="track.name">{{ track.name }}</mat-card-title>
-      <mat-card-subtitle class="artist">{{ track.artists?.[0]?.name }}</mat-card-subtitle>
+      <p class="title" [title]="track.name">{{ track.name }}</p>
+      <p class="artist">{{ track.artists?.[0]?.name }}</p>
     </div>
     <div class="actions">
       @if (isLiked$ | async) {
-        <button mat-icon-button (click)="unlike()" matTooltip="Unlike" aria-label="Unlike">
-          <mat-icon>favorite</mat-icon>
+        <button class="tl-icon-btn tl-icon-btn--small is-on" (click)="unlike()" matTooltip="Unlike" aria-label="Unlike">
+          <mat-icon class="tl-filled">favorite</mat-icon>
         </button>
       } @else {
-        <button mat-icon-button (click)="like()" matTooltip="Like" aria-label="Like">
-          <mat-icon>favorite_border</mat-icon>
+        <button class="tl-icon-btn tl-icon-btn--small" (click)="like()" matTooltip="Like" aria-label="Like">
+          <mat-icon>favorite</mat-icon>
         </button>
       }
-      <button mat-icon-button (click)="play()" matTooltip="Play" aria-label="Play">
-        <mat-icon>play_circle_outline</mat-icon>
+      <button class="tl-icon-btn tl-icon-btn--small" (click)="play()" matTooltip="Play" aria-label="Play">
+        <mat-icon class="tl-filled">play_arrow</mat-icon>
       </button>
-      <button mat-icon-button (click)="addoToPlayback()" matTooltip="Add to queue" aria-label="Add to queue">
+      <button class="tl-icon-btn tl-icon-btn--small" (click)="addoToPlayback()" matTooltip="Add to queue" aria-label="Add to queue">
         <mat-icon>playlist_add</mat-icon>
       </button>
-      <button mat-icon-button (click)="remove()" matTooltip="Remove from tracklist" aria-label="Remove from tracklist">
-        <mat-icon>cancel</mat-icon>
+      <button class="tl-icon-btn tl-icon-btn--small" (click)="remove()" matTooltip="Remove from tracklist" aria-label="Remove from tracklist">
+        <mat-icon>close</mat-icon>
       </button>
     </div>
-  </mat-card>
+  </div>
 } @else {
   <div class="track mobile" (click)="play()">
     <div class="cover" [style.background-image]="cover"></div>

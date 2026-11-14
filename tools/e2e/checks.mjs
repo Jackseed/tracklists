@@ -184,12 +184,12 @@ async function run() {
 
   // --- First import ----------------------------------------------------------------
   await page(`${buttonWithText('Load music')}.click()`);
-  await waitFor(`!!document.querySelector('mat-progress-bar')`);
+  await waitFor(`!!document.querySelector('#progress-bar [role=progressbar]')`);
   // Wait for the first counts (the very first call to the function can be slow in the emulator).
   await waitFor(`/\\d/.test(document.querySelector('#loading-status')?.textContent ?? '')`, 120_000).catch(() => 0);
   await sleep(1000);
   await screenshot('04-importing');
-  const progress = await page(`({ status: document.querySelector('#loading-status')?.textContent.trim().replace(/\\s+/g, ' '), percent: document.querySelector('mat-progress-bar')?.getAttribute('aria-valuenow') })`);
+  const progress = await page(`({ status: document.querySelector('#loading-status')?.textContent.trim().replace(/\\s+/g, ' '), percent: document.querySelector('#progress-bar [role=progressbar]')?.getAttribute('aria-valuenow') })`);
   check('import: phase, counts and a determinate progress bar are shown', /\d/.test(progress.status ?? '') && Number(progress.percent) >= 1, JSON.stringify(progress));
   const importMs = await waitFor(`!!document.querySelector('app-playlist-list')`, 900_000);
   const library = await page(`({ tracks: ${HOME}.trackQuery.getCount(), playlists: ${HOME}.playlistQuery.getCount(), imported: ${HOME}.authQuery.getActive().import.stats.tracks, seconds: ${HOME}.authQuery.getActive().import.stats.durationSeconds })`);
@@ -254,7 +254,7 @@ async function run() {
 
   // --- Likes, saving a playlist ------------------------------------------------------
   const like = await page(`(async () => {
-    const row = [...document.querySelectorAll('app-track-view')].find((r) => r.querySelector('mat-icon').textContent.trim() === 'favorite_border');
+    const row = [...document.querySelectorAll('app-track-view')].find((r) => !!r.querySelector('button[aria-label=Like]'));
     const id = window.ng.getComponent(row).track.id;
     const liked = () => ${HOME}.playlistQuery.getAll().find((p) => p.type === 'likedTracks').trackIds.includes(id);
     const rowOf = () => [...document.querySelectorAll('app-track-view')].find((r) => window.ng.getComponent(r).track.id === id);
@@ -283,7 +283,7 @@ async function run() {
 
   // --- Spotify goes down in the middle of a reload -------------------------------------
   await page(`${button('refresh')}.click()`);
-  await waitFor(`!!document.querySelector('mat-progress-bar')`);
+  await waitFor(`!!document.querySelector('#progress-bar [role=progressbar]')`);
   await sleep(3000);
   await configureSpotify({ errorRate: 1 });
   const downAt = Date.now();
@@ -310,7 +310,7 @@ async function run() {
     headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: { import: { mapValue: { fields: deadImport } } } }),
   });
-  await waitFor(`!!document.querySelector('mat-progress-bar')`, 10_000);
+  await waitFor(`!!document.querySelector('#progress-bar [role=progressbar]')`, 10_000);
   const stalledAt = Date.now();
   await waitFor(`!!document.querySelector('app-playlist-list')`, 120_000);
   await sleep(500);

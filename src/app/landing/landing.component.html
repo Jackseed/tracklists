@@ -22,18 +22,17 @@
     loop="heartbeat"
   ></div>
   <div class="text-centered">
-    <h1>Dig your tracks</h1>
+    <h1 class="hero">Dig your tracks</h1>
     <p class="bigger">using Spotify's hidden parameters</p>
     <button
-      mat-raised-button
-      color="accent"
+      class="tl-btn tl-btn--primary tl-btn--large"
       (click)="navigateToLogin()"
       (mouseenter)="beating = true"
       (mouseleave)="beating = false"
       (focus)="beating = true"
       (blur)="beating = false"
     >
-      <mat-icon class="icon" svgIcon="shovel"></mat-icon><span>Dig it!</span>
+      <mat-icon class="shovel" svgIcon="shovel"></mat-icon>Dig it!
     </button>
   </div>
 </section>
@@ -51,8 +50,7 @@
     <h1>Load your library</h1>
     <p class="bigger">based on your playlists and liked tracks</p>
     <button
-      mat-raised-button
-      color="primary"
+      class="tl-btn tl-btn--purple tl-btn--large"
       (click)="navigateToLogin()"
       (mouseenter)="rocking = true"
       (mouseleave)="rocking = false"
@@ -77,8 +75,7 @@
     <h1>Play with parameters</h1>
     <p class="bigger">Like danceability, chill or BPM</p>
     <button
-      mat-raised-button
-      color="primary"
+      class="tl-btn tl-btn--purple tl-btn--large"
       (click)="navigateToLogin()"
       (mouseenter)="rocking = true"
       (mouseleave)="rocking = false"
@@ -97,7 +94,7 @@
     />
     <h1>Discover all the genres</h1>
     <p class="bigger">behind your tracks</p>
-    <button mat-raised-button color="primary" (click)="navigateToLogin()">
+    <button class="tl-btn tl-btn--purple tl-btn--large" (click)="navigateToLogin()">
       Go!
     </button>
   </div>

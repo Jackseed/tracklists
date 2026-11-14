@@ -1,0 +1,8 @@
+.name-field {
+  width: 100%;
+  margin-top: var(--tl-space-2);
+}
+
+.actions {
+  gap: var(--tl-space-3);
+}

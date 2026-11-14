@@ -1,10 +1,19 @@
-.margins {
-  margin-top: 20px;
-  margin-bottom: 8px;
+.list {
+  padding-top: var(--tl-space-4);
+}
+
+.select-all {
+  margin: var(--tl-space-2) 0 var(--tl-space-3);
+  padding-bottom: var(--tl-space-3);
+  border-bottom: var(--tl-border) solid var(--tl-line);
+}
+
+#playlists .select-all {
+  margin-top: var(--tl-space-5);
 }
 
 .playlist {
-  margin: 5px 0;
+  margin: 2px 0;
 }
 
 #playlists:last-child {

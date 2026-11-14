@@ -17,10 +17,13 @@ img {
   height: calc(3rem + 3vmin);
 }
 
-.icon {
-  transform: scale(0.8);
-  padding-top: 1.5px;
-  padding-right: 5px;
+.shovel {
+  width: 22px;
+  height: 22px;
+}
+
+h1.hero {
+  font-size: var(--tl-fs-hero);
 }
 
 .spacer {

@@ -1,14 +1,14 @@
 <div class="margin-top">
   <h4>Genres</h4>
   <form>
-    <mat-form-field color="accent" class="genres-field">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="genres-field tl-field">
       <mat-label>Pop, rock, rap,..</mat-label>
       <mat-chip-grid #chipGrid aria-label="Selected genres">
         @for (activeGenre of activeGenres$ | async; track activeGenre.id) {
           <mat-chip-row (removed)="remove(activeGenre.id)">
             {{ activeGenre.id }} ({{ activeGenre.trackIds.length }})
             <button matChipRemove [attr.aria-label]="'Remove ' + activeGenre.id">
-              <mat-icon>cancel</mat-icon>
+              <mat-icon>close</mat-icon>
             </button>
           </mat-chip-row>
         }

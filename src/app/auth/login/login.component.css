@@ -1,7 +1,3 @@
-.margin-left {
-  margin-left: 8px;
-}
-
 .error {
-  color: #ff8a80;
+  color: var(--tl-error);
 }
