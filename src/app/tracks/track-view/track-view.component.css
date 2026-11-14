@@ -1,55 +1,85 @@
-.card {
+/* A row: cover, title and artist, then the actions on the right. */
+.track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
   margin: 12px;
-}
-
-.mat-card {
+  padding: 12px 8px 12px 16px;
   background: #131313;
-  margin: 0;
+  border-radius: 8px;
+  transition: background-color 150ms ease;
 }
 
-.mat-card-avatar {
-  border-radius: 0;
-}
-
-.mat-card-subtitle {
-  margin-bottom: 0;
-}
-
-.mat-card:hover {
-  background: #272727;
-}
-
-.playing {
+.track:hover,
+.track.playing {
   background: #272727;
 }
 
 .cover {
-  width: 40px;
-  height: 40px;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  background-size: cover;
+  background-position: center;
 }
 
-.container {
-  padding-top: 12px;
+/* Title and artist, centred on the cover, cut with an ellipsis when too long. */
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
-#title {
+.title,
+.artist {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mat-mdc-card-subtitle.artist {
+  margin: 0;
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- Mobile ------------------------------------------------------------- */
+.track.mobile {
+  gap: 12px;
+  margin: 0;
+  padding: 8px 0;
+  background: none;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.track.mobile .cover {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+}
+
+.track.mobile .title {
   font-size: calc(0.8rem + 0.5vmin);
   font-weight: 400;
-  margin: 0;
-  width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-#subtitle {
-  font-size: calc(0.8rem + 0.5vmin);
+.track.mobile .artist {
+  font-size: calc(0.75rem + 0.5vmin);
   font-weight: 300;
-  margin: 0;
-  width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  opacity: 0.7;
 }
 
 .active {

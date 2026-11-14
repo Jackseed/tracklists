@@ -1,99 +1,149 @@
-.right {
-  text-align: right;
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Three columns: now playing | controls | empty, so that the controls are centred. */
+.player {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px 24px;
+  border-radius: 12px;
+}
+
+.now-playing {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.cover {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  background-size: cover;
+  background-position: center;
+}
+
+.text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title,
+.artist {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* One scale for every control: the hover circle is sized with the icon it surrounds. */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The icon box takes the size of the button's icon, so it sits in the middle of the circle. */
+.controls .mat-icon {
+  width: var(--mat-icon-button-icon-size);
+  height: var(--mat-icon-button-icon-size);
+  font-size: var(--mat-icon-button-icon-size);
+  line-height: var(--mat-icon-button-icon-size);
+  /* Font icons and SVG icons (shuffle) line up the same way. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+}
+
+.controls .secondary {
+  --mat-icon-button-state-layer-size: 40px;
+  --mat-icon-button-icon-size: 24px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.controls .secondary:hover {
+  color: #fff;
+}
+
+.controls .main {
+  --mat-icon-button-state-layer-size: 52px;
+  --mat-icon-button-icon-size: 44px;
+}
+
+.controls .on {
+  color: #69f0ae;
+}
+
+.position {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.slider {
+  flex: 1;
   margin: 0;
 }
 
-.mat-card-avatar {
-  border-radius: 0;
+.time {
+  flex: none;
+  min-width: 36px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+  text-align: center;
 }
 
-.mat-card-actions,
-.mat-card-subtitle,
-.mat-card-content {
-  margin-bottom: 0;
-  padding: 0;
-}
-
-.icon {
-  transform: scale(0.7);
-}
-
-.green {
-  fill: #69f0ae;
-}
-
-/* gt-xs */
-@media screen and (min-width: 600px) {
-  #play-button {
-    width: 40px;
-    height: 40px;
-  }
-  #play-icon {
-    font-size: 40px;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-  }
-
-  .mat-icon {
-    font-size: 30px;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-  }
-
-  .mat-icon-button {
-    width: 30px;
-    height: 30px;
-  }
-}
-
-/* xs */
+/* --- Mobile: cover, title, then play, next and like ------------------------ */
 @media screen and (max-width: 599px) {
-  ::ng-deep .mat-card-header-text {
-    margin: 0 12px !important;
-  }
-  ::ng-deep .mat-card-title {
-    font-size: calc(1rem + 0.5vmin) !important;
-    font-weight: 400;
-    margin: 0;
-    width: 155px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  ::ng-deep .mat-card-subtitle {
-    font-size: calc(0.8rem + 0.5vmin) !important;
-    font-weight: 300;
-    margin: 0;
-    width: 155px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  ::ng-deep .mat-card {
-    padding: 4px !important;
-  }
-  .card {
-    height: 80% !important;
-    min-height: 80% !important;
-  }
-  .mobile-icon {
-    font-size: 25px !important;
-    width: 25px !important;
-    height: 25px !important;
-    line-height: 25px !important;
+  .player {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 8px 12px;
   }
 
-  .mat-icon {
-    font-size: 25px;
-    width: 25px;
-    height: 25px;
-    line-height: 25px;
+  .hide-xs {
+    display: none;
   }
 
-  .mat-icon-button {
-    width: 25px;
-    height: 25px;
+  .cover {
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+  }
+
+  .now-playing {
+    gap: 12px;
+  }
+
+  .controls {
+    gap: 4px;
+  }
+
+  .controls .main {
+    --mat-icon-button-state-layer-size: 44px;
+    --mat-icon-button-icon-size: 36px;
   }
 }

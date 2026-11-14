@@ -46,11 +46,22 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# Env
-/src/environments
+# Env: real configuration is not committed (see environment.example.ts)
+/src/environments/*
+!/src/environments/environment.example.ts
+!/src/environments/environment.fake.ts
 .firebase
 firestore-debug.log
 ui-debug.log
 /functions/.runtimeconfig.json
 firebase-debug.log
 functions/emulator.json
+functions/.env
+functions/.env.*
+!functions/.env.example
+!functions/.env.demo-tracklists
+functions/.secret.local
+
+# Tooling
+.claude/
+functions/.test-build/

@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { TrackListComponent } from './track-list/track-list.component';
 import { TrackViewComponent } from './track-view/track-view.component';
 import { MatCardModule } from '@angular/material/card';
-import { FlexLayoutModule } from '@angular/flex-layout';
+import { FlexLayoutModule } from '@ngbracket/ngx-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -19,7 +18,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     FlexLayoutModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
     MatTooltipModule,

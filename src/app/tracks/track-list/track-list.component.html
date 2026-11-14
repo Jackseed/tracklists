@@ -1,11 +1,12 @@
-<app-track-view
-  *ngFor="let track of tracks$ | async"
-  [track]="track"
-></app-track-view>
+@for (track of tracks$ | async; track track.id) {
+  <app-track-view [track]="track" animate.enter="row-in"></app-track-view>
+}
 
 <div #anchor></div>
-<div *ngIf="hasMore$ | async" fxLayoutAlign="center center">
-  <div fxFlex="nogrow">
-    <mat-spinner></mat-spinner>
+@if (hasMore$ | async) {
+  <div fxLayoutAlign="center center">
+    <div fxFlex="nogrow">
+      <mat-spinner></mat-spinner>
+    </div>
   </div>
-</div>
+}

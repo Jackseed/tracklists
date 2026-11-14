@@ -1,125 +1,47 @@
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
-import { TrackStore, TrackState } from './track.store';
-import { Observable, of, throwError, timer } from 'rxjs';
-import { catchError, debounceTime, map, mergeMap, retryWhen, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs/operators';
+import { PlaylistQuery } from '../../playlists/+state/playlist.query';
 import { MinMax, Track } from './track.model';
-import { AuthQuery } from '../../auth/+state';
-import { PlaylistQuery } from '../../playlists/+state';
-import { AkitaFiltersPlugin } from 'akita-filters-plugin';
-import { LocalforageService } from '../../utils/localforage.service';
-import {
-  collection,
-  collectionData,
-  Firestore,
-  query,
-  where,
-} from '@angular/fire/firestore';
+import { TrackState, TrackStore } from './track.store';
 
 @Injectable({ providedIn: 'root' })
 export class TrackQuery extends QueryEntity<TrackState, Track> {
-  trackFilters: AkitaFiltersPlugin<TrackState>;
-
-  constructor(
-    protected store: TrackStore,
-    private authQuery: AuthQuery,
-    private firestore: Firestore,
-    private playlistQuery: PlaylistQuery,
-    private localforage: LocalforageService
-  ) {
+  constructor(protected override store: TrackStore, private playlistQuery: PlaylistQuery) {
     super(store);
-    this.saveToStorage();
-    this.trackFilters = new AkitaFiltersPlugin<TrackState>(this);
-  }
-  // save to storage to avoid calling firebase
-  saveToStorage() {
-    this.select()
-      .pipe(debounceTime(2000))
-      .subscribe((state) => {
-        this.localforage.setItem('trackStore', JSON.stringify(state));
-      });
-  }
-
-  selectGenres(): Observable<string[][]> {
-    return this.selectAll().pipe(
-      map((tracks) => tracks.map((track) => track.genres))
-    );
-  }
-
-  public get selectUserTracks$(): Observable<Track[]> {
-    const userId$ = this.authQuery.selectActiveId();
-    const tracks$ = userId$.pipe(
-      switchMap((userId) => {
-        const trackCollection = collection(this.firestore, 'tracks');
-        const userQuery = query(
-          trackCollection,
-          where('userIds', 'array-contains', userId)
-        );
-        return (collectionData(userQuery) as Observable<Track[]>).pipe(
-          retryWhen((errors) =>
-            errors.pipe(
-              mergeMap((error, attempt) => {
-                // deadline-exceeded / unavailable → retry up to 3 times with backoff
-                const retryable =
-                  error?.code === 'deadline-exceeded' ||
-                  error?.code === 'unavailable';
-                if (!retryable || attempt >= 3) return throwError(() => error);
-                return timer((attempt + 1) * 2000);
-              })
-            )
-          ),
-          catchError((error) => {
-            console.error('[TrackQuery] Firestore load failed:', error);
-            return of([]);
-          })
-        );
-      })
-    );
-    return tracks$;
-  }
-
-  public get selectLikedTracks$(): Observable<Track[]> {
-    const likedTracks$ = this.playlistQuery.likedTracksPlaylist.pipe(
-      map((playlist) => playlist?.trackIds),
-      switchMap((trackIds) => this.selectMany(trackIds))
-    );
-    return likedTracks$;
   }
 
   public isLiked$(trackId: string): Observable<boolean> {
-    return this.selectLikedTracks$.pipe(
-      map((tracks) => tracks.map((track) => track.id)),
-      switchMap((trackIds) => of(trackIds.includes(trackId)))
+    return this.playlistQuery.likedTrackIds$.pipe(
+      map((likedIds) => likedIds.has(trackId)),
+      distinctUntilChanged()
     );
   }
 
-  public selectSpinner(): Observable<boolean> {
-    return this.select((state) => state.ui.spinner);
+  public selectLibraryLoading(): Observable<TrackState['ui']> {
+    return this.select((state) => state.ui);
   }
 
   public get getExtremeReleaseYears(): MinMax {
-    let releaseYears = this.getAll().map((track) =>
-      track.album.release_year ? track.album.release_year : null
-    );
-    releaseYears = releaseYears.filter((year) => year);
-
-    const extremes = {
-      min: Math.min(...releaseYears),
-      max: Math.max(...releaseYears),
-    };
-
-    return extremes;
+    return minMax(this.getAll().map((track) => track.album?.release_year));
   }
 
   public get getExtremeTempos(): MinMax {
-    const tempos = this.getAll().map((track) => track.tempo);
-
-    const extremes = {
-      // remove 0
-      min: Math.floor(Math.min(...tempos.filter(Boolean))),
-      max: Math.ceil(Math.max(...tempos.filter(Boolean))),
-    };
-
-    return extremes;
+    const { min, max } = minMax(this.getAll().map((track) => track.tempo));
+    return { min: Math.floor(min), max: Math.ceil(max) };
   }
+}
+
+/** Smallest and largest of the truthy values (0 means "unknown" for years and tempos). */
+function minMax(values: Array<number | null | undefined>): MinMax {
+  let min = Infinity;
+  let max = -Infinity;
+  // A loop rather than Math.min(...values): spreading tens of thousands of arguments overflows the stack.
+  for (const value of values) {
+    if (!value) continue;
+    if (value < min) min = value;
+    if (value > max) max = value;
+  }
+  return Number.isFinite(min) ? { min, max } : { min: 0, max: 0 };
 }

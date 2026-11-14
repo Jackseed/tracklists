@@ -1,5 +1,5 @@
-import { SpotifyUser } from 'src/app/auth/+state';
-import { Image, SpotifyTracks } from 'src/app/tracks/+state';
+import { SpotifyUser } from '../../auth/+state/auth.model';
+import { Image, SpotifyTracks } from '../../tracks/+state/track.model';
 
 export interface Playlist {
   collaborative?: boolean;
@@ -9,7 +9,7 @@ export interface Playlist {
   id?: string;
   images?: Image[];
   name?: string;
-  owner?: SpotifyUser;
+  owner?: Partial<SpotifyUser>;
   public?: boolean | null;
   snapshot_id?: string;
   tracks?: SpotifyTracks;

@@ -38,22 +38,93 @@
   margin: 0;
 }
 
-.mat-card-avatar {
-  border-radius: 0;
+.mat-mdc-card-avatar {
+  border-radius: 6px;
   height: 60px;
   width: 60px;
 }
-.mat-progress-bar {
+
+#progress-bar {
   width: 284.11px;
+  margin-top: 16px;
 }
 
-.mat-card {
+/* The outgoing and incoming tracks share the same cell during the cross-fade. */
+.top-track {
+  display: grid;
+  align-items: center;
   height: 100px;
   width: 284.11px;
 }
 
-.mat-card-subtitle {
+.top-track > mat-card-header {
+  grid-area: 1 / 1;
+}
+
+/* The next track comes in once the previous one has mostly faded out. */
+.top-track-in {
+  animation: top-track-in 600ms 200ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.top-track-out {
+  animation: top-track-out 350ms ease-in both;
+}
+
+@keyframes top-track-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes top-track-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.screen-in {
+  animation: screen-in 350ms ease-out both;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The progress bar glides between two updates of the import instead of jumping. */
+#progress-bar ::ng-deep .mdc-linear-progress__primary-bar {
+  transition-duration: 1200ms;
+  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-track-in,
+  .top-track-out,
+  .screen-in {
+    animation: none;
+  }
+}
+
+.mat-mdc-card-subtitle {
   margin-bottom: 0;
+}
+
+.status {
+  min-height: 1.6em;
+  margin: 8px 0 16px;
+  opacity: 0.8;
+}
+
+.percent {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.secondary {
+  margin-left: 8px;
 }
 
 .nav-titles {
@@ -92,4 +163,15 @@
   position: absolute;
   bottom: 60px;
   z-index: 1;
+}
+
+.library-summary {
+  margin: 0 0 8px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.library-summary .skipped {
+  color: #ffb74d;
+  cursor: help;
 }

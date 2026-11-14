@@ -1,8 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth.uid != null;
+    function signedIn() {
+      return request.auth != null;
+    }
+    // The "Liked tracks" pseudo playlist of a user is named after their id.
+    function isOwnLikedPlaylist(playlistId) {
+      return signedIn() && playlistId == request.auth.uid + 'LikedTracks';
+    }
+    function isLikedPlaylist(playlistId) {
+      return playlistId.matches('.*LikedTracks$');
+    }
+
+    // A user document holds the Spotify tokens of that user: nobody else may read it.
+    // It is created and maintained by the Cloud Functions; the app only stores the
+    // id of the Spotify player it opened.
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deviceId']);
+    }
+
+    // Tracks are written by the import (Cloud Function) only. A user reads the tracks
+    // linked to them: `where('userIds', 'array-contains', uid)`.
+    match /tracks/{trackId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.userIds;
+    }
+
+    // Playlists are read one by one, by id (the ids of a user's playlists are on their
+    // user document): no listing. Liked tracks stay private to their owner, who can
+    // like / unlike from the app.
+    match /playlists/{playlistId} {
+      allow get: if signedIn() && (!isLikedPlaylist(playlistId) || isOwnLikedPlaylist(playlistId));
+      allow update: if isOwnLikedPlaylist(playlistId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trackIds']);
+
+      match /genres/{genre} {
+        allow read: if signedIn() && (!isLikedPlaylist(playlistId) || isOwnLikedPlaylist(playlistId));
+      }
     }
   }
 }

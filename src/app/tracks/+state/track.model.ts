@@ -1,4 +1,4 @@
-import { SpotifyUser } from 'src/app/auth/+state';
+import { SpotifyUser } from '../../auth/+state/auth.model';
 
 export interface Track {
   id: string;
@@ -105,7 +105,7 @@ export interface SpotifySavedTrack {
 
 export interface SpotifyPaging {
   href: string;
-  items: Object[];
+  items: object[];
   limit: number;
   next: string;
   offset: number;
@@ -150,99 +150,4 @@ export interface SpotifyAudioFeatures {
 export interface MinMax {
   min: number;
   max: number;
-}
-
-export function createTrack(params: Partial<Track>) {
-  return {
-    id: params.id,
-    added_at: params.added_at ? params.added_at : '',
-    added_by: params.added_by ? params.added_by : null,
-    name: params.name,
-    artists: params.artists
-      ? params.artists.map((artist) => createArtist(artist))
-      : [],
-    album: params.album ? createAlbum(params.album) : {},
-    duration_ms: params.duration_ms,
-    popularity: params.popularity ? params.popularity : null,
-    uri: params.uri,
-  };
-}
-
-export function createAudioFeatures(params: Partial<Track>) {
-  return {
-    id: params.id,
-    key: params.key,
-    mode: params.mode,
-    time_signature: params.time_signature,
-    acousticness: params.acousticness,
-    danceability: params.danceability,
-    energy: params.energy,
-    instrumentalness: params.instrumentalness,
-    liveness: params.liveness,
-    loudness: params.loudness,
-    speechiness: params.speechiness,
-    valence: params.valence,
-    tempo: params.tempo,
-  };
-}
-
-export function createFullTrack(params: Partial<Track>) {
-  return {
-    id: params.id,
-    added_at: params.added_at,
-    uri: params.uri,
-    name: params.name,
-    artists: params.artists
-      ? params.artists.map((artist) => createArtist(artist))
-      : [],
-    album: params.album ? createAlbum(params.album) : {},
-    duration_ms: params.duration_ms,
-    popularity: params.popularity,
-    key: params.key,
-    mode: params.mode,
-    time_signature: params.time_signature,
-    acousticness: params.acousticness,
-    danceability: params.danceability,
-    energy: params.energy,
-    instrumentalness: params.instrumentalness,
-    liveness: params.liveness,
-    loudness: params.loudness,
-    speechiness: params.speechiness,
-    valence: params.valence,
-    tempo: params.tempo,
-  };
-}
-
-export function createAlbum(params: Partial<Album>) {
-  return {
-    id: params.id ? params.id : '',
-    name: params.name,
-    images: params.images.map((image) => createImage(image)),
-    genres: params.genres ? params.genres : [],
-    release_year: params.release_date
-      ? parseFloat(params.release_date.slice(0, 4))
-      : null,
-    release_date: params.release_date ? params.release_date : '',
-    release_date_precision: params.release_date_precision
-      ? params.release_date_precision
-      : '',
-  };
-}
-
-export function createArtist(params: Partial<Artist>) {
-  return {
-    id: params.id ? params.id : '',
-    name: params.name,
-    images: params.images
-      ? params.images.map((image) => createImage(image))
-      : [],
-  };
-}
-
-export function createImage(params: Partial<Image>) {
-  return {
-    url: params.url,
-    height: params.height,
-    width: params.width,
-  };
 }

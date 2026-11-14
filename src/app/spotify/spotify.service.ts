@@ -1,109 +1,86 @@
 // Angular
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpHeaders,
-} from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 // Rxjs
-import { of, timer } from 'rxjs';
-import {
-  catchError,
-  delayWhen,
-  filter,
-  first,
-  map,
-  retryWhen,
-  take,
-  tap,
-} from 'rxjs/operators';
-// Angularfire
-import {
-  arrayUnion,
-  collection,
-  CollectionReference,
-  doc,
-  Firestore,
-  setDoc,
-  Timestamp,
-} from '@angular/fire/firestore';
-// Akita
-import { AkitaFilter } from 'akita-filters-plugin';
+import { firstValueFrom } from 'rxjs';
 // States
-import { AuthQuery, AuthService, Devices, User } from '../auth/+state';
+import { environment } from '../../environments/environment';
+import { AuthQuery, AuthService, Devices } from '../auth/+state';
 import { Playlist } from '../playlists/+state';
-import {
-  Track,
-  Artist,
-  createAudioFeatures,
-  SpotifyAudioFeatures,
-  TrackQuery,
-  SpotifyTrack,
-  TrackState,
-} from '../tracks/+state';
-import { PlayerService } from '../player/+state/player.service';
 import { PlayerQuery } from '../player/+state';
+import { PlayerService } from '../player/+state/player.service';
+import { Track, TrackQuery } from '../tracks/+state';
 
 declare global {
   interface Window {
     onSpotifyWebPlaybackSDKReady(): void;
-    // @ts-ignore: Unreachable code error
     Spotify: typeof Spotify;
   }
 }
+
+/** Not documented by Spotify, but a play request with much more than this fails. */
+const MAX_URIS_PER_PLAY = 700;
+const MAX_URIS_PER_PLAYLIST_REQUEST = 100;
+const SDK_URL = 'https://sdk.scdn.co/spotify-player.js';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SpotifyService {
-  constructor(
-    private firestore: Firestore,
-    private authQuery: AuthQuery,
-    private authService: AuthService,
-    private playerQuery: PlayerQuery,
-    private playerService: PlayerService,
-    private trackQuery: TrackQuery,
-    private http: HttpClient,
-    private title: Title
-  ) {}
+  private authQuery = inject(AuthQuery);
+  private authService = inject(AuthService);
+  private playerQuery = inject(PlayerQuery);
+  private playerService = inject(PlayerService);
+  private trackQuery = inject(TrackQuery);
+  private http = inject(HttpClient);
+  private title = inject(Title);
 
+  private readonly api = environment.spotify.apiUrl;
+  private sdk?: Promise<typeof Spotify>;
+
+  //--------------------------------
+  //         WEB PLAYBACK         //
+  //--------------------------------
   public async initializePlayer(trackUris?: string[]) {
-    // @ts-ignore: Unreachable code error
-    const { Player } = await this.waitForSpotifyWebPlaybackSDKToLoad();
+    let Player: typeof Spotify.Player;
+    try {
+      ({ Player } = await this.loadSdk());
+    } catch (error) {
+      // No in-browser player (blocked script, offline): the rest of the app still works.
+      console.warn('[Spotify]', error);
+      return;
+    }
 
     // Instantiates Spotify player.
     const player = new Player({
       name: 'Tracklists',
-      getOAuthToken: async (callback: any) => {
-        const token = (await this.authService.getToken()).token;
-
-        callback(token);
+      getOAuthToken: (callback) => {
+        this.authService
+          .getAccessToken()
+          .then(callback)
+          .catch((error) => console.warn('[Spotify] no access token for the player:', error));
       },
     });
 
     player.connect();
 
     // Sets device id
-    player.addListener('ready', async ({ device_id }) => {
+    player.addListener('ready', ({ device_id }) => {
       this.authService.saveDeviceId(device_id);
 
       if (trackUris) this.play(trackUris, device_id);
     });
 
     // When player state changes, sets active the track.
-    player.on('player_state_changed', async (state) => {
-      if (!state) return;
+    player.addListener('player_state_changed', (state) => {
+      const current = state?.track_window?.current_track;
+      if (!current) return;
 
-      // gets it from db as there has been some errors
-      let dbTrack = this.trackQuery.getEntity(
-        state.track_window.current_track.id
-      );
-      // prevents error due to Track Relinking
-      if (!dbTrack)
-        dbTrack = this.trackQuery.getEntity(
-          state.track_window.current_track.linked_from.id
-        );
+      // Track relinking: Spotify may play another version of the track than the one in the library.
+      const linkedFromId = (current as { linked_from?: { id?: string | null } }).linked_from?.id;
+      const dbTrack = this.trackQuery.getEntity(current.id) ?? (linkedFromId ? this.trackQuery.getEntity(linkedFromId) : undefined);
+      if (!dbTrack) return;
 
       const track = {
         ...dbTrack,
@@ -118,496 +95,141 @@ export class SpotifyService {
       this.playerService.updatePosition(track.id, state.position);
       this.playerService.updateShuffle(state.shuffle);
       // update playing track with state paused
-      state.paused === pause
-        ? false
-        : this.playerService.updatePaused(track.id, state.paused);
+      if (state.paused !== pause) this.playerService.updatePaused(track.id, state.paused);
 
-      state.paused
-        ? this.title.setTitle('Tracklists')
-        : this.title.setTitle(`${track.name} - ${track.artists[0].name}`);
+      this.title.setTitle(state.paused ? 'Tracklists' : `${track.name} - ${track.artists?.[0]?.name ?? ''}`);
     });
   }
 
-  // check if window.Spotify object has either already been defined, or check until window.onSpotifyWebPlaybackSDKReady has been fired
-  public async waitForSpotifyWebPlaybackSDKToLoad() {
-    return new Promise((resolve) => {
-      if (window.Spotify) {
-        resolve(window.Spotify);
-      } else {
-        window.onSpotifyWebPlaybackSDKReady = () => {
-          resolve(window.Spotify);
-        };
-      }
+  /**
+   * Loads Spotify's Web Playback SDK on first use (only the app itself needs
+   * it, not the landing and login pages).
+   *
+   * The SDK calls `window.onSpotifyWebPlaybackSDKReady` once loaded and throws
+   * if it is missing. The callback is set here rather than in index.html: a
+   * window property named `on...` that exists before zone.js loads is taken for
+   * an event handler by zone.js and reads back as `null`.
+   */
+  private loadSdk(): Promise<typeof Spotify> {
+    this.sdk ??= new Promise<typeof Spotify>((resolve, reject) => {
+      if (window.Spotify) return resolve(window.Spotify);
+      window.onSpotifyWebPlaybackSDKReady = () => resolve(window.Spotify);
+      const script = document.createElement('script');
+      script.src = SDK_URL;
+      script.async = true;
+      script.onerror = () => {
+        this.sdk = undefined;
+        reject(new Error('The Spotify player could not be loaded'));
+      };
+      document.body.appendChild(script);
     });
-  }
-
-  //--------------------------------
-  //        RECOMMENDATIONS       //
-  //--------------------------------
-  public async getPromisedRecommendations(
-    artistIds: string[],
-    genreIds: string[],
-    trackIds: string[],
-    filters: AkitaFilter<TrackState>[]
-  ): Promise<Track[]> {
-    const url = 'https://api.spotify.com/v1/recommendations';
-    const limit = 100;
-    let queryParam: string = `?limit=${limit}`;
-
-    if (artistIds.length > 0) {
-      queryParam = queryParam + '&seed_artists=';
-      for (const artistId of artistIds) {
-        queryParam = queryParam + artistId + ',';
-      }
-      queryParam = queryParam.substring(0, queryParam.length - 1);
-    }
-
-    if (genreIds.length > 0) {
-      queryParam = queryParam + '&seed_genres=';
-      for (const genreId of genreIds) {
-        queryParam = queryParam + genreId + ',';
-      }
-      queryParam = queryParam.substring(0, queryParam.length - 1);
-    }
-
-    if (trackIds.length > 0) {
-      queryParam = queryParam + '&seed_tracks=';
-      for (const trackId of trackIds) {
-        queryParam = queryParam + trackId + ',';
-      }
-      queryParam = queryParam.substring(0, queryParam.length - 1);
-    }
-
-    if (filters.length > 0) {
-      for (const filter of filters) {
-        if (filter.id != 'genres') {
-          const min = `&min_${filter.id}=${filter.value[0]}`;
-          const max = `&max_${filter.id}=${filter.value[1]}`;
-          let target: string;
-          filter.id === 'release_year'
-            ? (target = '')
-            : (target = `&target_${filter.id}=${
-                (filter.value[0] + filter.value[1]) / 2
-              }`);
-          queryParam = queryParam + min + max + target;
-        }
-      }
-    }
-
-    const recommended = await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map(async (recommendedTracks: { tracks: SpotifyTrack[] }) => {
-          const tracks = recommendedTracks.tracks;
-          if (tracks) {
-            const trackIds = tracks.map((track) => track.id);
-            const audioFeatures = await this.getAudioFeatures(trackIds);
-            // Get genres
-            const artistIds: string[] = tracks.map(
-              (track) => track.artists[0].id
-            );
-            const genres = await this.getGenresByBatches(artistIds);
-            const fullTracks: Track[] = tracks.map((track, i) => ({
-              ...track,
-              ...audioFeatures[i],
-              genres: genres[i],
-            }));
-
-            // write tracks by batches
-            const trackCollection = collection(this.firestore, 'tracks');
-            this.firestoreWriteBatches(trackCollection, fullTracks, 'tracks');
-
-            return fullTracks;
-          }
-        }),
-        first()
-      )
-      .toPromise();
-
-    return recommended;
-  }
-
-  // Get all the artists by batches to extract genres
-  private async getGenresByBatches(artistIds: string[]): Promise<string[][]> {
-    const artistLimit = 50;
-    let totalGenres: string[][] = [];
-    for (let i = 0; i <= Math.floor(artistIds.length / artistLimit); i++) {
-      const bactchArtistIds = artistIds.slice(
-        artistLimit * i,
-        artistLimit * (i + 1)
-      );
-      const artists = await this.getArtists(bactchArtistIds);
-      let genres: string[][];
-      if (artists) {
-        genres = artists.map((artist) => (artist ? artist.genres : []));
-
-        // handle errors by returning empty genres
-      } else {
-        genres = Array.from(Array(bactchArtistIds.length), () => []);
-      }
-
-      totalGenres = totalGenres.concat(genres);
-    }
-    return totalGenres;
-  }
-
-  public async getAudioFeatures(trackIds: string[]): Promise<Track[]> {
-    const url = 'https://api.spotify.com/v1/audio-features/';
-    let queryParam: string = '?ids=';
-    // add all the trackIds
-    for (const trackId of trackIds) {
-      queryParam = queryParam + trackId + ',';
-    }
-    // remove last comma
-    queryParam = queryParam.substring(0, queryParam.length - 1);
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((audioFeat: { audio_features: SpotifyAudioFeatures[] }) =>
-          audioFeat.audio_features.map((feature) => {
-            if (feature === null) {
-              return;
-            }
-            return createAudioFeatures(feature);
-          })
-        ),
-        first()
-      )
-      .toPromise();
-  }
-
-  public async getArtists(artistIds: string[]): Promise<Artist[]> {
-    const url = 'https://api.spotify.com/v1/artists';
-    let queryParam: string = '?ids=';
-    for (const artistId of artistIds) {
-      // handle empty artist
-      if (artistId !== '') queryParam = queryParam + artistId + ',';
-    }
-    queryParam = queryParam.substring(0, queryParam.length - 1);
-
-    return await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(
-        map((artists: { artists: Artist[] }) => {
-          return artists.artists;
-        }),
-        first()
-      )
-      .toPromise();
+    return this.sdk;
   }
 
   //--------------------------------
   //             PLAYER           //
   //--------------------------------
-
-  public async getCurrentPlayback(): Promise<any> {
-    const url = 'https://api.spotify.com/v1/me/player';
-    const queryParam = '';
-
-    const currentPlayback = await (
-      await this.getPromisedObjects(url, queryParam)
-    )
-      .pipe(first())
-      .toPromise();
-
-    console.log(currentPlayback);
-
-    return currentPlayback;
+  public addToPlayback(trackUri: string) {
+    return this.post(`/me/player/queue?uri=${encodeURIComponent(trackUri)}`, null, true);
   }
 
-  public async addToPlayback(trackUri: string) {
-    const baseUrl = 'https://api.spotify.com/v1/me/player/queue';
-    const queryParam = `?uri=${trackUri}`;
-
-    return this.postRequests(baseUrl, queryParam, null);
+  public previous() {
+    return this.post('/me/player/previous', null, true);
   }
 
-  public async previous() {
-    const baseUrl = 'https://api.spotify.com/v1/me/player/previous';
-
-    return this.postRequests(baseUrl, '', null, true);
-  }
-
-  public async next() {
-    const baseUrl = 'https://api.spotify.com/v1/me/player/next';
-
-    return this.postRequests(baseUrl, '', null, true);
+  public next() {
+    return this.post('/me/player/next', null, true);
   }
 
   public async play(trackUris?: string[], newDeviceId?: string): Promise<void> {
-    let deviceId = newDeviceId ? newDeviceId : '';
+    let deviceId = newDeviceId;
 
     // Verifies user device if no new device id is attached.
-    if (!newDeviceId) {
-      let user = this.authQuery.getActive();
-      deviceId = user.deviceId;
+    if (!deviceId) {
+      deviceId = this.authQuery.getActive()?.deviceId;
 
       // Verifies that deviceId is still valid, otherwise updates it and relaunches play.
-      const deviceExists = await this.isDeviceExisting(user);
-      if (!deviceExists) {
+      if (!deviceId || !(await this.deviceExists(deviceId))) {
         await this.initializePlayer(trackUris);
         return;
       }
     }
-    // Prepares and sends play request.
-    trackUris = this.limitTrackAmount(trackUris);
-    const baseUrl = 'https://api.spotify.com/v1/me/player/play';
-    const body = { uris: trackUris };
-    const queryParam = `?device_id=${deviceId}`;
-
-    this.putRequests(baseUrl, queryParam, body, true);
+    // Without uris, Spotify resumes the current playback.
+    const body = trackUris ? { uris: trackUris.slice(0, MAX_URIS_PER_PLAY) } : null;
+    await this.put(`/me/player/play?device_id=${encodeURIComponent(deviceId)}`, body, true);
   }
 
-  private limitTrackAmount(trackUris?: string[]): string[] {
-    // Not documented by Spotify but it looks like there is a limit around 700 tracks.
-    const urisLimit = 700;
-    if (trackUris?.length > urisLimit)
-      trackUris = trackUris.slice(0, urisLimit - 1);
-    return trackUris;
+  private async deviceExists(deviceId: string): Promise<boolean> {
+    const { devices } = await this.get<Devices>('/me/player/devices');
+    return (devices ?? []).some((device) => device.id === deviceId);
   }
 
-  private async isDeviceExisting(user: User): Promise<boolean> {
-    const devices = await this.userAvailableDevices();
-
-    let deviceExists = false;
-    devices.devices.forEach((device) => {
-      if (user.deviceId === device.id) deviceExists = true;
-    });
-
-    return deviceExists;
+  public pause() {
+    return this.put('/me/player/pause', null, true);
   }
 
-  private async userAvailableDevices(): Promise<Devices> {
-    const headers = await this.getHeaders();
-    const url = 'https://api.spotify.com/v1/me/player/devices';
-    return this.http
-      .get(url, { headers })
-      .pipe(first())
-      .toPromise() as Promise<Devices>;
+  public shuffle(state: boolean) {
+    return this.put(`/me/player/shuffle?state=${state}`, null, true);
   }
 
-  public async pause() {
-    const baseUrl = 'https://api.spotify.com/v1/me/player/pause';
-
-    return this.putRequests(baseUrl, '', null, true);
+  public seekPosition(position_ms: number) {
+    return this.put(`/me/player/seek?position_ms=${position_ms}`, null, true);
   }
 
-  public async shuffle(state: boolean) {
-    const user = this.authQuery.getActive();
-    const baseUrl = 'https://api.spotify.com/v1/me/player/shuffle';
-    const queryParam = `?state=${state}`;
-
-    return this.putRequests(baseUrl, queryParam, null, true);
-  }
-
-  public async seekPosition(position_ms: number) {
-    const baseUrl = 'https://api.spotify.com/v1/me/player/seek';
-    const queryParam = `?position_ms=${position_ms}`;
-
-    return this.putRequests(baseUrl, queryParam, null, true);
-  }
-
-  public async addToLikedTracks(trackId: string) {
-    const baseUrl = 'https://api.spotify.com/v1/me/tracks';
-    const queryParam = `?ids=${trackId}`;
-
-    return this.putRequests(baseUrl, queryParam, null, true);
+  public addToLikedTracks(trackId: string) {
+    return this.put(`/me/tracks?ids=${trackId}`, null, true);
   }
 
   public async removeFromLikedTracks(trackId: string) {
-    const baseUrl = 'https://api.spotify.com/v1/me/tracks';
-    const queryParam = `?ids=${trackId}`;
-
-    return this.deleteRequests(baseUrl, queryParam, null);
+    const headers = await this.getHeaders();
+    return firstValueFrom(this.http.delete(`${this.api}/me/tracks?ids=${trackId}`, { headers, responseType: 'text' }));
   }
 
   //--------------------------------
   //           PLAYLISTS          //
   //--------------------------------
-
-  public async getActiveUserPlaylists(): Promise<Playlist[]> {
-    const user = this.authQuery.getActive();
-    const url = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
-    return await (
-      await this.getPromisedObjects(url, '?limit=50')
-    )
-      .pipe(
-        map((paging: { items: Playlist[] }) => paging.items),
-        first()
-      )
-      .toPromise();
+  public createPlaylist(name: string): Promise<Playlist> {
+    return this.post<Playlist>('/me/playlists', { name });
   }
 
-  public async createPlaylist(name: string) {
-    const user = this.authQuery.getActive();
-    const baseUrl = `https://api.spotify.com/v1/users/${user.uid}/playlists`;
-    const body = { name };
-
-    return this.postRequests(baseUrl, '', body);
-  }
-
-  public async addTracksToPlaylistByBatches(
-    playlistId: string,
-    tracks: Track[]
-  ) {
-    const limit = 100;
-
-    for (let i = 0; i <= Math.floor(tracks.length / limit); i++) {
-      const batchTracks = tracks.slice(limit * i, limit * (i + 1));
-      if (batchTracks.length === 0) continue;
-      await this.addTracksToPlaylist(playlistId, batchTracks);
+  public async addTracksToPlaylistByBatches(playlistId: string, tracks: Track[]) {
+    const uris = tracks.map((track) => track.uri).filter(Boolean);
+    for (let i = 0; i < uris.length; i += MAX_URIS_PER_PLAYLIST_REQUEST) {
+      await this.post(`/playlists/${playlistId}/items`, { uris: uris.slice(i, i + MAX_URIS_PER_PLAYLIST_REQUEST) });
     }
-  }
-
-  private async addTracksToPlaylist(playlistId: string, tracks: Track[]) {
-    const uris = tracks.map((track) => track.uri);
-    const baseUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-    const body = { uris };
-
-    return this.postRequests(baseUrl, '', body);
-  }
-
-  private async postRequests(
-    baseUrl: string,
-    queryParam: string,
-    body,
-    emptyResponse = false
-  ) {
-    const headers = await this.getHeaders();
-    const options: any = emptyResponse
-      ? { headers, responseType: 'text' }
-      : { headers };
-
-    return this.http
-      .post(`${baseUrl + queryParam}`, body, options)
-      .pipe(first())
-      .toPromise();
   }
 
   //--------------------------------
   //             USER             //
   //--------------------------------
-
   public async getActiveUserTopTracks(): Promise<Track[]> {
-    const url = `https://api.spotify.com/v1/me/top/tracks`;
-    return await (
-      await this.getPromisedObjects(url, '?limit=50&time_range=long_term')
-    )
-      .pipe(
-        map((paging: { items: Track[] }) => paging.items),
-        first()
-      )
-      .toPromise();
+    const paging = await this.get<{ items: Track[] }>('/me/top/tracks?limit=50&time_range=long_term');
+    return paging?.items ?? [];
   }
 
   //--------------------------------
   //          HTTP CALLS          //
   //--------------------------------
-
-  private async firestoreWriteBatches(
-    collection: CollectionReference,
-    objects,
-    type: string
-  ) {
-    // let firebaseWriteLimit: number;
-    const userId = this.authQuery.getActiveId();
-    await Promise.all(
-      objects.map((object) => {
-        const objectDoc = doc(this.firestore, `${collection}/${object.id}`);
-        type === 'tracks'
-          ? setDoc(
-              objectDoc,
-              { ...object, userIds: arrayUnion(userId) },
-              { merge: true }
-            )
-          : setDoc(objectDoc, object, { merge: true });
-      })
-    );
-  }
-
   private async getHeaders(): Promise<HttpHeaders> {
-    const user = this.authQuery.getActive();
-    let token = user.tokens.access;
-    const isTokenValid = await this.isTokenStillValid();
-
-    if (!isTokenValid) token = (await this.authService.getToken()).token;
-
-    const headers = new HttpHeaders().set('Authorization', 'Bearer ' + token);
-
-    return headers;
+    const token = await this.authService.getAccessToken();
+    return new HttpHeaders().set('Authorization', 'Bearer ' + token);
   }
 
-  private async isTokenStillValid(): Promise<boolean> {
-    const user = this.authQuery.getActive();
-    let isTokenStillValid: boolean;
-
-    const tokenCreationTime =
-      (Timestamp.now().toMillis() - user.tokens.addedTime.toMillis()) / 1000;
-
-    tokenCreationTime > 3600
-      ? (isTokenStillValid = false)
-      : (isTokenStillValid = true);
-
-    return isTokenStillValid;
-  }
-
-  public async getPromisedObjects(url: string, queryParam: string) {
+  private async get<T>(path: string): Promise<T> {
     const headers = await this.getHeaders();
-
-    return this.http.get(`${url + queryParam}`, { headers }).pipe(
-      retryWhen((error) => {
-        return error.pipe(
-          tap((error) => console.log('error: ', error)),
-          map((error) => {
-            if (error.status === 400) {
-              throw error;
-            } else {
-              return error;
-            }
-          }),
-          filter((error) => error.status === 429),
-          delayWhen(() => timer(5000)),
-          tap(() => console.log('retrying...')),
-          take(3)
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 400) {
-          return of([{}]);
-        }
-      })
-    );
+    return firstValueFrom(this.http.get<T>(this.api + path, { headers }));
   }
 
-  private async putRequests(
-    baseUrl: string,
-    queryParam: string,
-    body,
-    emptyResponse = false
-  ) {
+  // Player endpoints answer with an empty body: it must not be parsed as JSON.
+  private async post<T = unknown>(path: string, body: unknown, emptyResponse = false): Promise<T> {
     const headers = await this.getHeaders();
-    const options: any = emptyResponse
-      ? { headers, responseType: 'text' }
-      : { headers };
-
-    return this.http
-      .put(`${baseUrl + queryParam}`, body, options)
-      .pipe(first())
-      .toPromise();
+    if (emptyResponse) return firstValueFrom(this.http.post(this.api + path, body, { headers, responseType: 'text' })) as Promise<T>;
+    return firstValueFrom(this.http.post<T>(this.api + path, body, { headers }));
   }
 
-  private async deleteRequests(baseUrl: string, queryParam: string, body) {
+  private async put<T = unknown>(path: string, body: unknown, emptyResponse = false): Promise<T> {
     const headers = await this.getHeaders();
-
-    return this.http
-      .delete(`${baseUrl + queryParam}`, {
-        headers,
-        observe: body,
-      })
-      .pipe(first())
-      .toPromise();
+    if (emptyResponse) return firstValueFrom(this.http.put(this.api + path, body, { headers, responseType: 'text' })) as Promise<T>;
+    return firstValueFrom(this.http.put<T>(this.api + path, body, { headers }));
   }
 }

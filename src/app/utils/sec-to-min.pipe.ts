@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'secToMin',
+  standalone: false,
 })
 export class SecToMinPipe implements PipeTransform {
   transform(value: number): string {

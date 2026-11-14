@@ -1,12 +1,15 @@
 # Compiled JavaScript files
-**/*.js
-**/*.js.map
-
-# Except the ESLint config file
-!.eslintrc.js
-
-# TypeScript v1 declaration files
-typings/
+lib/
+.test-build/
 
 # Node.js dependency directory
 node_modules/
+
+# Local configuration and secrets (never commit)
+.env
+.env.*
+!.env.example
+!.env.demo-tracklists
+.secret.local
+.runtimeconfig.json
+emulator.json

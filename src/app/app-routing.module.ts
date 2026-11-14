@@ -1,45 +1,27 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomepageComponent } from './homepage/homepage.component';
-import {
-  AuthGuard,
-  redirectUnauthorizedTo,
-  redirectLoggedInTo,
-} from '@angular/fire/auth-guard';
-import { ActiveGuard } from './auth/guard/active.guard';
-import { SyncPlaylistsGuard } from './playlists/+state/guard/sync-playlists.guard';
+import { redirectLoggedInToHome, requireLogin, startSession, stopSession } from './auth/guard/auth.guards';
 import { LoginComponent } from './auth/login/login.component';
+import { HomepageComponent } from './homepage/homepage.component';
 import { LandingComponent } from './landing/landing.component';
-
-const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['']);
-const redirectLoggedInToHome = () => redirectLoggedInTo(['home']);
 
 const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
     component: LandingComponent,
-    canActivate: [AuthGuard],
-    data: { authGuardPipe: redirectLoggedInToHome },
+    canActivate: [redirectLoggedInToHome],
   },
   {
     path: 'login',
     component: LoginComponent,
-    canActivate: [AuthGuard],
-    data: { authGuardPipe: redirectLoggedInToHome },
+    canActivate: [redirectLoggedInToHome],
   },
   {
     path: 'home',
-    canActivate: [AuthGuard, ActiveGuard],
-    data: { authGuardPipe: redirectUnauthorizedToLogin },
-    canDeactivate: [ActiveGuard],
-    children: [
-      {
-        path: '',
-        canActivate: [SyncPlaylistsGuard],
-        canDeactivate: [SyncPlaylistsGuard],
-        component: HomepageComponent,
-      },
-    ],
+    component: HomepageComponent,
+    canActivate: [requireLogin, startSession],
+    canDeactivate: [stopSession],
   },
   {
     path: '**',

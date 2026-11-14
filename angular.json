@@ -5,29 +5,24 @@
   "projects": {
     "listy": {
       "projectType": "application",
-      "schematics": {},
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": { "standalone": false },
+        "@schematics/angular:directive": { "standalone": false },
+        "@schematics/angular:pipe": { "standalone": false }
+      },
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular/build:application",
           "options": {
-            "allowedCommonJsDependencies": [
-              "firebase/app",
-              "@firebase/auth",
-              "@firebase/functions"
-            ],
-            "customWebpackConfig": {
-              "path": "src/webpack.config.js"
-            },
             "outputPath": "dist/listy",
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "sourceMap": true,
-            "aot": true,
+            "allowedCommonJsDependencies": ["@datorama/akita", "localforage"],
             "assets": [
               "src/favicon_dark.ico",
               "src/favicon_light.ico",
@@ -37,105 +32,68 @@
               "src/robots.txt"
             ],
             "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
-              "src/styles.css",
-              "./node_modules/primeicons/primeicons.css",
-              "./node_modules/primeng/resources/themes/saga-blue/theme.css",
-              "./node_modules/primeng/resources/primeng.min.css"
+              "@angular/material/prebuilt-themes/purple-green.css",
+              "node_modules/ng-zorro-antd/slider/style/index.min.css",
+              "src/styles.css"
             ],
-            "scripts": [],
-            "serviceWorker": true,
-            "ngswConfigPath": "ngsw-config.json"
+            "scripts": []
           },
           "configurations": {
             "production": {
               "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.prod.ts" }
               ],
-              "optimization": true,
               "outputHashing": "all",
               "sourceMap": true,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
+              "serviceWorker": "ngsw-config.json",
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
-                }
+                { "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" },
+                { "type": "anyComponentStyle", "maximumWarning": "6kb", "maximumError": "10kb" }
               ]
             },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
+            "staging": {
+              "fileReplacements": [
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.staging.ts" }
+              ],
+              "outputHashing": "all",
               "sourceMap": true,
-              "namedChunks": true
-            }
-          }
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "listy:build"
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "listy:build:production"
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
-              "browserTarget": "listy:build:development"
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            },
+            "fake": {
+              "fileReplacements": [
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.fake.ts" }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "host": "127.0.0.1",
+            "port": 4200
+          },
+          "configurations": {
+            "production": { "buildTarget": "listy:build:production" },
+            "development": { "buildTarget": "listy:build:development" },
+            "fake": { "buildTarget": "listy:build:fake" }
           },
           "defaultConfiguration": "development"
         },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "listy:build"
-          }
-        },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
-            "assets": [
-              "src/favicon_dark.ico",
-              "src/favicon_light.ico",
-              "src/assets",
-              "src/manifest.webmanifest"
-            ],
-            "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
-              "src/styles.css"
-            ],
-            "scripts": []
-          }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "listy:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "listy:serve:production"
-            }
+            "buildTarget": "listy:build:fake",
+            "runnerConfig": "vitest.config.mts"
           }
         },
         "lint": {
@@ -147,8 +105,7 @@
       }
     }
   },
-  "defaultProject": "listy",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
+    "analytics": false
   }
 }

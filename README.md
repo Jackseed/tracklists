@@ -1,27 +1,129 @@
-# Listy
+# Tracklists
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.1.
+Filter your Spotify library by genre, energy, danceability, BPM… and save the result as a playlist.
+Live at [tracklists.io](https://tracklists.io).
 
-## Development server
+- **Web app**: Angular 22 (NgModules, Angular Material, Akita stores), in `src/`
+- **Backend**: Firebase — Auth (custom tokens), Firestore, Cloud Functions 2nd gen (Node 22), in `functions/`
+- **Firebase projects**: `listy-bcc65` (development / staging, the default) and `listy-prod` (production)
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Requirements
 
-## Code scaffolding
+- Node 22 (`nvm use` reads `.nvmrc`)
+- Java 21+ for the Firebase emulators (`npm run emulators:*` picks a recent JDK by itself when the default `java` is older)
+- Chrome, only for `npm run e2e`
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+```bash
+npm install
+npm --prefix functions install
+```
 
-## Build
+## Configuration
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Nothing secret is committed.
 
-## Running unit tests
+| What | Where | Notes |
+| --- | --- | --- |
+| Web app | `src/environments/environment*.ts` | Copy `environment.example.ts`. `environment.ts` = local, `.staging.ts`, `.prod.ts` |
+| Functions, per project | `functions/.env.<project id>` | Copy `functions/.env.example` |
+| Spotify client secret (deployed) | Secret Manager | `firebase functions:secrets:set SPOTIFY_CLIENT_SECRET --project <id>` |
+| Spotify client secret (emulators) | `functions/.secret.local` | `SPOTIFY_CLIENT_SECRET=...` |
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Spotify refuses `localhost` as a redirect URI: local development uses `http://127.0.0.1:4200/login`,
+which must be registered in the [Spotify dashboard](https://developer.spotify.com/dashboard) along with
+the staging and production URLs.
 
-## Running end-to-end tests
+## Running locally
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+### Without any account: fake Spotify
 
-## Further help
+A fake Spotify server (`tools/fake-spotify`) serves a deterministic library of any size, with rate
+limiting, errors and expiring tokens on demand. Everything else runs in the Firebase emulators.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+```bash
+npm run emulators:fake   # Firebase emulators (demo project) + fake Spotify on :8888
+npm run start:fake       # the app on http://127.0.0.1:4200
+```
+
+Size and behaviour of the fake library are set with environment variables, for instance a large
+library behind a rate limit:
+
+```bash
+FAKE_SPOTIFY_TRACKS=20000 FAKE_SPOTIFY_PLAYLISTS=300 FAKE_SPOTIFY_LIKED=5000 FAKE_SPOTIFY_RATE_LIMIT=600 npm run emulators:fake
+```
+
+`http://127.0.0.1:8888/__stats` shows what the fake server received; `POST /__config` changes its
+behaviour while it runs (e.g. `{"errorRate": 1}` to simulate an outage).
+
+### With the real Spotify API
+
+```bash
+npm run emulators:start  # Firebase emulators for the default project, real Spotify
+npm start                # the app on http://127.0.0.1:4200
+```
+
+## Tests
+
+```bash
+npm test                  # web app unit tests (Vitest)
+npm run test:functions    # functions unit tests, against the fake Spotify server
+npm run test:integration  # the import end to end, in the Firestore and Auth emulators
+npm run e2e               # the whole app in headless Chrome (needs the two "fake" commands above running)
+npm run bench:import      # times the import of a large library (BENCH_TRACKS, BENCH_RATE_LIMIT...)
+npm run lint
+```
+
+## How the library import works
+
+`importLibrary` (callable function) reads the playlists, liked tracks, audio features and artist
+genres from Spotify and writes them to Firestore:
+
+- `tracks/{trackId}` — shared between users, linked through `userIds`
+- `playlists/{playlistId}` with its `trackIds`, plus `playlists/{id}/genres/{genre}`
+- `users/{uid}` — Spotify tokens, `playlistIds`, and the state of the import in `import`
+
+The web app does not wait for the HTTP answer: it listens to `users/{uid}.import` (phase, progress,
+heartbeat, outcome). The import therefore survives a closed tab, and the library itself never
+travels through the function's response. When the import completes, `libraryUpdatedAt` changes and
+the app reads the tracks from Firestore page by page, then caches them in the browser (IndexedDB);
+on later visits the cache is used as long as `libraryUpdatedAt` has not changed.
+
+Spotify calls go through `functions/src/spotify/client.ts`: bounded concurrency and pace, `Retry-After`
+honoured for every pending request on a 429, retries on 5xx and network errors, token refreshed on the
+server when it expires half-way. A page that cannot be fetched fails the import: nothing is ever
+unlinked from a partial read.
+
+## Deploying
+
+```bash
+npm run deploy:staging   # builds the staging configuration and deploys hosting to listy-bcc65
+npm run deploy           # builds production and deploys hosting to listy-prod
+firebase deploy --only functions --project <id>
+firebase deploy --only firestore:rules,firestore:indexes --project <id>
+```
+
+### First deployment of this version (per project)
+
+The functions moved to 2nd gen, to `europe-west1` and to new names (`spotifyLogin`,
+`spotifyRefreshToken`, `importLibrary`); the runtime config (`functions.config()`) no longer exists.
+
+1. Fill `functions/.env.<project id>` (see `.env.example`), in particular `CUSTOM_TOKEN_SERVICE_ACCOUNT`
+   (the former `functions.serviceaccountid`).
+2. `firebase functions:secrets:set SPOTIFY_CLIENT_SECRET --project <id>`
+3. Register the redirect URI of the environment in the Spotify dashboard.
+4. `firebase deploy --only functions,firestore:indexes --project <id>`, then deploy hosting.
+5. Once the new web app is live: `firebase deploy --only firestore:rules --project <id>`
+   (the previous web app does not work with the new rules).
+6. Delete the former functions, which are public HTTP endpoints:
+   `firebase functions:delete getSpotifyToken saveToken saveUserPlaylists firestoreWrite removesUnusedTracks extractGenresFromTrackToPlaylist deleteGenresCollection --region us-central1 --project <id>`
+
+The functions run as `<project id>@appspot.gserviceaccount.com`, like the former ones, so that the
+existing IAM grants (signing custom tokens) keep working; `FUNCTIONS_SERVICE_ACCOUNT` overrides it.
+
+## Spotify API notes
+
+- The app relies on the audio-features and "several artists" endpoints, which Spotify only serves
+  to apps in *extended quota mode* (the current app has it). Without them the import still
+  completes, with a warning and without the corresponding filters.
+- The recommendations endpoint was shut down by Spotify; the feature was removed.
+- The web player uses the Web Playback SDK, which needs Spotify Premium and a desktop browser.

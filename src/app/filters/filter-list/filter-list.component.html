@@ -1,3 +1,5 @@
-<div *ngFor="let filter of filters" class="filters">
-  <app-filter-view [filter]="filter"></app-filter-view>
-</div>
+@for (filter of filters; track filter.property) {
+  <div class="filters">
+    <app-filter-view [filter]="filter"></app-filter-view>
+  </div>
+}

@@ -1,5 +1,5 @@
-import { Timestamp } from '@angular/fire/firestore';
-import { Image } from '../../tracks/+state';
+import { Timestamp } from 'firebase/firestore';
+import { Image } from '../../tracks/+state/track.model';
 
 export interface User {
   uid: string;
@@ -8,16 +8,39 @@ export interface User {
   tokens?: {
     access?: string;
     addedTime?: Timestamp;
-    refresh?: string;
   };
   deviceId?: string;
   playlistIds?: string[];
+  /** State of the Spotify library import, written by the `importLibrary` Cloud Function. */
+  import?: LibraryImport;
+  /** Changes every time an import completes: tells the app that its cached tracks are stale. */
+  libraryUpdatedAt?: Timestamp;
+}
+
+export type ImportPhase = 'starting' | 'playlists' | 'tracks' | 'details' | 'saving';
+
+export interface LibraryImport {
+  status: 'running' | 'done' | 'error';
+  runId: string;
+  phase: ImportPhase;
+  /** Overall progress, 0-100. */
+  percent: number;
+  /** Progress inside the current phase. */
+  done: number;
+  total: number;
+  /** Different tracks found so far: the real size of the library, exact after the `tracks` phase. */
+  found?: number;
+  /** Heartbeat of the running import. */
+  updatedAt?: Timestamp;
+  finishedAt?: Timestamp;
+  stats?: { tracks: number; playlists: number; skippedPlaylists?: number; likedTracks: number; durationSeconds: number };
+  warnings?: string[];
+  error?: { code: string; message: string; retryAfterSeconds?: number };
 }
 
 export interface Tokens {
   token: string;
-  refresh_token: string;
-  custom_auth_token: string;
+  custom_auth_token?: string;
 }
 
 export interface Devices {
@@ -50,12 +73,4 @@ export interface SpotifyUser {
   product: string;
   type: string;
   uri: string;
-}
-
-export function createUser(params: Partial<User>): User {
-  return {
-    uid: params.uid,
-    email: params.email,
-    playlistIds: [],
-  };
 }

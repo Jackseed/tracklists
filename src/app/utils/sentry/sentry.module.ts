@@ -1,38 +1,22 @@
-import { ErrorHandler, Injectable, NgModule } from '@angular/core';
+import { ErrorHandler, NgModule, inject, provideAppInitializer } from '@angular/core';
+import * as Sentry from '@sentry/angular';
 import { environment } from '../../../environments/environment';
-import * as Sentry from '@sentry/browser';
-import { Auth, user } from '@angular/fire/auth';
+import { AUTH, authState } from '../../core/firebase';
 
-@Injectable()
-export class SentryErrorHandler implements ErrorHandler {
-  constructor(private auth: Auth) {
-    user(auth).subscribe((user) => {
-      if (!user) {
-        return;
-      }
-
-      Sentry.configureScope((scope) => {
-        scope.setUser({
-          email: user.email,
-          id: user.uid,
-        });
-      });
-    });
-  }
-  handleError(error) {
-    if (!environment.production) console.error(error);
-    Sentry.captureException(error.originalError || error);
-  }
-}
-
-// Init and add the Sentry ErrorHandler.
+// Without a DSN (development, staging) nothing is sent.
 Sentry.init({
   dsn: environment.sentry.dsn,
+  enabled: !!environment.sentry.dsn,
   environment: environment.production ? 'prod' : 'dev',
 });
 
 @NgModule({
-  providers: [{ provide: ErrorHandler, useClass: SentryErrorHandler }],
+  providers: [
+    { provide: ErrorHandler, useValue: Sentry.createErrorHandler({ logErrors: !environment.production }) },
+    // Attaches the signed-in user to the error reports.
+    provideAppInitializer(() => {
+      authState(inject(AUTH)).subscribe((user) => Sentry.setUser(user ? { id: user.uid, email: user.email ?? undefined } : null));
+    }),
+  ],
 })
 export class SentryModule {}
-

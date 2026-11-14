@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as localforage from 'localforage';
+import localforage from 'localforage';
 
 localforage.config({
   driver: localforage.INDEXEDDB,
@@ -8,21 +8,24 @@ localforage.config({
   storeName: 'tracklists-storage',
 });
 
+/** Browser storage (IndexedDB) used to cache the library between visits. */
 @Injectable({
   providedIn: 'root',
 })
 export class LocalforageService {
-  constructor() {}
-
-  getItem(key: string) {
-    return localforage.getItem(key);
+  getItem<T>(key: string): Promise<T | null> {
+    return localforage.getItem<T>(key);
   }
 
-  setItem(key: string, value: any) {
+  setItem<T>(key: string, value: T): Promise<T> {
     return localforage.setItem(key, value);
   }
 
-  removeItem(key: string) {
+  removeItem(key: string): Promise<void> {
     return localforage.removeItem(key);
+  }
+
+  clear(): Promise<void> {
+    return localforage.clear();
   }
 }

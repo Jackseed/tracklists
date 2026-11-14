@@ -1,138 +1,60 @@
-<div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-  <mat-card
-    fxFlexFill
-    class="card"
-    fxLayoutAlign="start center"
-    fxLayoutAlign.xs="center center"
-    fxLayout="row"
-  >
-    <mat-card-header
-      fxFlexOffset.gt-xs="3"
-      fxFlex="30"
-      fxFlex.xs="70"
-      *ngIf="track$ | async as track"
-    >
-      <div
-        mat-card-avatar
-        [ngStyle]="{
-          'background-image': 'url(' + track.album.images[0].url + ')',
-          'background-size': 'cover'
-        }"
-      ></div>
-      <mat-card-title>{{ track.name }}</mat-card-title>
-      <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
-    </mat-card-header>
-    <div
-      fxFlexOffset.gt-xs="15"
-      fxFlex="48"
-      fxFlex.xs="25"
-      fxLayoutAlign="center center"
-      fxLayout="column"
-    >
-      <mat-card-actions
-        fxFlexFill
-        fxLayout="row"
-        fxLayoutAlign="start center"
-        *ngIf="track$ | async as track"
-      >
-        <button
-          fxFlex="5"
-          fxFlexOffset="32"
-          fxHide.xs
-          mat-icon-button
-          (click)="shuffle()"
-        >
-          <mat-icon
-            [ngClass]="{ green: (shuffle$ | async) }"
-            class="icon"
-            svgIcon="shuffle"
-          ></mat-icon>
+@if (track$ | async; as track) {
+  <mat-card class="player">
+    <!-- Now playing -->
+    <div class="now-playing">
+      <div class="cover" [style.background-image]="cover(track)"></div>
+      <div class="text">
+        <mat-card-title class="title" [title]="track.name">{{ track.name }}</mat-card-title>
+        <mat-card-subtitle class="artist">{{ track.artists?.[0]?.name }}</mat-card-subtitle>
+      </div>
+    </div>
+
+    <!-- Controls and position -->
+    <div class="center">
+      <div class="controls">
+        <button mat-icon-button class="secondary hide-xs" (click)="shuffle()" [class.on]="shuffle$ | async" aria-label="Shuffle">
+          <mat-icon svgIcon="shuffle"></mat-icon>
         </button>
-        <button
-          fxFlex="5"
-          fxFlexOffset="5"
-          fxHide.xs
-          mat-icon-button
-          (click)="previous()"
-        >
+        <button mat-icon-button class="secondary hide-xs" (click)="previous()" aria-label="Previous">
           <mat-icon>skip_previous</mat-icon>
         </button>
-        <button
-          id="play-button"
-          fxFlex="8"
-          fxFlex.xs="30"
-          fxFlexOffset="3"
-          class="mobile-icon"
-          mat-icon-button
-          (click)="play()"
-          *ngIf="paused$ | async"
-        >
-          <mat-icon id="play-icon">play_circle_outline</mat-icon>
-        </button>
-        <button
-          id="play-button"
-          fxFlex="8"
-          fxFlex.xs="30"
-          fxFlexOffset="3"
-          class="mobile-icon"
-          mat-icon-button
-          (click)="pause()"
-          *ngIf="(paused$ | async) === false"
-        >
-          <mat-icon id="play-icon">pause_circle_outline</mat-icon>
-        </button>
-        <button
-          fxFlex="5"
-          fxFlex.xs="30"
-          fxFlexOffset="3"
-          class="mobile-icon"
-          mat-icon-button
-          (click)="next()"
-        >
+        @if (paused$ | async) {
+          <button mat-icon-button class="main" (click)="play()" aria-label="Play">
+            <mat-icon>play_circle</mat-icon>
+          </button>
+        } @else {
+          <button mat-icon-button class="main" (click)="pause()" aria-label="Pause">
+            <mat-icon>pause_circle</mat-icon>
+          </button>
+        }
+        <button mat-icon-button class="secondary" (click)="next()" aria-label="Next">
           <mat-icon>skip_next</mat-icon>
         </button>
-        <button
-          fxFlex="5"
-          fxFlexOffset="5"
-          *ngIf="isLiked$ | async"
-          mat-icon-button
-          (click)="like(false)"
-          matTooltip="Unlike"
-        >
-          <mat-icon>favorite</mat-icon>
-        </button>
-        <button
-          fxFlex="5"
-          fxFlexOffset="5"
-          class="mobile-icon"
-          *ngIf="(isLiked$ | async) === false"
-          mat-icon-button
-          (click)="like(true)"
-          matTooltip="Like"
-        >
-          <mat-icon>favorite_border</mat-icon>
-        </button>
-      </mat-card-actions>
-      <mat-card-content
-        fxFlexFill
-        fxFlex="90"
-        fxHide.xs
-        fxLayoutAlign="center center"
-        fxLayout="row"
-        *ngIf="track$ | async as track"
-      >
-        <p class="right">{{ value | secToMin }}</p>
-        <mat-slider
-          fxFlex
-          color="accent"
-          min="0"
-          [max]="track.duration_ms / 1000"
-          [(ngModel)]="value"
-          (ngModelChange)="onChangeSlider()"
-        >
+        @if (isLiked$ | async) {
+          <button mat-icon-button class="secondary" (click)="like(false)" matTooltip="Unlike" aria-label="Unlike">
+            <mat-icon>favorite</mat-icon>
+          </button>
+        } @else {
+          <button mat-icon-button class="secondary" (click)="like(true)" matTooltip="Like" aria-label="Like">
+            <mat-icon>favorite_border</mat-icon>
+          </button>
+        }
+      </div>
+      <div class="position hide-xs">
+        <span class="time">{{ value | secToMin }}</span>
+        <mat-slider class="slider" color="accent" min="0" [max]="track.duration_ms / 1000">
+          <input
+            matSliderThumb
+            aria-label="Position in the track"
+            [(ngModel)]="value"
+            (change)="onChangeSlider()"
+          />
         </mat-slider>
-        <p>{{ track.duration_ms / 1000 | secToMin }}</p>
-      </mat-card-content>
+        <span class="time">{{ track.duration_ms / 1000 | secToMin }}</span>
+      </div>
     </div>
+
+    <!-- Balances the layout so that the controls stay centred. -->
+    <div class="spacer hide-xs"></div>
   </mat-card>
-</div>
+}

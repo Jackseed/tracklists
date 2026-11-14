@@ -13,13 +13,13 @@
   </div>
   <div
     class="spacer layer1"
-    [@heartBeat]="animStates[1]"
-    (@heartBeat.done)="animDone(1)"
+    [appLoopWhile]="beating"
+    loop="heartbeat"
   ></div>
   <div
     class="spacer layer2"
-    [@heartBeat]="animStates[1]"
-    (@heartBeat.done)="animDone(1)"
+    [appLoopWhile]="beating"
+    loop="heartbeat"
   ></div>
   <div class="text-centered">
     <h1>Dig your tracks</h1>
@@ -28,8 +28,10 @@
       mat-raised-button
       color="accent"
       (click)="navigateToLogin()"
-      (mouseenter)="toggleAnimation(1)"
-      (mouseleave)="toggleAnimation(1)"
+      (mouseenter)="beating = true"
+      (mouseleave)="beating = false"
+      (focus)="beating = true"
+      (blur)="beating = false"
     >
       <mat-icon class="icon" svgIcon="shovel"></mat-icon><span>Dig it!</span>
     </button>
@@ -38,13 +40,13 @@
 <section fxFlexFill fxLayout="column" fxLayoutAlign="start end">
   <div
     class="spacer layer3"
-    [@heartBeat]="animStates[1]"
-    (@heartBeat.done)="animDone(1)"
+    [appLoopWhile]="beating"
+    loop="heartbeat"
   ></div>
   <div class="margin-top">
     <img
       alt="Load your Spotify library"
-      src="../../assets/landing/download.svg"
+      src="assets/landing/download.svg"
     />
     <h1>Load your library</h1>
     <p class="bigger">based on your playlists and liked tracks</p>
@@ -52,8 +54,10 @@
       mat-raised-button
       color="primary"
       (click)="navigateToLogin()"
-      (mouseenter)="toggleAnimation(2)"
-      (mouseleave)="toggleAnimation(2)"
+      (mouseenter)="rocking = true"
+      (mouseleave)="rocking = false"
+      (focus)="rocking = true"
+      (blur)="rocking = false"
     >
       Let's go!
     </button>
@@ -62,13 +66,13 @@
 <section id="three" fxFlexFill fxLayout="column" fxLayoutAlign="center start">
   <div
     class="spacer layer4"
-    [@rotate]="animStates[2]"
-    (@rotate.done)="animDone(2)"
+    [appLoopWhile]="rocking"
+    loop="rock"
   ></div>
   <div>
     <img
       alt="Filter your Spotify library"
-      src="../../assets/landing/filters.svg"
+      src="assets/landing/filters.svg"
     />
     <h1>Play with parameters</h1>
     <p class="bigger">Like danceability, chill or BPM</p>
@@ -76,8 +80,10 @@
       mat-raised-button
       color="primary"
       (click)="navigateToLogin()"
-      (mouseenter)="toggleAnimation(2)"
-      (mouseleave)="toggleAnimation(2)"
+      (mouseenter)="rocking = true"
+      (mouseleave)="rocking = false"
+      (focus)="rocking = true"
+      (blur)="rocking = false"
     >
       Let's play!
     </button>
@@ -87,7 +93,7 @@
   <div>
     <img
       alt="(Re)discover your Spotify library"
-      src="../../assets/landing/funk.svg"
+      src="assets/landing/funk.svg"
     />
     <h1>Discover all the genres</h1>
     <p class="bigger">behind your tracks</p>
@@ -97,8 +103,6 @@
   </div>
   <div
     class="spacer layer5"
-    [@pulse]="animStates[3]"
-    (@pulse.done)="loopDone()"
   ></div>
 </section>
 <section
@@ -109,13 +113,9 @@
 >
   <div
     class="spacer layer6"
-    [@pulse]="animStates[3]"
-    (@pulse.done)="loopDone()"
   ></div>
   <div
     class="spacer layer7"
-    [@pulse]="animStates[3]"
-    (@pulse.done)="loopDone()"
   ></div>
   <div class="text-centered">
     <h1>Free and open source</h1>

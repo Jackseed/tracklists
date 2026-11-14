@@ -1,43 +1,27 @@
 import { Injectable } from '@angular/core';
+import { EntityState, EntityStore, MultiActiveState, StoreConfig } from '@datorama/akita';
 import { Track } from './track.model';
-import {
-  EntityState,
-  EntityStore,
-  MultiActiveState,
-  StoreConfig,
-} from '@datorama/akita';
-import { LocalforageService } from '../../utils/localforage.service';
 
-export interface TrackState
-  extends EntityState<Track, string>,
-    MultiActiveState {
+export interface TrackState extends EntityState<Track, string>, MultiActiveState {
   ui: {
-    spinner: boolean;
+    /** The library is being read from the cache or from Firestore. */
+    loading: boolean;
+    /** Tracks read so far while loading from Firestore. */
+    loaded: number;
+    /** Set when the library could not be loaded. */
+    error: string | null;
   };
 }
+
 const initialState = {
-  ui: { spinner: false },
+  active: [],
+  ui: { loading: true, loaded: 0, error: null },
 };
 
 @Injectable({ providedIn: 'root' })
-@StoreConfig({ name: 'tracks' })
+@StoreConfig({ name: 'tracks', resettable: true })
 export class TrackStore extends EntityStore<TrackState, Track> {
-  constructor(private localforage: LocalforageService) {
+  constructor() {
     super(initialState);
-    this.loadFromStorage();
-  }
-  // Calls local storage instead of firebase when it's loaded
-  async loadFromStorage() {
-    const data: any = await this.localforage.getItem('trackStore');
-    if (!data || data.includes(':{}')) return;
-
-    try {
-      this._setState((_) => JSON.parse(data));
-      this.setActive([]);
-      this.setLoading(false);
-    } catch (e) {
-      console.warn('[TrackStore] Corrupted cache, clearing:', e);
-      await this.localforage.removeItem('trackStore');
-    }
   }
 }

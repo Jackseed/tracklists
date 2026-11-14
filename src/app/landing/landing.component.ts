@@ -1,29 +1,22 @@
 // Angular
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { DomSanitizer, Meta } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 // Material
 import { MatIconRegistry } from '@angular/material/icon';
-// Animations
-import {
-  heartBeatAnimation,
-  pulseAnimation,
-  rotateAnimation,
-} from 'angular-animations';
 
 @Component({
   selector: 'app-landing',
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
-  animations: [
-    pulseAnimation({ duration: 3000, scale: 1.1 }),
-    heartBeatAnimation({ duration: 2000, scale: 1.1 }),
-    rotateAnimation({ duration: 2000 }),
-  ],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class LandingComponent implements OnInit {
-  animating = [false, false, false];
-  animStates = [false, false, false];
+  /** The first background shapes beat while "Dig it!" is hovered or focused. */
+  beating = false;
+  /** The big shape of the "filters" section turns while a "Let's ..." button is hovered or focused. */
+  rocking = false;
 
   constructor(
     private matIconRegistry: MatIconRegistry,
@@ -34,7 +27,7 @@ export class LandingComponent implements OnInit {
     this.matIconRegistry.addSvgIcon(
       'shovel',
       this.domSanitizer.bypassSecurityTrustResourceUrl(
-        '../../assets/buttons/shovel.svg'
+        'assets/buttons/shovel.svg'
       )
     );
   }
@@ -74,20 +67,5 @@ export class LandingComponent implements OnInit {
 
   navigateToLogin() {
     this.router.navigate(['login']);
-  }
-
-  toggleAnimation(animNumber: number) {
-    this.animating[animNumber] = !this.animating[animNumber];
-    this.animStates[animNumber] = !this.animStates[animNumber];
-  }
-
-  animDone(animNumber: number) {
-    if (this.animating[animNumber]) {
-      this.animStates[animNumber] = !this.animStates[animNumber];
-    }
-  }
-
-  loopDone() {
-    this.animStates[3] = !this.animStates[3];
   }
 }

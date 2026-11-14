@@ -11,15 +11,13 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FlexLayoutModule } from '@ngbracket/ngx-layout';
 
 @NgModule({
-  declarations: [
-    PlaylistListComponent,
-    PlaylistViewComponent,
-    PlaylistFormComponent,
-  ],
+  declarations: [PlaylistListComponent, PlaylistViewComponent, PlaylistFormComponent],
   imports: [
     CommonModule,
+    FlexLayoutModule,
     MatCardModule,
     MatCheckboxModule,
     MatFormFieldModule,
@@ -29,10 +27,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
     MatButtonModule,
     MatSlideToggleModule,
   ],
-  exports: [
-    PlaylistListComponent,
-    PlaylistViewComponent,
-    PlaylistFormComponent,
-  ],
+  exports: [PlaylistListComponent, PlaylistViewComponent, PlaylistFormComponent],
 })
 export class PlaylistsModule {}

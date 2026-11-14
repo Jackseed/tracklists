@@ -1,83 +1,37 @@
-<div
-  *ngIf="!this.media.isActive('xs'); else mobile"
-  fxLayout="row"
-  fxLayoutAlign="center center"
->
-  <mat-card
-    class="card"
-    [ngClass]="{ playing: (isPlaying$ | async) }"
-    fxFlex
-    fxFlexAlign="center center"
-  >
-    <mat-card-header fxLayout="row" fxLayoutAlign="center center">
-      <div
-        mat-card-avatar
-        [ngStyle]="{
-          'background-image': 'url(' + track.album.images[0].url + ')',
-          'background-size': 'cover'
-        }"
-      ></div>
-      <div fxFlex="nogrow">
-        <mat-card-title>{{ track.name }}</mat-card-title>
-        <mat-card-subtitle>{{ track.artists[0].name }}</mat-card-subtitle>
-      </div>
-      <div fxFlex></div>
-      <button
-        *ngIf="isLiked$ | async"
-        mat-icon-button
-        (click)="unlike()"
-        matTooltip="Unlike"
-      >
-        <mat-icon>favorite</mat-icon>
-      </button>
-      <button
-        *ngIf="!(isLiked$ | async)"
-        mat-icon-button
-        (click)="like()"
-        matTooltip="Like"
-      >
-        <mat-icon>favorite_border</mat-icon>
-      </button>
-      <button mat-icon-button (click)="play()" matTooltip="Play">
+@if (!this.media.isActive('xs')) {
+  <mat-card class="track" [class.playing]="isPlaying$ | async">
+    <div class="cover" [style.background-image]="cover"></div>
+    <div class="text">
+      <mat-card-title class="title" [title]="track.name">{{ track.name }}</mat-card-title>
+      <mat-card-subtitle class="artist">{{ track.artists?.[0]?.name }}</mat-card-subtitle>
+    </div>
+    <div class="actions">
+      @if (isLiked$ | async) {
+        <button mat-icon-button (click)="unlike()" matTooltip="Unlike" aria-label="Unlike">
+          <mat-icon>favorite</mat-icon>
+        </button>
+      } @else {
+        <button mat-icon-button (click)="like()" matTooltip="Like" aria-label="Like">
+          <mat-icon>favorite_border</mat-icon>
+        </button>
+      }
+      <button mat-icon-button (click)="play()" matTooltip="Play" aria-label="Play">
         <mat-icon>play_circle_outline</mat-icon>
       </button>
-      <button
-        mat-icon-button
-        (click)="addoToPlayback()"
-        matTooltip="Add to queue"
-      >
+      <button mat-icon-button (click)="addoToPlayback()" matTooltip="Add to queue" aria-label="Add to queue">
         <mat-icon>playlist_add</mat-icon>
       </button>
-      <button
-        mat-icon-button
-        (click)="remove()"
-        matTooltip="Remove from tracklist"
-      >
+      <button mat-icon-button (click)="remove()" matTooltip="Remove from tracklist" aria-label="Remove from tracklist">
         <mat-icon>cancel</mat-icon>
       </button>
-    </mat-card-header>
+    </div>
   </mat-card>
-</div>
-
-<ng-template #mobile>
-  <div
-    fxLayout="row"
-    fxLayoutAlign="start center"
-    class="container"
-    (click)="play()"
-  >
-    <div
-      class="cover"
-      [ngStyle]="{
-        'background-image': 'url(' + track.album.images[0].url + ')',
-        'background-size': 'cover'
-      }"
-    ></div>
-    <div fxFlexOffset="5" fxFlex="nogrow">
-      <p id="title" [ngClass]="{ active: (isPlaying$ | async) }">
-        {{ track.name }}
-      </p>
-      <p id="subtitle">{{ track.artists[0].name }}</p>
+} @else {
+  <div class="track mobile" (click)="play()">
+    <div class="cover" [style.background-image]="cover"></div>
+    <div class="text">
+      <p class="title" [class.active]="isPlaying$ | async">{{ track.name }}</p>
+      <p class="artist">{{ track.artists?.[0]?.name }}</p>
     </div>
   </div>
-</ng-template>
+}

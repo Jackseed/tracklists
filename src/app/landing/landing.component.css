@@ -27,6 +27,33 @@ img {
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  /* Moved on the compositor: no repaint of the large shapes while they move. */
+  will-change: transform;
+}
+
+/* The shapes of the last sections breathe slowly, without stopping. */
+.layer5,
+.layer6,
+.layer7 {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer5,
+  .layer6,
+  .layer7 {
+    animation: none;
+  }
 }
 
 .margin-top {

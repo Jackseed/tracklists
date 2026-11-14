@@ -1,156 +1,124 @@
-import { Component, HostListener, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconRegistry } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DomSanitizer } from '@angular/platform-browser';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { combineLatest, Observable } from 'rxjs';
-import { filter, first, map, switchMap, tap } from 'rxjs/operators';
+import { firstValueFrom, Observable } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
 import { PlaylistQuery, PlaylistService } from '../playlists/+state';
 import { SpotifyService } from '../spotify/spotify.service';
 import { Track, TrackQuery } from '../tracks/+state';
 import { PlayerQuery } from './+state';
 
-@UntilDestroy()
 @Component({
   selector: 'app-player',
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class PlayerComponent implements OnInit {
+  private query = inject(PlayerQuery);
+  private trackQuery = inject(TrackQuery);
+  private playlistQuery = inject(PlaylistQuery);
+  private playlistService = inject(PlaylistService);
+  private spotifyService = inject(SpotifyService);
+  private matIconRegistry = inject(MatIconRegistry);
+  private domSanitizer = inject(DomSanitizer);
+  private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
+
   @Input() track$: Observable<Track>;
   paused$: Observable<boolean>;
   shuffle$: Observable<boolean>;
   isLiked$: Observable<boolean>;
+  /** Position in the track, in seconds. */
   value = 0;
-  isTicking = false;
-
-  constructor(
-    private query: PlayerQuery,
-    private trackQuery: TrackQuery,
-    private playlistQuery: PlaylistQuery,
-    private playlistService: PlaylistService,
-    private spotifyService: SpotifyService,
-    private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer,
-    private _snackBar: MatSnackBar
-  ) {}
+  private ticker?: number;
 
   ngOnInit(): void {
-    this.isLiked$ = this.track$.pipe(
-      switchMap((track) => this.trackQuery.isLiked$(track.id))
-    );
-    this.matIconRegistry.addSvgIcon(
-      'shuffle',
-      this.domSanitizer.bypassSecurityTrustResourceUrl(
-        `../assets/buttons/shuffle.svg`
-      )
-    );
-    let interval;
-    // get track position
-    this.track$
-      .pipe(
-        untilDestroyed(this),
-        filter((track) => !!track),
-        switchMap((track) => this.query.selectPosition(track.id)),
-        map((position) => {
-          clearInterval(interval);
-          this.isTicking = false;
-          return (this.value = position / 1000);
-        })
-      )
-      .subscribe();
-    this.paused$ = this.track$.pipe(
-      filter((track) => !!track),
-      switchMap((track) => this.query.selectPaused(track.id))
-    );
+    const currentTrack$ = this.track$.pipe(filter((track) => !!track));
+    this.isLiked$ = currentTrack$.pipe(switchMap((track) => this.trackQuery.isLiked$(track.id)));
+    this.matIconRegistry.addSvgIcon('shuffle', this.domSanitizer.bypassSecurityTrustResourceUrl('assets/buttons/shuffle.svg'));
 
+    // get track position
+    currentTrack$
+      .pipe(
+        switchMap((track) => this.query.selectPosition(track.id)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((position) => (this.value = (position ?? 0) / 1000));
+
+    this.paused$ = currentTrack$.pipe(switchMap((track) => this.query.selectPaused(track.id)));
     this.shuffle$ = this.query.selectShuffle();
 
-    // if the track is played, add 1 to value every sec
-    this.paused$
-      .pipe(
-        untilDestroyed(this),
-        tap((paused) => {
-          if (paused) {
-            clearInterval(interval);
-            this.isTicking = false;
-          }
-        }),
-        tap((paused) => {
-          if (!paused && !this.isTicking) {
-            interval = window.setInterval((_) => {
-              const activeTrack = this.query.getActive();
-              if (this.value <= activeTrack.duration_ms / 1000) {
-                this.value += 1;
-                this.isTicking = true;
-              }
-            }, 1000);
-          }
-        })
-      )
-      .subscribe();
+    // while the track is played, add 1 to value every sec
+    this.paused$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((paused) => {
+      this.stopTicking();
+      if (paused) return;
+      this.ticker = window.setInterval(() => {
+        const activeTrack = this.query.getActive();
+        if (activeTrack && this.value <= activeTrack.duration_ms / 1000) this.value += 1;
+      }, 1000);
+    });
+    this.destroyRef.onDestroy(() => this.stopTicking());
   }
 
-  public async play() {
-    await this.spotifyService.play();
-  }
-  public async pause() {
-    await this.spotifyService.pause();
-  }
-  // Implements spacebar as play / pause button.
-/*   @HostListener('document:keydown', ['$event']) onKeydownHandler(
-    event: KeyboardEvent
-  ) {
-    if (event.key === ' ') {
-      this.paused$
-        .pipe(
-          tap((isPaused) => {
-            isPaused ? this.play() : this.pause();
-          }),
-          first()
-        )
-        .subscribe();
-    }
-  }
- */
-
-  public async previous() {
-    await this.spotifyService.previous();
-  }
-  public async next() {
-    await this.spotifyService.next();
+  private stopTicking() {
+    if (this.ticker !== undefined) window.clearInterval(this.ticker);
+    this.ticker = undefined;
   }
 
-  public async onChangeSlider() {
-    await this.spotifyService.seekPosition(Math.round(this.value * 1000));
+  /** CSS value for the album cover; some tracks have none. */
+  cover(track: Track): string | null {
+    const url = track.album?.images?.[0]?.url;
+    return url ? `url(${url})` : null;
   }
 
-  public async shuffle() {
-    const state = this.query.getShuffle();
-    await this.spotifyService.shuffle(!state);
+  public play() {
+    return this.spotifyService.play().catch((error) => this.fail('Spotify could not start the playback.', error));
+  }
+
+  public pause() {
+    return this.spotifyService.pause().catch((error) => this.fail('Spotify could not pause the playback.', error));
+  }
+
+  public previous() {
+    return this.spotifyService.previous().catch((error) => this.fail('Spotify could not go to the previous track.', error));
+  }
+
+  public next() {
+    return this.spotifyService.next().catch((error) => this.fail('Spotify could not go to the next track.', error));
+  }
+
+  /** The user released the position slider. */
+  public onChangeSlider() {
+    return this.spotifyService.seekPosition(Math.round(this.value * 1000)).catch((error) => this.fail('Spotify could not move in the track.', error));
+  }
+
+  public shuffle() {
+    return this.spotifyService.shuffle(!this.query.getShuffle()).catch((error) => this.fail('Spotify could not change the shuffle mode.', error));
   }
 
   public async like(isLiked: boolean) {
-    const likedTracksPlaylist$ = this.playlistQuery.likedTracksPlaylist;
-    combineLatest([likedTracksPlaylist$, this.track$])
-      .pipe(
-        tap(async ([playlist, track]) => {
-          if (isLiked) {
-            this.playlistService.addTrack(playlist.id, track.id);
-            await this.spotifyService.addToLikedTracks(track.id);
-            this._snackBar.open('Added to Liked tracks', '', {
-              duration: 2000,
-            });
-          } else {
-            this.playlistService.removeTrack(playlist.id, track.id);
-            await this.spotifyService.removeFromLikedTracks(track.id);
-            this._snackBar.open('Removed from Liked tracks', '', {
-              duration: 2000,
-            });
-          }
-        }),
-        first()
-      )
-      .subscribe();
+    try {
+      const [playlist, track] = await Promise.all([firstValueFrom(this.playlistQuery.likedTracksPlaylist), firstValueFrom(this.track$)]);
+      if (!track) return;
+      if (isLiked) {
+        await this.spotifyService.addToLikedTracks(track.id);
+        if (playlist) await this.playlistService.addTrack(playlist.id, track.id);
+      } else {
+        await this.spotifyService.removeFromLikedTracks(track.id);
+        if (playlist) await this.playlistService.removeTrack(playlist.id, track.id);
+      }
+      this.snackBar.open(isLiked ? 'Added to Liked tracks' : 'Removed from Liked tracks', '', { duration: 2000 });
+    } catch (error) {
+      this.fail('Could not update your liked tracks.', error);
+    }
+  }
+
+  private fail(message: string, error: unknown) {
+    console.error(`[Player] ${message}`, error);
+    this.snackBar.open(message, '', { duration: 4000 });
   }
 }

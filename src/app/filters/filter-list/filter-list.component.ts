@@ -1,12 +1,17 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TrackQuery, TrackService } from '../../tracks/+state';
 
 @Component({
   selector: 'app-filter-list',
   templateUrl: './filter-list.component.html',
   styleUrls: ['./filter-list.component.css'],
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class FilterListComponent {
+  private trackQuery = inject(TrackQuery);
+  private trackService = inject(TrackService);
+
   extremeYears = this.trackQuery.getExtremeReleaseYears;
   extremeTempos = this.trackQuery.getExtremeTempos;
   filters = [
@@ -104,11 +109,6 @@ export class FilterListComponent {
       step: 0.01,
     },
   ];
-  constructor(
-    private trackQuery: TrackQuery,
-    private trackService: TrackService
-  ) {}
-
   public clearFilters() {
     this.trackService.clearFilters();
   }

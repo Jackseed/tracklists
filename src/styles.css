@@ -1,5 +1,3 @@
-@import "~ng-zorro-antd/slider/style/index.min.css";
-
 html,
 body {
   height: 100%;
@@ -25,13 +23,48 @@ html::-webkit-scrollbar-thumb {
   box-shadow: inset 2px 2px 2px hsl(0deg 0% 100% / 25%),
     inset -2px -2px 2px rgb(0 0 0 / 25%);
 }
-.mat-card {
-  background: #1f1f1f;
-  color: rgb(230, 230, 230);
+/* Angular Material design tokens: keep the look the app had before Material's redesign. */
+html {
+  /* Cards blend into the app's near-black panels. */
+  --mat-card-elevated-container-color: #1f1f1f;
+  /* Compact playlist list. */
+  --mat-checkbox-state-layer-size: 30px;
+  /* Track rows: light titles in the app's fonts, as before. */
+  --mat-card-title-text-font: "Yantramanav", "Helvetica Neue", sans-serif;
+  --mat-card-title-text-size: calc(0.8rem + 0.5vmin);
+  --mat-card-title-text-weight: 400;
+  --mat-card-title-text-line-height: 1.4;
+  --mat-card-title-text-tracking: normal;
+  --mat-card-subtitle-text-font: "Raleway", "Helvetica Neue", sans-serif;
+  --mat-card-subtitle-text-size: calc(0.7rem + 0.5vmin);
+  --mat-card-subtitle-text-weight: 400;
+  --mat-card-subtitle-text-line-height: 1.4;
+  --mat-card-subtitle-text-tracking: normal;
+  /* No letter-spacing on buttons (and on tabs, below). */
+  --mat-button-protected-label-text-tracking: normal;
+  --mat-button-filled-label-text-tracking: normal;
+  --mat-button-text-label-text-tracking: normal;
+}
+/* The prebuilt theme pads every icon button by 12px, which only centres the icon in a
+   48px button: derive the padding from the button and icon sizes instead. */
+.mat-mdc-icon-button.mat-mdc-button-base {
+  padding: calc((var(--mat-icon-button-state-layer-size, 48px) - var(--mat-icon-button-icon-size, 24px)) / 2);
 }
 
-.mat-tab-label {
-  font-size: calc(1.1rem + 1.5vmin);
+html .mat-mdc-tab-header {
+  --mat-tab-label-text-tracking: normal;
+}
+/* Tabs: white labels, the purple line marks the selected one. */
+html .mat-mdc-tab-group {
+  --mat-tab-active-label-text-color: #fff;
+  --mat-tab-active-focus-label-text-color: #fff;
+  --mat-tab-active-hover-label-text-color: #fff;
+  --mat-tab-inactive-label-text-color: rgba(255, 255, 255, 0.6);
+  --mat-tab-inactive-focus-label-text-color: rgba(255, 255, 255, 0.6);
+  --mat-tab-inactive-hover-label-text-color: rgba(255, 255, 255, 0.8);
+}
+.mat-mdc-card {
+  color: rgb(230, 230, 230);
 }
 
 a {
@@ -75,27 +108,19 @@ span {
   font-family: "Raleway", "Helvetica Neue", sans-serif;
 }
 
-.mat-tab-label {
+.mat-mdc-tab .mdc-tab__text-label {
   margin: 0;
   font-size: calc(0.8rem + 2vmin) !important;
   font-weight: bold !important;
   font-family: "Yantramanav", sans-serif !important;
 }
 
-.mat-card-title {
+.mat-mdc-card-title,
+.mat-mdc-card-subtitle {
   margin: 0;
-  font-size: calc(0.8rem + 0.5vmin);
-  font-weight: normal;
-  font-family: "Yantramanav", "Helvetica Neue", sans-serif;
 }
 
-.mat-card-subtitle {
-  margin: 0;
-  font-size: calc(0.7rem + 0.5vmin);
-  font-family: "Raleway", "Helvetica Neue", sans-serif;
-}
-
-.mat-checkbox-background {
+.mat-mdc-checkbox .mdc-checkbox__native-control:not(:checked) ~ .mdc-checkbox__background {
   background-color: rgb(204, 204, 204);
 }
 
@@ -126,24 +151,18 @@ span {
 
 /* gt-xs */
 @media screen and (min-width: 600px) {
-  .mat-tab-label,
-  .mat-tab-label-active {
+  .mat-mdc-tab {
     min-width: 128px !important;
   }
 }
 /* xs */
 @media screen and (max-width: 599px) {
-  .mat-tab-label,
-  .mat-tab-label-active {
+  .mat-mdc-tab {
     padding: 0px 12px !important;
     width: 33% !important;
   }
 }
 
-.mat-tab-label.mat-tab-label-active {
-  opacity: 1;
-}
-
-.mat-tab-body-wrapper {
+.mat-mdc-tab-body-wrapper {
   height: 100%;
 }

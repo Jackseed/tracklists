@@ -1,8 +1,8 @@
 // Angular
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ServiceWorkerModule } from '@angular/service-worker';
 // Env
@@ -19,72 +19,35 @@ import { AppComponent } from './app.component';
 import { HomepageComponent } from './homepage/homepage.component';
 import { PlayerComponent } from './player/player.component';
 import { LandingComponent } from './landing/landing.component';
-// Angularfire
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import {
-  connectFirestoreEmulator,
-  getFirestore,
-  provideFirestore,
-} from '@angular/fire/firestore';
-import { provideFunctions } from '@angular/fire/functions';
-import { getPerformance, providePerformance } from '@angular/fire/performance';
-import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
-import { provideAuth } from '@angular/fire/auth';
-import { connectAuthEmulator, getAuth } from 'firebase/auth';
-// Akita
-import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 // Material
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 // Flex layout
-import { FlexLayoutModule } from '@angular/flex-layout';
+import { FlexLayoutModule } from '@ngbracket/ngx-layout';
 // Pipes
 import { SecToMinPipe } from './utils/sec-to-min.pipe';
+import { LoopWhileDirective } from './utils/loop-while.directive';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomepageComponent,
-    PlayerComponent,
-    SecToMinPipe,
-    LandingComponent,
-  ],
+  declarations: [AppComponent, HomepageComponent, PlayerComponent, SecToMinPipe, LandingComponent, LoopWhileDirective],
   imports: [
     BrowserModule,
     CommonModule,
-    BrowserAnimationsModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
-    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-    provideFirestore(() => {
-      const firestore = getFirestore();
-      // connectFirestoreEmulator(firestore, 'localhost', 8080);
-      return firestore;
-    }),
-
-    provideFunctions(() => {
-      const functions = getFunctions();
-      // connectFunctionsEmulator(functions, 'localhost', 5001);
-      return functions;
-    }),
-    provideAuth(() => {
-      const auth = getAuth();
-      // connectAuthEmulator(auth, 'http://localhost:9099');
-      return auth;
-    }),
-    providePerformance(() => getPerformance()),
-    // environment.production ? [] : AkitaNgDevtools.forRoot(),
     AppRoutingModule,
     SentryModule,
     AuthModule,
@@ -93,7 +56,9 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     PlaylistsModule,
     MatButtonModule,
     MatCardModule,
+    MatDialogModule,
     MatIconModule,
+    MatSnackBarModule,
     FormsModule,
     FlexLayoutModule,
     MatSliderModule,
@@ -102,6 +67,11 @@ import { SecToMinPipe } from './utils/sec-to-min.pipe';
     MatProgressSpinnerModule,
     MatProgressBarModule,
     MatTooltipModule,
+  ],
+  providers: [
+    // The app relies on zone.js to detect changes (timers, Firebase and Spotify callbacks).
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideHttpClient(),
   ],
   bootstrap: [AppComponent],
 })

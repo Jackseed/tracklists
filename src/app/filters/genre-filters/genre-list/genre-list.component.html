@@ -1,42 +1,38 @@
 <div class="margin-top">
   <h4>Genres</h4>
   <form>
-    <mat-form-field appearance="legacy" color="accent">
+    <mat-form-field color="accent" class="genres-field">
       <mat-label>Pop, rock, rap,..</mat-label>
-      <mat-chip-list #chipList>
-        <mat-chip
-          *ngFor="let activeGenre of activeGenres$ | async"
-          [selectable]="selectable"
-          [removable]="removable"
-          (removed)="remove(activeGenre.id)"
-          color="primary"
-        >
-          {{ activeGenre.id }} ({{ activeGenre.trackIds.length }})
-          <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-        </mat-chip>
+      <mat-chip-grid #chipGrid aria-label="Selected genres">
+        @for (activeGenre of activeGenres$ | async; track activeGenre.id) {
+          <mat-chip-row (removed)="remove(activeGenre.id)">
+            {{ activeGenre.id }} ({{ activeGenre.trackIds.length }})
+            <button matChipRemove [attr.aria-label]="'Remove ' + activeGenre.id">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        }
         <input
           #genreInput
           type="text"
           placeholder="Genres"
           aria-label="Genres"
-          matInput
           [formControl]="genreControl"
           [matAutocomplete]="auto"
-          [matChipInputFor]="chipList"
+          [matChipInputFor]="chipGrid"
           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
           (matChipInputTokenEnd)="add($event)"
         />
-      </mat-chip-list>
+      </mat-chip-grid>
       <mat-autocomplete
         #auto="matAutocomplete"
         (optionSelected)="selected($event)"
       >
-        <mat-option
-          *ngFor="let genre of filteredGenres$ | async"
-          [value]="genre"
-        >
-          {{ genre.id }} ({{ genre.trackIds.length }})
-        </mat-option>
+        @for (genre of filteredGenres$ | async; track genre.id) {
+          <mat-option [value]="genre">
+            {{ genre.id }} ({{ genre.trackIds.length }})
+          </mat-option>
+        }
       </mat-autocomplete>
     </mat-form-field>
   </form>

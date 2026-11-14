@@ -22,6 +22,7 @@
       "resources": {
         "files": [
           "/assets/**",
+          "/media/**",
           "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
         ]
       }
@@ -30,13 +31,13 @@
   "dataGroups": [
     {
       "name": "sentry",
-      "urls": ["sentry.io/api"],
-
+      "urls": [
+        "sentry.io/api"
+      ],
       "cacheConfig": {
         "maxSize": 50,
         "maxAge": "3d12h"
       },
-
       "cacheQueryOptions": {
         "ignoreSearch": true
       }
