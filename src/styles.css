@@ -151,8 +151,9 @@ body.mat-typography .bigger {
 
 body.mat-typography #logo h1,
 #logo-text {
-  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem); /* 32 → 44 */
   font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 /* --- Icons: Material Symbols Rounded (only the glyphs the app uses are loaded) --- */
