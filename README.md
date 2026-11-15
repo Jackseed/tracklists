@@ -5,7 +5,8 @@ Live at [tracklists.io](https://tracklists.io).
 
 - **Web app**: Angular 22 (NgModules, Angular Material, Akita stores), in `src/`
 - **Backend**: Firebase — Auth (custom tokens), Firestore, Cloud Functions 2nd gen (Node 22), in `functions/`
-- **Firebase projects**: `listy-bcc65` (development / staging, the default) and `listy-prod` (production)
+- **Firebase projects**: `listy-bcc65` (development / staging, the default) and `listy-prod` (production, alias `prod`: an alias named like its project
+  makes `firebase deploy --only functions` fail, as it reads `functions/.env.listy-prod` twice)
 
 ## Requirements
 

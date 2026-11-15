@@ -20,7 +20,7 @@
     "emulators:fake": "npm --prefix functions run build && node tools/with-java.mjs firebase emulators:exec --project demo-tracklists --only functions,auth,firestore --ui \"node tools/fake-spotify/server.mjs\"",
     "emulators:stop": "lsof -t -i:5001 -i:8080 -i:9099 -i:4000 | xargs kill -9",
     "deploy:staging": "firebase use default && npm run build:staging && firebase deploy --only hosting",
-    "deploy": "firebase use listy-prod && npm run build:prod && firebase deploy --only hosting",
+    "deploy": "firebase use prod && npm run build:prod && firebase deploy --only hosting",
     "bench:import": "node tools/with-java.mjs firebase emulators:exec --project demo-tracklists --only firestore \"npm --prefix functions run bench\"",
     "e2e": "node tools/e2e/checks.mjs",
     "mobile:fake": "ng build --configuration fake && CAP_DEV=1 cap sync",

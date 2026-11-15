@@ -1,6 +1,6 @@
 {
   "projects": {
     "default": "listy-bcc65",
-    "listy-prod": "listy-prod"
+    "prod": "listy-prod"
   }
 }
