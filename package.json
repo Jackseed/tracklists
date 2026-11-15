@@ -29,7 +29,8 @@
     "mobile:ios": "cap open ios",
     "mobile:android": "cap open android",
     "mobile:assets": "capacitor-assets generate --assetPath resources --ios --android --iconBackgroundColor \"#69f0ae\" --iconBackgroundColorDark \"#69f0ae\" --splashBackgroundColor \"#000000\" --splashBackgroundColorDark \"#000000\"",
-    "mobile:ios:ipa": "sh tools/ios-ipa.sh"
+    "mobile:ios:ipa": "sh tools/ios-ipa.sh",
+    "mobile:ios:testflight": "sh tools/ios-ipa.sh --upload"
   },
   "dependencies": {
     "@angular/cdk": "^22.2.7",

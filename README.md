@@ -136,7 +136,7 @@ npm run mobile:assets    # icons and splash screens, from resources/ (python3 re
 ```
 
 TestFlight: `npm run mobile:staging` (or `mobile:prod`), then `npm run mobile:ios:ipa` builds
-`.build-ios/export/App.ipa`, signed for App Store Connect (team set in the Xcode project, Xcode
+`.build-ios/export/App.ipa`, signed for App Store Connect, and `npm run mobile:ios:testflight` uploads it (team set in the Xcode project, Xcode
 signed in to that Apple account, new build number each run). Upload it with Apple's Transporter
 app or Xcode's Organizer. The environment's web `/login` page must be deployed first.
 
