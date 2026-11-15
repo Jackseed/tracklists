@@ -26,24 +26,6 @@ h1.hero {
   font-size: var(--tl-fs-hero);
 }
 
-/* One short tagline, then a sentence or two of detail before the button. */
-.tagline {
-  margin-bottom: var(--tl-space-3) !important;
-}
-
-.detail {
-  max-width: 440px;
-  margin: 0 0 var(--tl-space-5);
-  font-size: var(--tl-fs-body);
-  line-height: 1.6;
-  color: var(--tl-text-faint);
-}
-
-.detail.centered {
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .spacer {
   background-repeat: no-repeat;
   background-position: center;
