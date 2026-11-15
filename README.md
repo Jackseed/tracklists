@@ -135,6 +135,11 @@ npm run mobile:android   # opens Android Studio
 npm run mobile:assets    # icons and splash screens, from resources/ (python3 resources/make-sources.py rebuilds those)
 ```
 
+TestFlight: `npm run mobile:staging` (or `mobile:prod`), then `npm run mobile:ios:ipa` builds
+`.build-ios/export/App.ipa`, signed for App Store Connect (team set in the Xcode project, Xcode
+signed in to that Apple account, new build number each run). Upload it with Apple's Transporter
+app or Xcode's Organizer. The environment's web `/login` page must be deployed first.
+
 With the local stack on the Android emulator, forward the ports first:
 `for p in 8080 9099 5001 8888 4200; do adb reverse tcp:$p tcp:$p; done`.
 
