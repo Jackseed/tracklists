@@ -21,28 +21,30 @@ export class NativeAppService {
 
   private backHandlers: BackHandler[] = [];
 
-  public async init() {
+  public init() {
     if (!isNativeApp) return;
+
+    // The splash stays until the first page is on screen. Watched right away: the first
+    // navigation may end before the plugins below are loaded.
+    const firstPage = new Promise<void>((resolve) =>
+      this.router.events
+        .pipe(
+          filter((event) => event instanceof NavigationEnd),
+          take(1)
+        )
+        .subscribe(() => resolve())
+    );
+
     // Loaded on demand: the web app does not need the native plugins.
-    const [{ App }, { SplashScreen }, { StatusBar, Style }] = await Promise.all([
-      import('@capacitor/app'),
-      import('@capacitor/splash-screen'),
-      import('@capacitor/status-bar'),
-    ]);
-
-    // White status bar text over the black app; the page draws under it (see the safe areas in styles.css).
-    StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
-
-    // The splash stays until the first page is on screen.
-    this.router.events
-      .pipe(
-        filter((event) => event instanceof NavigationEnd),
-        take(1)
-      )
-      .subscribe(() => setTimeout(() => SplashScreen.hide({ fadeOutDuration: 200 }), 50));
-
-    App.addListener('appUrlOpen', (event) => this.zone.run(() => this.onUrlOpen(event)));
-    App.addListener('backButton', () => this.zone.run(() => this.onBackButton(App.minimizeApp)));
+    Promise.all([import('@capacitor/app'), import('@capacitor/splash-screen'), import('@capacitor/status-bar')]).then(
+      ([{ App }, { SplashScreen }, { StatusBar, Style }]) => {
+        // White status bar text over the black app; the page draws under it (see the safe areas in styles.css).
+        StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
+        firstPage.then(() => setTimeout(() => SplashScreen.hide({ fadeOutDuration: 200 }), 50));
+        App.addListener('appUrlOpen', (event) => this.zone.run(() => this.onUrlOpen(event)));
+        App.addListener('backButton', () => this.zone.run(() => this.onBackButton(App.minimizeApp)));
+      }
+    );
   }
 
   /** Lets a page handle the back button first (the latest registered wins). Returns the unregister function. */

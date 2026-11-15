@@ -33,6 +33,9 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Only standard HTTPS: no export compliance documents needed for TestFlight / App Store. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>spotify</string>

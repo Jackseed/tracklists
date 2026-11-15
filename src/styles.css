@@ -68,6 +68,12 @@ app-root {
   height: 100%;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
+/* Routed pages: what they position absolutely (the login page's logo) stays in the safe area. */
+app-root > :not(router-outlet) {
+  display: block;
+  position: relative;
+  height: 100%;
+}
 .cdk-overlay-container .mat-mdc-snack-bar-container {
   margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 }
