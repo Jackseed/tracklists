@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, CanDeactivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { signOut } from 'firebase/auth';
 import { AUTH, currentUser } from '../../core/firebase';
 import { isAppLoginReturn, isNativeApp } from '../../core/native';
@@ -31,9 +31,4 @@ export const startSession: CanActivateFn = async () => {
   // otherwise the landing page would send the visitor straight back here.
   await signOut(auth).catch(() => undefined);
   return router.createUrlTree(['']);
-};
-
-export const stopSession: CanDeactivateFn<unknown> = () => {
-  inject(SessionService).stop();
-  return true;
 };

@@ -349,6 +349,15 @@ async function run() {
   const cached = await page(`({ tracks: ${HOME}.trackQuery.getCount(), trackReads: performance.getEntriesByType('resource').filter((r) => /Firestore\\/(RunQuery|BatchGet)/.test(r.name)).length })`);
   check('coming back: the library comes from the browser cache, no track is read from Firestore', cached.tracks === library.tracks && cached.trackReads === 0, `main screen after ${cachedMs} ms`);
 
+  // Browser back button to the login page, as right after a login: the login page sends a signed-in
+  // user back home, and the library must still load (the session used to stay stopped).
+  await page(`history.replaceState(history.state, '', '/login'); history.pushState(history.state, '', '/home'); history.back()`);
+  await waitFor(`location.pathname === '/login'`, 5_000).catch(() => undefined);
+  await waitFor(`location.pathname === '/home'`, 10_000);
+  await sleep(1500);
+  const back = await page(`({ list: !!document.querySelector('app-playlist-list'), loading: document.body.textContent.includes('Loading your tracks') })`);
+  check('back to the login page while signed in: home again, library on screen', back.list && !back.loading, JSON.stringify(back));
+
   await page(`${button('power_settings_new')}.click()`);
   await waitFor(`!!document.querySelector('app-landing')`, 15_000);
   await sleep(500);

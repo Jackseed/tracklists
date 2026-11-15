@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { redirectLoggedInToHome, requireLogin, startSession, stopSession } from './auth/guard/auth.guards';
+import { redirectLoggedInToHome, requireLogin, startSession } from './auth/guard/auth.guards';
 import { LoginComponent } from './auth/login/login.component';
 import { HomepageComponent } from './homepage/homepage.component';
 import { LandingComponent } from './landing/landing.component';
@@ -21,7 +21,6 @@ const routes: Routes = [
     path: 'home',
     component: HomepageComponent,
     canActivate: [requireLogin, startSession],
-    canDeactivate: [stopSession],
   },
   {
     path: '**',

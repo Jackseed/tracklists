@@ -73,6 +73,10 @@ export class HomepageComponent implements OnInit {
     const registry = inject(MatIconRegistry);
     const sanitizer = inject(DomSanitizer);
     for (const [name, url] of Object.entries(ICONS)) registry.addSvgIcon(name, sanitizer.bypassSecurityTrustResourceUrl(url));
+    // The startSession guard starts the session; it stops when this page is really left. Not in a
+    // canDeactivate guard: those run before the next page's guards, and the login page sends signed-in
+    // users back here (browser back button after a login), which keeps this page without restarting it.
+    this.destroyRef.onDestroy(() => this.session.stop());
   }
 
   ngOnInit() {
