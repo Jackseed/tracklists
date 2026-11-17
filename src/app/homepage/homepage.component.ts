@@ -31,8 +31,6 @@ const ICONS: Record<string, string> = {
   'tracklists-fill': 'assets/navbar/tracklists-fill.svg',
   'playlists-empty': 'assets/navbar/playlists-empty.svg',
   'playlists-fill': 'assets/navbar/playlists-fill.svg',
-  'filters-empty': 'assets/navbar/filters-empty.svg',
-  'filters-fill': 'assets/navbar/filters-fill.svg',
 };
 
 @Component({
@@ -68,6 +66,15 @@ export class HomepageComponent implements OnInit {
   private topTracksRequested = false;
   /** Selected tab of the phone layout (0: tracks). */
   public mobileTab = 0;
+  /** Phone layout: the filters sheet is open. */
+  public filtersOpen = false;
+  /** Number of filters in use (genres count as one), shown on the phone's Filters button. */
+  public activeFilterCount$: Observable<number> = this.trackService.selectFilters().pipe(map((filters) => filters.length));
+
+  /** Three columns (playlists | tracks | filters) from 1280px wide. */
+  public get wide(): boolean {
+    return this.media.isActive('gt-md');
+  }
 
   constructor() {
     const registry = inject(MatIconRegistry);
@@ -81,8 +88,12 @@ export class HomepageComponent implements OnInit {
 
   ngOnInit() {
     this.spotifyService.initializePlayer();
-    // Android back button: from the Playlists or Filters tab, back to the tracks first.
+    // Android back button: closes the filters sheet, then goes back from the Playlists tab to the tracks.
     const stopBack = this.nativeApp.onBack(() => {
+      if (this.filtersOpen) {
+        this.filtersOpen = false;
+        return true;
+      }
       if (this.mobileTab === 0) return false;
       this.mobileTab = 0;
       return true;

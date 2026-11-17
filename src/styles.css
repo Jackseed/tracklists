@@ -612,3 +612,10 @@ html .mat-mdc-slider {
 .ant-slider .ant-slider-handle:focus-visible {
   border-color: var(--tl-green);
 }
+
+/* An untouched filter: its full-range bar stays quiet. */
+.tl-filter-idle .ant-slider .ant-slider-track,
+.tl-filter-idle .ant-slider:hover .ant-slider-track {
+  border-color: #5a5a5a;
+  background: #2f6b50;
+}

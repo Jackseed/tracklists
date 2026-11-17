@@ -1,9 +1,5 @@
-.margin-top {
-  margin-top: var(--tl-space-5);
-}
-
 h4 {
-  margin-bottom: var(--tl-space-3) !important;
+  margin-bottom: var(--tl-space-2) !important;
 }
 
 .genres-field {

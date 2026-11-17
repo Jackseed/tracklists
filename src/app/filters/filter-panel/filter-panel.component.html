@@ -1,0 +1,18 @@
+<div class="head">
+  <h2>Filters</h2>
+  @if ((activeCount$ | async) > 0) {
+    <button type="button" class="reset" (click)="resetAll()">Reset all</button>
+  }
+</div>
+@if (!sheet) {
+  <p class="count" aria-live="polite">
+    <span class="shown">{{ shown$ | async | number }}</span> of {{ selected$ | async | number }} tracks
+  </p>
+}
+<app-genre-list></app-genre-list>
+<app-filter-list></app-filter-list>
+@if (sheet) {
+  <button type="button" class="tl-btn tl-btn--primary show" (click)="done.emit()">
+    Show {{ shown$ | async | number }} tracks
+  </button>
+}

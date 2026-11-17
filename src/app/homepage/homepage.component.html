@@ -1,234 +1,104 @@
 @if (view$ | async; as view) {
   @switch (view.kind) {
     @case ('ready') {
-      <div fxFlexFill fxLayout="column" fxLayoutAlign="start center" animate.enter="screen-in">
-        <div fxFlex class="main-area">
-          <div fxFlexFill>
-            @if (!this.media.isActive('xs')) {
-              <div fxFlexFill fxLayout="row">
-                <!----------------- LEFT BAR ----------------->
-                <div
-                  fxFlexOffset.lt-lg="5"
-                  fxFlexOffset="10"
-                  fxFlex.lt-lg="30"
-                  fxFlex="25"
-                  fxFlexFill
-                >
-                  <div fxLayout="column" fxFlexFill>
-                    <div fxFlexOffset="10" fxFlex="90" class="left-bar">
-                      <mat-tab-group
-                        mat-align-tabs="center"
-                        mat-stretch-tabs="false"
-                        fxFlexFill
-                      >
-                        <mat-tab label="Playlists">
-                          <div fxLayout="row" fxLayoutAlign="center center">
-                            <div fxFlex="90">
-                              <app-playlist-list></app-playlist-list>
-                            </div>
-                          </div>
-                        </mat-tab>
-                        <mat-tab label="Filters">
-                          <div fxLayout="row" fxLayoutAlign="center center">
-                            <div fxFlex="80">
-                              <app-genre-list></app-genre-list>
-                              <app-filter-list></app-filter-list>
-                            </div>
-                          </div>
-                        </mat-tab>
-                      </mat-tab-group>
-                    </div>
-                  </div>
-                </div>
-                <!----------------- RIGHT BAR ----------------->
-                <div fxFlex.lt-lg="55" fxFlex="40" fxFlexOffset="5" fxFlexFill>
-                  <div fxLayout="column" fxFlexFill>
-                    <div fxFlexOffset="5" fxFlex="none" class="home-top">
-                      <div class="home-header">
-                        <h1>Tracklists</h1>
-                        <div class="header-actions">
-                          <button class="tl-icon-btn" (click)="savePlaylist()" matTooltip="Save as playlist" aria-label="Save as playlist">
-                            <mat-icon>save</mat-icon>
-                          </button>
-                          <button class="tl-icon-btn" (click)="loadPlaylist()" matTooltip="Reload Spotify tracks" aria-label="Reload Spotify tracks">
-                            <mat-icon>refresh</mat-icon>
-                          </button>
-                          <button class="tl-icon-btn" (click)="signOut()" matTooltip="Log out" aria-label="Log out">
-                            <mat-icon>power_settings_new</mat-icon>
-                          </button>
-                        </div>
-                      </div>
-
-                      @if (librarySummary$ | async; as summary) {
-                        <p class="library-summary">
-                          {{ summary.text }}
-                          @if (summary.skipped > 0) {
-                            <span class="skipped" [matTooltip]="summary.warnings">
-                              · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
-                            </span>
-                          }
-                        </p>
-                      }
-                      <mat-divider></mat-divider>
-                      <div class="play-row">
-                        <button
-                          class="tl-btn tl-btn--primary"
-                          (click)="playAll()"
-                          [disabled]="(trackNumber$ | async) === 0"
-                        >
-                          <mat-icon class="tl-filled">play_arrow</mat-icon>
-                          Play tracklist
-                        </button>
-                        <div fxFlex></div>
-                        <p class="track-count">{{ trackNumber$ | async }} tracks</p>
-                      </div>
-                    </div>
-                    <!----------------- TRACK LIST ----------------->
-                    @if ((trackNumber$ | async) > 0) {
-                      <div class="track-list" fxFlexFill fxFlex>
-                        <app-track-list></app-track-list>
-                      </div>
-                    } @else {
-                      <ng-container *ngTemplateOutlet="noActiveTrack"></ng-container>
-                    }
-                  </div>
-                </div>
+      <div class="home" animate.enter="screen-in">
+        @if (!this.media.isActive('xs')) {
+          <!-- Wide screens: playlists | tracks | filters. Narrower: playlists and filters share the left column. -->
+          <div class="desk" [class.wide]="wide">
+            <aside class="side">
+              @if (wide) {
+                <h2 class="side-title">Playlists</h2>
+                <app-playlist-list></app-playlist-list>
+              } @else {
+                <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="false" class="side-tabs">
+                  <mat-tab label="Playlists">
+                    <div class="tab-body"><app-playlist-list></app-playlist-list></div>
+                  </mat-tab>
+                  <mat-tab label="Filters">
+                    <div class="tab-body"><app-filter-panel></app-filter-panel></div>
+                  </mat-tab>
+                </mat-tab-group>
+              }
+            </aside>
+            <main class="center">
+              <div class="home-top">
+                <ng-container *ngTemplateOutlet="top"></ng-container>
               </div>
-            } @else {
-              <!----------------- MOBILE VERSION ----------------->
-              <div fxFlexFill fxLayout="column" class="container">
-                <div class="home-header mobile-header">
-                  <h1>Tracklists</h1>
-                  <div class="header-actions">
-                    <button class="tl-icon-btn" (click)="savePlaylist()" matTooltip="Save as playlist" aria-label="Save as playlist">
-                      <mat-icon>save</mat-icon>
-                    </button>
-                    <button class="tl-icon-btn" (click)="loadPlaylist()" matTooltip="Reload Spotify tracks" aria-label="Reload Spotify tracks">
-                      <mat-icon>refresh</mat-icon>
-                    </button>
-                    <button class="tl-icon-btn" (click)="signOut()" matTooltip="Log out" aria-label="Log out">
-                      <mat-icon>power_settings_new</mat-icon>
-                    </button>
-                  </div>
+              @if ((trackNumber$ | async) > 0) {
+                <div class="track-list">
+                  <app-track-list></app-track-list>
                 </div>
-                @if (librarySummary$ | async; as summary) {
-                  <p class="library-summary padding-left">
-                    {{ summary.text }}
-                    @if (summary.skipped > 0) {
-                      <span class="skipped" [matTooltip]="summary.warnings">
-                        · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
-                      </span>
-                    }
-                  </p>
-                }
-                <mat-divider></mat-divider>
-                <div class="play-row margins">
-                  <button
-                    class="tl-btn tl-btn--primary"
-                    (click)="playAll()"
-                    [disabled]="(trackNumber$ | async) === 0"
-                  >
-                    <mat-icon class="tl-filled">play_arrow</mat-icon>
-                    Play tracklist
-                  </button>
-                  <div fxFlex></div>
-                  <p class="track-count">{{ trackNumber$ | async }} tracks</p>
-                </div>
-
-                <div fxFlex class="mobile-tabs">
-                  <mat-tab-group
-                    fxFlexFill
-                    fxFill
-                    mat-align-tabs="center"
-                    headerPosition="below"
-                    [(selectedIndex)]="mobileTab"
-                  >
-                    <mat-tab #tracks>
-                      <ng-template mat-tab-label>
-                        <div
-                          fxLayout="column"
-                          class="margin-top"
-                          fxLayoutAlign="center center"
-                        >
-                          <mat-icon
-                            [svgIcon]="tracks.isActive ? 'tracklists-fill' : 'tracklists-empty'"
-                          ></mat-icon>
-                          <div class="nav-titles">Tracks</div>
-                        </div>
-                      </ng-template>
-                      <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-                        @if ((trackNumber$ | async) > 0) {
-                          <div
-                            class="track-list"
-                            fxFlexFill
-                            fxFlex="90"
-                            fxFlexOffset="10"
-                          >
-                            <app-track-list></app-track-list>
-                          </div>
-                        } @else {
-                          <ng-container *ngTemplateOutlet="noActiveTrack"></ng-container>
-                        }
-                      </div>
-                    </mat-tab>
-                    <mat-tab #playlists>
-                      <ng-template mat-tab-label>
-                        <div
-                          fxLayout="column"
-                          class="margin-top"
-                          fxLayoutAlign="center center"
-                        >
-                          <mat-icon
-                            [svgIcon]="playlists.isActive ? 'playlists-fill' : 'playlists-empty'"
-                          ></mat-icon>
-                          <div class="nav-titles">Playlists</div>
-                        </div>
-                      </ng-template>
-                      <div fxFlexFill fxLayout="row" fxLayoutAlign="center center">
-                        <div fxFlex="80" class="playlists">
-                          <app-playlist-list></app-playlist-list>
-                        </div>
-                      </div>
-                    </mat-tab>
-                    <mat-tab #filters>
-                      <ng-template mat-tab-label>
-                        <div
-                          fxLayout="column"
-                          class="margin-top"
-                          fxLayoutAlign="center center"
-                        >
-                          <mat-icon
-                            [svgIcon]="filters.isActive ? 'filters-fill' : 'filters-empty'"
-                          ></mat-icon>
-                          <div class="nav-titles">Filters</div>
-                        </div>
-                      </ng-template>
-                      <div fxLayout="row" fxLayoutAlign="center center">
-                        <div fxFlex="80">
-                          <app-genre-list></app-genre-list>
-                          <app-filter-list></app-filter-list>
-                        </div>
-                      </div>
-                    </mat-tab>
-                  </mat-tab-group>
-                </div>
-                <!----------------- PLAYER ----------------->
-                @if ((playingTrack$ | async) && tracks.isActive) {
-                  <div fxFlexFill fxFlex="15" fxLayout="row" class="player">
-                    <div fxFlexOffset="5" fxFlex="90">
-                      <app-player [track$]="playingTrack$"></app-player>
+              } @else {
+                <ng-container *ngTemplateOutlet="noActiveTrack"></ng-container>
+              }
+            </main>
+            @if (wide) {
+              <aside class="filters-col">
+                <app-filter-panel></app-filter-panel>
+              </aside>
+            }
+          </div>
+          @if (playingTrack$ | async) {
+            <div class="player-dock">
+              <app-player [track$]="playingTrack$"></app-player>
+            </div>
+          }
+        } @else {
+          <!----------------- MOBILE VERSION ----------------->
+          <div class="phone">
+            <div class="phone-top">
+              <ng-container *ngTemplateOutlet="top"></ng-container>
+            </div>
+            <div class="mobile-tabs">
+              <mat-tab-group mat-align-tabs="center" headerPosition="below" [(selectedIndex)]="mobileTab">
+                <mat-tab #tracks>
+                  <ng-template mat-tab-label>
+                    <div class="nav-tab">
+                      <mat-icon [svgIcon]="tracks.isActive ? 'tracklists-fill' : 'tracklists-empty'"></mat-icon>
+                      <div class="nav-titles">Tracks</div>
                     </div>
+                  </ng-template>
+                  @if ((trackNumber$ | async) > 0) {
+                    <div class="track-list phone-list">
+                      <app-track-list></app-track-list>
+                    </div>
+                  } @else {
+                    <ng-container *ngTemplateOutlet="noActiveTrack"></ng-container>
+                  }
+                </mat-tab>
+                <mat-tab #playlists>
+                  <ng-template mat-tab-label>
+                    <div class="nav-tab">
+                      <mat-icon [svgIcon]="playlists.isActive ? 'playlists-fill' : 'playlists-empty'"></mat-icon>
+                      <div class="nav-titles">Playlists</div>
+                    </div>
+                  </ng-template>
+                  <div class="playlists">
+                    <app-playlist-list></app-playlist-list>
                   </div>
+                </mat-tab>
+              </mat-tab-group>
+            </div>
+            <!----------------- FILTERS BUTTON AND PLAYER ----------------->
+            @if (mobileTab === 0) {
+              <div class="phone-dock">
+                <button type="button" class="filters-fab" (click)="filtersOpen = true" aria-haspopup="dialog">
+                  <mat-icon>tune</mat-icon>
+                  Filters
+                  @if ((activeFilterCount$ | async) > 0) {
+                    <span class="badge">{{ activeFilterCount$ | async }}</span>
+                  }
+                </button>
+                @if (playingTrack$ | async) {
+                  <app-player class="phone-player" [track$]="playingTrack$"></app-player>
                 }
               </div>
             }
-          </div>
-        </div>
-        <!----------------- PLAYER ----------------->
-        @if ((playingTrack$ | async) && !this.media.isActive('xs')) {
-          <div fxFlex="none" fxLayout="row" class="player-dock">
-            <div fxFlexOffset="10" fxFlex="70">
-              <app-player [track$]="playingTrack$"></app-player>
+            <!----------------- FILTERS SHEET (kept in the page: sliders keep their place) ----------------->
+            <div class="sheet-backdrop" [class.open]="filtersOpen" (click)="filtersOpen = false"></div>
+            <div class="sheet" [class.open]="filtersOpen" role="dialog" aria-label="Filters" [attr.inert]="filtersOpen ? null : ''">
+              <div class="grip" aria-hidden="true"></div>
+              <app-filter-panel [sheet]="true" (done)="filtersOpen = false"></app-filter-panel>
             </div>
           </div>
         }
@@ -347,5 +217,42 @@
         svgIcon="straight-arrow"
       ></mat-icon>
     }
+  </div>
+</ng-template>
+
+<!----------------- TITLE, LIBRARY SUMMARY, PLAY ----------------->
+<ng-template #top>
+  <div class="home-header">
+    <h1>Tracklists</h1>
+    <div class="header-actions">
+      <button class="tl-icon-btn" (click)="savePlaylist()" matTooltip="Save as playlist" aria-label="Save as playlist">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button class="tl-icon-btn" (click)="loadPlaylist()" matTooltip="Reload Spotify tracks" aria-label="Reload Spotify tracks">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button class="tl-icon-btn" (click)="signOut()" matTooltip="Log out" aria-label="Log out">
+        <mat-icon>power_settings_new</mat-icon>
+      </button>
+    </div>
+  </div>
+  @if (librarySummary$ | async; as summary) {
+    <p class="library-summary">
+      {{ summary.text }}
+      @if (summary.skipped > 0) {
+        <span class="skipped" [matTooltip]="summary.warnings">
+          · {{ summary.skipped }} playlist{{ summary.skipped > 1 ? 's' : '' }} couldn't be read
+        </span>
+      }
+    </p>
+  }
+  <mat-divider></mat-divider>
+  <div class="play-row">
+    <button class="tl-btn tl-btn--primary" (click)="playAll()" [disabled]="(trackNumber$ | async) === 0">
+      <mat-icon class="tl-filled">play_arrow</mat-icon>
+      Play tracklist
+    </button>
+    <div fxFlex></div>
+    <p class="track-count">{{ trackNumber$ | async | number }} tracks</p>
   </div>
 </ng-template>

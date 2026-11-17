@@ -1,14 +1,4 @@
-.track-list {
-  overflow-y: scroll;
-}
 
-.left-bar {
-  box-sizing: border-box;
-  padding: var(--tl-space-4) var(--tl-space-5) var(--tl-space-5);
-  background: var(--tl-surface);
-  border: var(--tl-border) solid var(--tl-line);
-  border-radius: var(--tl-radius-l);
-}
 
 /* Title and actions, library summary, then "Play tracklist" and the count. */
 .home-top {
@@ -34,15 +24,6 @@
   gap: var(--tl-space-2);
 }
 
-.mobile-header {
-  padding: var(--tl-space-4) var(--tl-space-4) var(--tl-space-2);
-}
-
-.mobile-header .tl-icon-btn {
-  --tl-icon-btn-size: 40px;
-  --tl-icon-size: 22px;
-}
-
 .play-row {
   display: flex;
   align-items: center;
@@ -65,18 +46,8 @@
   gap: var(--tl-space-4);
 }
 
-.margin-top {
-  margin-top: 20%;
-}
 
-.margin-5 {
-  margin-top: 5%;
-}
 
-.arrow {
-  width: 150px;
-  height: 150px;
-}
 
 .icon {
   transform: scale(5);
@@ -86,9 +57,6 @@
   width: 100%;
 }
 
-.no-margin {
-  margin: 0;
-}
 
 #progress-bar {
   width: 320px;
@@ -218,31 +186,14 @@
   font-weight: 700;
 }
 
-.playlists {
-  height: 100%;
-}
 
-.padding-left {
-  padding-left: 16px;
-}
 
 .rotate {
   transform: rotate(290deg) scale(5);
 }
 
-.margins {
-  margin: var(--tl-space-2) var(--tl-space-4) var(--tl-space-3);
-}
 
-.container {
-  position: relative;
-}
 
-.player {
-  position: absolute;
-  bottom: 60px;
-  z-index: 1;
-}
 
 .library-summary {
   margin: 0 0 var(--tl-space-1);
@@ -255,18 +206,255 @@
   cursor: help;
 }
 
-.mobile-tabs,
-.main-area {
+/* --- Main screen ------------------------------------------------------------- */
+.home {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Wide screens: playlists | tracks | filters. Narrower: two columns, playlists and filters in tabs. */
+.desk {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: var(--tl-space-5);
+  width: 100%;
+  max-width: 1200px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: var(--tl-space-5) var(--tl-space-5) 0;
+}
+
+.desk.wide {
+  grid-template-columns: 260px minmax(0, 1fr) 320px;
+  max-width: 1560px;
+  gap: var(--tl-space-6);
+  padding: var(--tl-space-5) var(--tl-space-6) 0;
+}
+
+.side,
+.filters-col {
+  min-height: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  margin-bottom: var(--tl-space-4);
+  padding: var(--tl-space-4) var(--tl-space-5) var(--tl-space-5);
+  background: var(--tl-surface);
+  border: var(--tl-border) solid var(--tl-line);
+  border-radius: var(--tl-radius-l);
+}
+
+/* The filters are the heart of the app: their column stands out. */
+.filters-col {
+  margin-right: 6px;
+  border-color: var(--tl-text);
+  box-shadow: 5px 5px 0 var(--tl-green);
+}
+
+.side-title {
+  font-size: var(--tl-fs-h3) !important;
+}
+
+.side-tabs {
+  height: 100%;
+}
+
+.tab-body {
+  padding-top: var(--tl-space-3);
+}
+
+.center {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.track-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.player-dock {
+  flex: none;
+  width: 100%;
+  max-width: 1560px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: var(--tl-space-2) var(--tl-space-6) var(--tl-space-4);
+}
+
+/* --- Phone ----------------------------------------------------------------------- */
+.phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.phone-top {
+  padding: var(--tl-space-4) var(--tl-space-4) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-space-2);
+}
+
+.phone-top .play-row {
+  padding: var(--tl-space-1) 0 var(--tl-space-3);
+}
+
+.phone-top .tl-icon-btn {
+  --tl-icon-btn-size: 40px;
+  --tl-icon-size: 22px;
+}
+
+.mobile-tabs {
+  flex: 1;
   min-height: 0;
 }
 
-.main-area {
+.mobile-tabs mat-tab-group {
+  height: 100%;
+}
+
+.phone-list {
+  height: 100%;
+  box-sizing: border-box;
+  /* Room for the Filters button and the player over the end of the list. */
+  padding: 0 var(--tl-space-4) 180px;
+}
+
+.playlists {
+  padding: 0 var(--tl-space-5) var(--tl-space-5);
+}
+
+.nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--tl-space-2);
+}
+
+/* Filters button, then the player, floating over the bottom of the track list. */
+.phone-dock {
+  position: absolute;
+  left: var(--tl-space-3);
+  right: var(--tl-space-3);
+  bottom: 72px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tl-space-3);
+  pointer-events: none;
+}
+
+.phone-dock > * {
+  pointer-events: auto;
+}
+
+.phone-player {
   width: 100%;
 }
 
-/* Keeps the player's outline off the bottom edge of the window. */
-.player-dock {
+.filters-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tl-space-2);
+  height: 48px;
+  padding: 0 18px;
   box-sizing: border-box;
-  width: 100%;
-  padding: var(--tl-space-3) 0 var(--tl-space-4);
+  border: var(--tl-border) solid var(--tl-text);
+  border-radius: var(--tl-radius-m);
+  background: var(--tl-green);
+  color: var(--tl-green-ink);
+  box-shadow: var(--tl-shadow-purple);
+  font-family: var(--tl-font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.filters-fab:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--tl-purple);
+}
+
+.filters-fab .mat-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+}
+
+.filters-fab .badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--tl-green-ink);
+  color: var(--tl-green);
+  font-size: 13px;
+  line-height: 22px;
+  text-align: center;
+}
+
+/* Bottom sheet with every filter; it stays in the page so the sliders keep their place. */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgb(0 0 0 / 60%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 250ms ease, visibility 250ms;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  max-height: 85%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: var(--tl-space-2) var(--tl-space-5) calc(var(--tl-space-5) + env(safe-area-inset-bottom, 0px));
+  background: #0d0d0d;
+  border-top: var(--tl-border) solid var(--tl-text);
+  border-radius: 22px 22px 0 0;
+  transform: translateY(100%);
+  visibility: hidden;
+  transition: transform 300ms var(--tl-ease-out), visibility 300ms;
+}
+
+.sheet-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sheet.open {
+  transform: none;
+  visibility: visible;
+}
+
+.grip {
+  width: 44px;
+  height: 5px;
+  margin: 0 auto var(--tl-space-3);
+  border-radius: 3px;
+  background: #5a5a5a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-backdrop {
+    transition: none;
+  }
 }

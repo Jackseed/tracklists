@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FilterViewComponent } from './filter-view/filter-view.component';
 import { FilterListComponent } from './filter-list/filter-list.component';
+import { FilterPanelComponent } from './filter-panel/filter-panel.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { GenreListComponent } from './genre-filters/genre-list/genre-list.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -13,7 +14,7 @@ import { NzSliderModule } from 'ng-zorro-antd/slider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
-  declarations: [FilterViewComponent, FilterListComponent, GenreListComponent],
+  declarations: [FilterViewComponent, FilterListComponent, GenreListComponent, FilterPanelComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -26,6 +27,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     NzSliderModule,
     MatTooltipModule,
   ],
-  exports: [FilterViewComponent, FilterListComponent, GenreListComponent],
+  exports: [FilterViewComponent, FilterListComponent, GenreListComponent, FilterPanelComponent],
 })
 export class FiltersModule {}

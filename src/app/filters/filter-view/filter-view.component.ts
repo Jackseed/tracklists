@@ -1,7 +1,21 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, inject } from '@angular/core';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
+import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MinMax, Track, TrackService } from '../../tracks/+state';
+
+export interface FilterDefinition {
+  property: string;
+  label: string;
+  /** Words for both ends (tooltips), and their Material Symbols icons. */
+  min: string;
+  minIcon: string;
+  max: string;
+  maxIcon: string;
+  extremeValues: MinMax;
+  step: number;
+  format: 'percent' | 'number' | 'bpm' | 'year';
+  /** Folded under "more" by default. */
+  more?: boolean;
+}
 
 @Component({
   selector: 'app-filter-view',
@@ -12,23 +26,40 @@ import { MinMax, Track, TrackService } from '../../tracks/+state';
 })
 export class FilterViewComponent implements OnInit {
   private trackService = inject(TrackService);
-  private matIconRegistry = inject(MatIconRegistry);
-  private domSanitizer = inject(DomSanitizer);
+  private destroyRef = inject(DestroyRef);
 
-  @Input() filter: {
-    label: string;
-    property: string;
-    min: string;
-    max: string;
-    extremeValues: MinMax;
-    step: number;
-  };
+  @Input() filter: FilterDefinition;
   rangeValues: number[];
 
   ngOnInit(): void {
-    this.rangeValues = [this.filter.extremeValues.min, this.filter.extremeValues.max];
-    for (const icon of [this.filter.min, this.filter.max]) {
-      this.matIconRegistry.addSvgIcon(icon, this.domSanitizer.bypassSecurityTrustResourceUrl(`assets/filters/${icon}.svg`));
+    const { min, max } = this.filter.extremeValues;
+    this.rangeValues = [min, max];
+    // The slider follows the filter: "Reset all", or the same filter shown elsewhere.
+    this.trackService
+      .selectFilters()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((filters) => {
+        const value = filters.find((filter) => filter.id === this.filter.property)?.value;
+        this.rangeValues = Array.isArray(value) ? value : [min, max];
+      });
+  }
+
+  /** True when the slider leaves part of the range out. */
+  get active(): boolean {
+    const [min, max] = this.rangeValues;
+    return min > this.filter.extremeValues.min || max < this.filter.extremeValues.max;
+  }
+
+  /** The selected range in words: "35 – 90%", "92 – 144 BPM", "1983 – 2010". */
+  get valueText(): string {
+    const [min, max] = this.rangeValues;
+    switch (this.filter.format) {
+      case 'percent':
+        return `${Math.round(min * 100)} – ${Math.round(max * 100)}%`;
+      case 'bpm':
+        return `${Math.round(min)} – ${Math.round(max)} BPM`;
+      default:
+        return `${Math.round(min)} – ${Math.round(max)}`;
     }
   }
 

@@ -139,6 +139,11 @@ export class TrackService {
     return this.filteredTracks$.pipe(map((tracks) => tracks.length));
   }
 
+  /** The filters in use (sliders and genres), updated as they change. */
+  selectFilters(): Observable<AkitaFilter<TrackState>[]> {
+    return this.trackFilters.selectFilters() as Observable<AkitaFilter<TrackState>[]>;
+  }
+
   getFilters(): AkitaFilter<TrackState>[] {
     return this.trackFilters.getFilters() as AkitaFilter<TrackState>[];
   }

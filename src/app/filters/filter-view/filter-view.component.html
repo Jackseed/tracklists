@@ -1,25 +1,21 @@
-<div class="margin-top">
-  <h4>{{ filter.label }}</h4>
-  <div class="margin-top" fxLayout="row" fxLayoutAlign="space-between center">
-    <mat-icon
-      class="icon"
-      fxFlex="10"
-      [svgIcon]="filter.min"
-      [matTooltip]="filter.min"
-    ></mat-icon>
+<div class="filter" [class.tl-filter-idle]="!active">
+  <div class="head">
+    <span class="label">{{ filter.label }}</span>
+    <span class="value" [class.on]="active">{{ active ? valueText : 'Any' }}</span>
+  </div>
+  <div class="row">
+    <mat-icon class="end" [class.lit]="rangeValues[0] > filter.extremeValues.min" [matTooltip]="filter.min">{{ filter.minIcon }}</mat-icon>
     <nz-slider
-      fxFlex="65"
+      class="slider"
       nzRange
       [nzMin]="filter.extremeValues.min"
       [nzMax]="filter.extremeValues.max"
       [nzStep]="filter.step"
+      [nzTipFormatter]="null"
       [ngModel]="rangeValues"
       (ngModelChange)="onChange($event)"
+      [attr.aria-label]="filter.label"
     ></nz-slider>
-    <mat-icon
-      fxFlex="10"
-      [svgIcon]="filter.max"
-      [matTooltip]="filter.max"
-    ></mat-icon>
+    <mat-icon class="end" [class.lit]="rangeValues[1] < filter.extremeValues.max" [matTooltip]="filter.max">{{ filter.maxIcon }}</mat-icon>
   </div>
 </div>

@@ -126,7 +126,7 @@ async function screenshot(name) {
 
 // --- Helpers evaluated in the page -------------------------------------------------
 const HOME = `window.ng.getComponent(document.querySelector('app-homepage'))`;
-const TRACK_COUNT = `Number([...document.querySelectorAll('p')].map((p) => p.textContent.trim()).find((text) => /^\\d+ tracks$/.test(text))?.split(' ')[0])`;
+const TRACK_COUNT = `Number([...document.querySelectorAll('p')].map((p) => p.textContent.trim()).find((text) => /^[\\d,]+ tracks$/.test(text))?.split(' ')[0].replaceAll(',', ''))`;
 const button = (icon) => `[...document.querySelectorAll('button')].find((b) => b.querySelector('mat-icon')?.textContent.trim() === '${icon}')`;
 const buttonWithText = (text) => `[...document.querySelectorAll('button')].find((b) => b.textContent.includes('${text}'))`;
 const lastSnackBar = `[...document.querySelectorAll('.mat-mdc-snack-bar-label')].pop()?.textContent.trim()`;
@@ -223,8 +223,10 @@ async function run() {
   })()`);
   check('tracks: "select all" shows the whole library', (await page(TRACK_COUNT)) === library.tracks, `${selectAllMs} ms`);
 
-  await page(`[...document.querySelectorAll('.mat-mdc-tab')].find((tab) => tab.textContent.includes('Filters')).click()`);
+  // Wide screens show the filters in their own column; narrower ones behind a Filters tab.
+  await page(`[...document.querySelectorAll('.mat-mdc-tab')].find((tab) => tab.textContent.includes('Filters'))?.click()`);
   await waitFor(`document.querySelectorAll('app-filter-view').length === 9`);
+  check('filters: always on screen next to the tracks (wide screen)', await page(`!!document.querySelector('.filters-col app-filter-panel') && !document.querySelector('.side mat-tab-group')`));
   await sleep(700);
   const genre = await page(`(() => {
     const list = window.ng.getComponent(document.querySelector('app-genre-list'));
@@ -336,11 +338,20 @@ async function run() {
   await page(`document.querySelectorAll('.mat-mdc-tab')[0].click()`);
   await sleep(1200);
   await screenshot('12-mobile-tracks-selected');
-  const mobile = await page(`({ tabs: document.querySelectorAll('.mat-mdc-tab').length, rows: document.querySelectorAll('app-track-view').length })`);
-  check('mobile: three tabs, tracks listed', mobile.tabs === 3 && mobile.rows > 0, JSON.stringify(mobile));
-  await page(`document.querySelectorAll('.mat-mdc-tab')[2].click()`);
-  await sleep(1200);
+  const mobile = await page(`({ tabs: document.querySelectorAll('.mat-mdc-tab').length, rows: document.querySelectorAll('app-track-view').length, fab: !!document.querySelector('.filters-fab') })`);
+  check('mobile: tracks and playlists tabs, tracks listed, Filters button', mobile.tabs === 2 && mobile.rows > 0 && mobile.fab, JSON.stringify(mobile));
+  await page(`document.querySelector('.filters-fab').click()`);
+  await sleep(800);
   await screenshot('13-mobile-filters');
+  const sheet = await page(`(() => {
+    const sheet = document.querySelector('.sheet');
+    const box = sheet.getBoundingClientRect();
+    return { open: sheet.classList.contains('open'), onScreen: box.top < innerHeight && box.bottom <= innerHeight + 1, sliders: sheet.querySelectorAll('app-filter-view').length };
+  })()`);
+  await page(`[...document.querySelectorAll('.sheet button')].find((b) => b.textContent.includes('Show')).click()`);
+  await sleep(600);
+  const closed = await page(`!document.querySelector('.sheet').classList.contains('open')`);
+  check('mobile: the Filters button opens the sheet, "Show N tracks" closes it', sheet.open && sheet.onScreen && sheet.sliders === 9 && closed, JSON.stringify({ ...sheet, closed }));
   await viewport(1440, 900);
 
   // --- Coming back, signing out ------------------------------------------------------------

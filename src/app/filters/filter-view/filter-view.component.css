@@ -1,12 +1,53 @@
-.margin-top {
-  margin-top: var(--tl-space-3);
+.filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-h4 {
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tl-space-2);
+  font-family: var(--tl-font-display);
+  font-weight: 700;
+}
+
+.label {
+  font-size: var(--tl-fs-body);
+}
+
+.value {
+  font-size: var(--tl-fs-small);
+  color: #6a6a6a;
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.value.on {
+  color: var(--tl-green);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--tl-space-1);
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+}
+
+.end {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+  color: var(--tl-text-faint);
+  transition: color 150ms ease;
+}
+
+.end.lit {
   color: var(--tl-text);
-}
-
-.mat-icon {
-  width: 24px;
-  height: 24px;
 }

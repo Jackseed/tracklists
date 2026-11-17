@@ -1,7 +1,35 @@
-div:not(:first-child) {
-  margin-top: 25px;
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tl-space-4);
 }
 
-.filters {
-  margin-bottom: 25px;
+/* Folded filters stay in the page (and keep their position) but are not shown. */
+app-filter-view.folded {
+  display: none;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tl-space-1);
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tl-text-faint);
+  font-family: var(--tl-font-display);
+  font-size: var(--tl-fs-small);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.more:hover {
+  color: var(--tl-green);
+}
+
+.more .mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
 }

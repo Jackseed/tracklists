@@ -62,4 +62,9 @@ export class GenreService {
   public removeActive(genreId: string) {
     this.store.removeActive(genreId);
   }
+
+  /** Unselects every genre: the genre filter goes away with them. */
+  public clearActive() {
+    this.store.setActive([]);
+  }
 }

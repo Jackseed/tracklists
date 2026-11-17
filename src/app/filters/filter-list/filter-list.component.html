@@ -1,5 +1,7 @@
 @for (filter of filters; track filter.property) {
-  <div class="filters">
-    <app-filter-view [filter]="filter"></app-filter-view>
-  </div>
+  <app-filter-view [filter]="filter" [class.folded]="filter.more && !showMore"></app-filter-view>
 }
+<button type="button" class="more" (click)="showMore = !showMore" [attr.aria-expanded]="showMore">
+  <mat-icon>{{ showMore ? 'expand_less' : 'expand_more' }}</mat-icon>
+  {{ showMore ? 'Fewer filters' : '3 more: instrumental, acoustic, live' }}
+</button>

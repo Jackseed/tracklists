@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { TrackQuery, TrackService } from '../../tracks/+state';
+import { TrackQuery } from '../../tracks/+state';
+import { FilterDefinition } from '../filter-view/filter-view.component';
 
 @Component({
   selector: 'app-filter-list',
@@ -10,106 +11,22 @@ import { TrackQuery, TrackService } from '../../tracks/+state';
 })
 export class FilterListComponent {
   private trackQuery = inject(TrackQuery);
-  private trackService = inject(TrackService);
 
-  extremeYears = this.trackQuery.getExtremeReleaseYears;
-  extremeTempos = this.trackQuery.getExtremeTempos;
-  filters = [
-    {
-      property: 'energy',
-      label: 'Energy',
-      min: 'Sleepy',
-      max: 'Dynamic',
-      extremeValues: {
-        min: 0,
-        max: 1,
-      },
-      step: 0.01,
-    },
-    {
-      property: 'danceability',
-      label: 'Danceability',
-      min: 'Chill',
-      max: 'Dancy',
-      extremeValues: {
-        min: 0,
-        max: 1,
-      },
-      step: 0.01,
-    },
-    {
-      property: 'valence',
-      label: 'Happyness',
-      min: 'Gloomy',
-      max: 'Joyful',
-      extremeValues: {
-        min: 0,
-        max: 1,
-      },
-      step: 0.01,
-    },
-    {
-      property: 'popularity',
-      label: 'Popularity',
-      min: 'Unknown',
-      max: 'Star',
-      extremeValues: {
-        min: 0,
-        max: 100,
-      },
-      step: 1,
-    },
-    {
-      property: 'release_year',
-      label: 'Release Year',
-      min: 'Old',
-      max: 'New',
-      extremeValues: this.extremeYears,
-      step: 1,
-    },
-    {
-      property: 'tempo',
-      label: 'BPM',
-      min: 'Low',
-      max: 'High',
-      extremeValues: this.extremeTempos,
-      step: 1,
-    },
-    {
-      property: 'instrumentalness',
-      label: 'Instrumental',
-      min: 'A capella',
-      max: 'Instrumental',
-      extremeValues: {
-        min: 0,
-        max: 1,
-      },
-      step: 0.01,
-    },
-    {
-      property: 'acousticness',
-      label: 'Acoustic',
-      min: 'Electronic',
-      max: 'Acoustic',
-      extremeValues: {
-        min: 0,
-        max: 1,
-      },
-      step: 0.01,
-    },
-    {
-      property: 'liveness',
-      label: 'Live music',
-      min: 'Studio',
-      max: 'Live',
-      extremeValues: {
-        min: 0,
-        max: 1,
-      },
-      step: 0.01,
-    },
+  /** The less common filters stay folded until asked for. */
+  public showMore = false;
+
+  private readonly unit = { min: 0, max: 1 };
+
+  /** Icons are Material Symbols: add new names to the icon font link in index.html. */
+  public readonly filters: FilterDefinition[] = [
+    { property: 'energy', label: 'Energy', min: 'Sleepy', minIcon: 'bedtime', max: 'Dynamic', maxIcon: 'bolt', extremeValues: this.unit, step: 0.01, format: 'percent' },
+    { property: 'danceability', label: 'Danceability', min: 'Chill', minIcon: 'weekend', max: 'Dancy', maxIcon: 'nightlife', extremeValues: this.unit, step: 0.01, format: 'percent' },
+    { property: 'valence', label: 'Mood', min: 'Gloomy', minIcon: 'rainy', max: 'Joyful', maxIcon: 'sunny', extremeValues: this.unit, step: 0.01, format: 'percent' },
+    { property: 'tempo', label: 'Tempo', min: 'Slow', minIcon: 'directions_walk', max: 'Fast', maxIcon: 'directions_run', extremeValues: this.trackQuery.getExtremeTempos, step: 1, format: 'bpm' },
+    { property: 'release_year', label: 'Release year', min: 'Old', minIcon: 'history', max: 'New', maxIcon: 'new_releases', extremeValues: this.trackQuery.getExtremeReleaseYears, step: 1, format: 'year' },
+    { property: 'popularity', label: 'Popularity', min: 'Hidden gem', minIcon: 'diamond', max: 'Hit', maxIcon: 'star', extremeValues: { min: 0, max: 100 }, step: 1, format: 'number' },
+    { property: 'instrumentalness', label: 'Instrumental', min: 'Sung', minIcon: 'mic', max: 'Instrumental', maxIcon: 'piano', extremeValues: this.unit, step: 0.01, format: 'percent', more: true },
+    { property: 'acousticness', label: 'Acoustic', min: 'Electronic', minIcon: 'memory', max: 'Acoustic', maxIcon: 'nature', extremeValues: this.unit, step: 0.01, format: 'percent', more: true },
+    { property: 'liveness', label: 'Live', min: 'Studio', minIcon: 'headphones', max: 'Live', maxIcon: 'stadium', extremeValues: this.unit, step: 0.01, format: 'percent', more: true },
   ];
-  public clearFilters() {
-    this.trackService.clearFilters();
-  }
 }
