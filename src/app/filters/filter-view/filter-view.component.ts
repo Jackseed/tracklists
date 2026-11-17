@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
 import { MinMax, Track, TrackService } from '../../tracks/+state';
 
 export interface FilterDefinition {
   property: string;
   label: string;
-  /** Words for both ends (tooltips), and their Material Symbols icons. */
+  /** Words for both ends (tooltips), and their icons (`src/assets/filters/<icon>.svg`). */
   min: string;
   minIcon: string;
   max: string;
@@ -27,6 +29,8 @@ export interface FilterDefinition {
 export class FilterViewComponent implements OnInit {
   private trackService = inject(TrackService);
   private destroyRef = inject(DestroyRef);
+  private iconRegistry = inject(MatIconRegistry);
+  private sanitizer = inject(DomSanitizer);
 
   @Input() filter: FilterDefinition;
   rangeValues: number[];
@@ -34,6 +38,9 @@ export class FilterViewComponent implements OnInit {
   ngOnInit(): void {
     const { min, max } = this.filter.extremeValues;
     this.rangeValues = [min, max];
+    for (const icon of [this.filter.minIcon, this.filter.maxIcon]) {
+      this.iconRegistry.addSvgIcon(icon, this.sanitizer.bypassSecurityTrustResourceUrl(`assets/filters/${icon}.svg`));
+    }
     // The slider follows the filter: "Reset all", or the same filter shown elsewhere.
     this.trackService
       .selectFilters()

@@ -4,7 +4,7 @@
     <span class="value" [class.on]="active">{{ active ? valueText : 'Any' }}</span>
   </div>
   <div class="row">
-    <mat-icon class="end" [class.lit]="rangeValues[0] > filter.extremeValues.min" [matTooltip]="filter.min">{{ filter.minIcon }}</mat-icon>
+    <mat-icon class="end" [class.lit]="rangeValues[0] > filter.extremeValues.min" [matTooltip]="filter.min" [svgIcon]="filter.minIcon"></mat-icon>
     <nz-slider
       class="slider"
       nzRange
@@ -16,6 +16,6 @@
       (ngModelChange)="onChange($event)"
       [attr.aria-label]="filter.label"
     ></nz-slider>
-    <mat-icon class="end" [class.lit]="rangeValues[1] < filter.extremeValues.max" [matTooltip]="filter.max">{{ filter.maxIcon }}</mat-icon>
+    <mat-icon class="end" [class.lit]="rangeValues[1] < filter.extremeValues.max" [matTooltip]="filter.max" [svgIcon]="filter.maxIcon"></mat-icon>
   </div>
 </div>

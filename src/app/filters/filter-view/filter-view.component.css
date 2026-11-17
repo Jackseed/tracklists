@@ -39,15 +39,15 @@
   min-width: 0;
 }
 
+/* The icons are white drawings: the end being pulled towards lights up. */
 .end {
   flex: none;
-  width: 22px;
-  height: 22px;
-  font-size: 22px;
-  color: var(--tl-text-faint);
-  transition: color 150ms ease;
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
+  transition: opacity 150ms ease;
 }
 
 .end.lit {
-  color: var(--tl-text);
+  opacity: 1;
 }
